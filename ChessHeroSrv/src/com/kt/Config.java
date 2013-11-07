@@ -7,7 +7,8 @@ package com.kt;
  * Time: 12:00 AM
  * To change this template use File | Settings | File Templates.
  */
-public class Config {
+public class Config
+{
     public final static boolean DEBUG = true;
 
     public final static int SERVER_SOCK_PORT = 4848;
