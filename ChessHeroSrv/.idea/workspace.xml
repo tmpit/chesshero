@@ -4,10 +4,11 @@
     <list default="true" id="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" name="Default" comment="" />
     <ignored path="ChessHeroSrv.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/Listener.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1383774975353" ignored="false" />
+    <file path="/Listener.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1383837516951" ignored="false" />
     <file path="/Constants.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1383775560333" ignored="false" />
     <file path="/SLog.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1383777026323" ignored="false" />
     <file path="/Main.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1383775873789" ignored="false" />
+    <file path="/ListenerDelegate.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1383837271596" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,19 +68,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Main.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Main.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="8" selection-start="83" selection-end="83" vertical-scroll-proportion="0.11904762">
+            <state line="6" column="0" selection-start="86" selection-end="86" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Listener.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Listener.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Listener.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="15" column="4" selection-start="281" selection-end="281" vertical-scroll-proportion="0.0">
+            <state line="18" column="4" selection-start="341" selection-end="341" vertical-scroll-proportion="0.16666667">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -87,10 +88,19 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="ListenerDelegate.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/kt/ListenerDelegate.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="13" column="64" selection-start="296" selection-end="296" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="SLog.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/SLog.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="52" column="25" selection-start="1123" selection-end="1123" vertical-scroll-proportion="0.0">
+            <state line="60" column="4" selection-start="1096" selection-end="1096" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -101,7 +111,7 @@
       <file leaf-file-name="Config.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Config.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="12" column="51" selection-start="292" selection-end="292" vertical-scroll-proportion="0.0">
+            <state line="10" column="0" selection-start="192" selection-end="192" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -118,10 +128,11 @@
     <option name="changedFiles">
       <list>
         <option value="$PROJECT_DIR$/src/com/kt/Constants.java" />
-        <option value="$PROJECT_DIR$/src/com/kt/Listener.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/SLog.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Config.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Main.java" />
-        <option value="$PROJECT_DIR$/src/com/kt/SLog.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/ListenerDelegate.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/Listener.java" />
       </list>
     </option>
   </component>
@@ -370,33 +381,61 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/Config.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="51" selection-start="292" selection-end="292" vertical-scroll-proportion="0.0">
+        <state line="10" column="0" selection-start="192" selection-end="192" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="0" selection-start="86" selection-end="86" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/SLog.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="52" column="25" selection-start="1123" selection-end="1123" vertical-scroll-proportion="0.0">
+        <state line="60" column="4" selection-start="1096" selection-end="1096" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/lang/Throwable.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="12" column="57" selection-start="455" selection-end="455" vertical-scroll-proportion="0.267423">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/lang/Exception.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="44" selection-start="183" selection-end="183" vertical-scroll-proportion="0.11904762">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/io/IOException.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="46" selection-start="183" selection-end="183" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/ListenerDelegate.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="64" selection-start="296" selection-end="296" vertical-scroll-proportion="0.0">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/Listener.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="4" selection-start="281" selection-end="281" vertical-scroll-proportion="0.0">
+        <state line="18" column="4" selection-start="341" selection-end="341" vertical-scroll-proportion="0.16666667">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/kt/Main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="8" selection-start="83" selection-end="83" vertical-scroll-proportion="0.11904762">
-          <folding />
         </state>
       </provider>
     </entry>
