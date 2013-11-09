@@ -15,7 +15,7 @@ public class SLog
 {
     private static Logger logger = Logger.getLogger("SLog");
     static {
-        logger.setLevel(Level.OFF);
+        logger.setLevel((Config.DEBUG ? Level.ALL : Level.OFF));
     }
 
     public static void write(String str)
