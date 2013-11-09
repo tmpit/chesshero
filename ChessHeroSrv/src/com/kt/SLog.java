@@ -10,11 +10,12 @@ import java.util.logging.Logger;
  * Time: 12:04 AM
  * To change this template use File | Settings | File Templates.
  */
+
 public class SLog
 {
-    private final static Logger logger = Logger.getLogger("SLog");
-    {
-        logger.setLevel((Config.DEBUG ? Level.ALL : Level.OFF));
+    private static Logger logger = Logger.getLogger("SLog");
+    static {
+        logger.setLevel(Level.OFF);
     }
 
     public static void write(String str)
