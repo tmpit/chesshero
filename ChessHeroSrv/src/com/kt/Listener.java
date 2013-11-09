@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.InetAddress;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,19 +18,22 @@ import java.net.InetAddress;
 public class Listener
 {
     private ServerSocket _sock;
-
-    public ListenerDelegate delegate;
+    private ExecutorService pool = Executors.newFixedThreadPool(Config.MAX_CONCURRENT_THREADS);
 
     Listener()
     {
+        super();
+
         try
         {
             _sock = new ServerSocket(Config.SERVER_SOCK_PORT);
+            SLog.write("Server socket bound");
+
             listen();
         }
         catch (IOException e)
         {
-            SLog.write("Server socket did fail to bind or to accept client connection: " + e.getMessage());
+            SLog.write("Server socket failed: " + e.getMessage());
             System.exit(1);
         }
     }
@@ -37,12 +42,14 @@ public class Listener
     {
         while (true)
         {
+            SLog.write("Listening...");
             Socket clientSock = _sock.accept();
+            SLog.write("Client socket accepted");
 
-            if (delegate != null)
-            {
-                delegate.listenerDidReceiveClientConnection(clientSock);
-            }
+            ClientConnection connection = new ClientConnection(clientSock);
+            pool.submit(connection);
+
+            break;
         }
     }
 }

@@ -97,10 +97,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ClientConnection.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="ClientConnection.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/kt/ClientConnection.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="63" column="44" selection-start="1610" selection-end="1610" vertical-scroll-proportion="0.0">
+            <state line="63" column="44" selection-start="1610" selection-end="1610" vertical-scroll-proportion="1.5">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -119,10 +119,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Config.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Config.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Config.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="17" column="70" selection-start="428" selection-end="428" vertical-scroll-proportion="0.4047619">
+            <state line="17" column="70" selection-start="428" selection-end="428" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -513,15 +513,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/kt/ClientConnection.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="63" column="44" selection-start="1610" selection-end="1610" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/Listener.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="46" column="28" selection-start="1076" selection-end="1076" vertical-scroll-proportion="0.0">
@@ -533,8 +524,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/Config.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="70" selection-start="428" selection-end="428" vertical-scroll-proportion="0.4047619">
+        <state line="17" column="70" selection-start="428" selection-end="428" vertical-scroll-proportion="0.0">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/ClientConnection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="63" column="44" selection-start="1610" selection-end="1610" vertical-scroll-proportion="1.5">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
