@@ -13,5 +13,7 @@ public class Config
 
     public final static int SERVER_SOCK_PORT = 4848;
 
-    public final static int TIMEOUT = 30; // In seconds
+    public final static int SILENCE_TIMEOUT = 15 * 1000; // In milliseconds
+
+    public final static int MAX_CONCURRENT_THREADS = 10;
 }
