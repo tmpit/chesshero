@@ -48,8 +48,6 @@ public class Listener
 
             ClientConnection connection = new ClientConnection(clientSock);
             pool.submit(connection);
-
-            break;
         }
     }
 }
