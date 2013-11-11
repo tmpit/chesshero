@@ -45,6 +45,11 @@ public class ClientConnection implements Runnable
 
     private void closeConnection()
     {
+        if (sock.isClosed())
+        {
+            return;
+        }
+
         try
         {
             SLog.write("Closing connection...");
@@ -64,14 +69,71 @@ public class ClientConnection implements Runnable
             return;
         }
 
+        Message message = readMessage();
+
         try
-        {   // The first byte will be the body length
-            int bodyLen = sock.getInputStream().read();
+        {
             sock.setSoTimeout(0); // Reset timeout back to no timeout after we've read the request header
+        }
+        catch (IOException e)
+        {
+            SLog.write("Error setting socket timeout: " + e);
+            closeConnection();
+            return;
+        }
 
-            SLog.write("body len: " + bodyLen);
+        do
+        {
+            // do something with the message
+            message = readMessage();
+        }
+        while(true);
+    }
 
-            readBodyWithLength(bodyLen);
+    private Message readMessage()
+    {
+        short bodyLen = readHeader();
+
+        if (0 == bodyLen)
+        {   // An error has occurred during header reading, end the task
+            return null;
+        }
+
+        byte bodyData[] = readBodyWithLength(bodyLen);
+        if (0 == bodyData.length)
+        {   // An error has occurred during body reading, end the task
+            return null;
+        }
+
+        return getParser().messageFromData(bodyData);
+    }
+
+    private short readHeader()
+    {
+        try
+        {   // The first two bytes will be the body length
+            byte headerData[] = new byte[2];
+            int bytesRead = 0;
+
+            do
+            {
+                bytesRead = sock.getInputStream().read(headerData, 0, 2);
+                if (-1 == bytesRead)
+                {
+                    throw new EOFException();
+                }
+            }
+            while (bytesRead != 2);
+
+            ByteBuffer buf = ByteBuffer.allocate(2);
+            buf.put(headerData);
+
+            return buf.getShort();
+        }
+        catch (EOFException e)
+        {
+            SLog.write("Unexpected end of file reached while reading from socket");
+            closeConnection();
         }
         catch (SocketTimeoutException e)
         {
@@ -83,9 +145,11 @@ public class ClientConnection implements Runnable
             SLog.write("Error reading: " + e.getMessage());
             closeConnection();
         }
+
+        return 0;
     }
 
-    public void readBodyWithLength(int len)
+    private byte[] readBodyWithLength(short len)
     {
         byte bodyData[] = new byte[len];
 
@@ -104,8 +168,6 @@ public class ClientConnection implements Runnable
                 }
             }
             while (bytesRead != len);
-
-            Object message = getParser().messageFromData(bodyData);
         }
         catch (EOFException e)
         {
@@ -117,5 +179,7 @@ public class ClientConnection implements Runnable
             SLog.write("Could not read body of len: " + len);
             closeConnection();
         }
+
+        return bodyData;
     }
 }
