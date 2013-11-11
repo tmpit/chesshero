@@ -22,8 +22,6 @@ public class Listener
 
     Listener()
     {
-        super();
-
         try
         {
             _sock = new ServerSocket(Config.SERVER_SOCK_PORT);
