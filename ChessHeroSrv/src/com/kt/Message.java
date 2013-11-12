@@ -9,5 +9,21 @@ package com.kt;
  */
 public class Message
 {
+    public static final int HEADER_LENGTH = 2;
+    public static enum ActionCode
+    {
+        REGISTER,
+        LOGIN,
+        MOVE
+    }
 
+    public static Message fromData(byte data[])
+    {
+        return new Message();
+    }
+
+    public byte[] toData()
+    {
+        return null;
+    }
 }

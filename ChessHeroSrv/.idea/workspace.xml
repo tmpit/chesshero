@@ -10,8 +10,9 @@
     <file path="/Main.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384032887152" ignored="false" />
     <file path="/ListenerDelegate.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1383838895209" ignored="false" />
     <file path="/Parser.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384211239511" ignored="false" />
-    <file path="/ClientConnection.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384291797707" ignored="false" />
+    <file path="/ClientConnection.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384296802772" ignored="false" />
     <file path="/Config.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384290159688" ignored="false" />
+    <file path="/Message.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384296759624" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,7 +99,7 @@
       <file leaf-file-name="ClientConnection.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/kt/ClientConnection.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="91" column="65" selection-start="2298" selection-end="2298" vertical-scroll-proportion="1.1155063">
+            <state line="53" column="44" selection-start="1183" selection-end="1183" vertical-scroll-proportion="0.14240506">
               <folding />
             </state>
           </provider>
@@ -107,16 +108,7 @@
       <file leaf-file-name="Message.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Message.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="11" column="4" selection-start="195" selection-end="195" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Parser.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/kt/Parser.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="13" column="28" selection-start="277" selection-end="277" vertical-scroll-proportion="0.0">
+            <state line="11" column="46" selection-start="241" selection-end="241" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -154,11 +146,11 @@
         <option value="$PROJECT_DIR$/src/com/kt/ListenerDelegate.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Main.java" />
         <option value="$PROJECT_DIR$/src/com/kt/SLog.java" />
-        <option value="$PROJECT_DIR$/src/com/kt/Message.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Parser.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Listener.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Config.java" />
         <option value="$PROJECT_DIR$/src/com/kt/ClientConnection.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/Message.java" />
       </list>
     </option>
   </component>
@@ -269,8 +261,8 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="PackagesPane" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -506,20 +498,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/kt/Message.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="4" selection-start="195" selection-end="195" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/kt/Parser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="28" selection-start="277" selection-end="277" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/SLog.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="20" column="64" selection-start="445" selection-end="445" vertical-scroll-proportion="0.0">
@@ -534,9 +512,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/Message.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="11" column="46" selection-start="241" selection-end="241" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/ClientConnection.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="91" column="65" selection-start="2298" selection-end="2298" vertical-scroll-proportion="1.1155063">
+        <state line="53" column="44" selection-start="1183" selection-end="1183" vertical-scroll-proportion="0.14240506">
           <folding />
         </state>
       </provider>

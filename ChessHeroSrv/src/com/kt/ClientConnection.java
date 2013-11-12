@@ -17,21 +17,10 @@ import java.nio.ByteBuffer;
 public class ClientConnection implements Runnable
 {
     private Socket sock = null;
-    private Parser parser = null;
 
     ClientConnection(Socket sock)
     {
         this.sock = sock;
-    }
-
-    private Parser getParser()
-    {
-        if (null == parser)
-        {
-            parser = new Parser();
-        }
-
-        return parser;
     }
 
     private void closeConnection()
@@ -80,7 +69,7 @@ public class ClientConnection implements Runnable
                     return;
                 }
 
-                Message msg = getParser().messageFromData(bodyData);
+                Message msg = Message.fromData(bodyData);
                 // Pass message wherever
 
                 // Remove timeout when listening for header
@@ -98,21 +87,21 @@ public class ClientConnection implements Runnable
     {
         try
         {   // The first two bytes will be the body length
-            byte headerData[] = new byte[2];
+            byte headerData[] = new byte[Message.HEADER_LENGTH];
             int bytesRead = 0;
 
             do
             {   // The docs are ambiguous as to whether this will definitely try to read len or can return less than len
                 // so just in case iterating until len is read or shit happens
-                bytesRead = sock.getInputStream().read(headerData, 0, 2);
+                bytesRead = sock.getInputStream().read(headerData, 0, Message.HEADER_LENGTH);
                 if (-1 == bytesRead)
                 {
                     throw new EOFException();
                 }
             }
-            while (bytesRead != 2);
+            while (bytesRead != Message.HEADER_LENGTH);
 
-            ByteBuffer buf = ByteBuffer.allocate(2);
+            ByteBuffer buf = ByteBuffer.allocate(Message.HEADER_LENGTH);
             buf.put(headerData);
 
             return buf.getShort();
