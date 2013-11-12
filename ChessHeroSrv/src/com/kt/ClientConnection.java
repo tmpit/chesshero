@@ -21,16 +21,7 @@ public class ClientConnection implements Runnable
 
     ClientConnection(Socket sock)
     {
-        try
-        {
-            sock.setSoTimeout(Config.READ_TIMEOUT);
-            this.sock = sock;
-        }
-        catch (SocketException e)
-        {
-            SLog.write("Error setting socket timeout: " + e.getMessage());
-            closeConnection();
-        }
+        this.sock = sock;
     }
 
     private Parser getParser()
@@ -64,48 +55,43 @@ public class ClientConnection implements Runnable
 
     public void run()
     {
-        if (null == sock)
-        {   // Set timeout in the constructor hasn't succeeded, end the task
-            return;
-        }
-
-        Message message = readMessage();
-
         try
         {
-            sock.setSoTimeout(0); // Reset timeout back to no timeout after we've read the request header
+            // Set timeout for the first message, if someone connected, he must say something
+            sock.setSoTimeout(Config.READ_TIMEOUT);
+
+            while (true)
+            {
+                short bodyLen = readHeader();
+
+                if (0 == bodyLen)
+                {   // An error has occurred during header reading or header is invalid, end the task
+                    closeConnection();
+                    return;
+                }
+
+                // Set timeout for the body
+                sock.setSoTimeout(Config.READ_TIMEOUT);
+
+                byte bodyData[] = readBodyWithLength(bodyLen);
+                if (0 == bodyData.length)
+                {   // An error has occurred during body reading, end the task
+                    closeConnection();
+                    return;
+                }
+
+                Message msg = getParser().messageFromData(bodyData);
+                // Pass message wherever
+
+                // Remove timeout when listening for header
+                sock.setSoTimeout(0);
+            }
         }
         catch (IOException e)
         {
-            SLog.write("Error setting socket timeout: " + e);
+            SLog.write("Could not set socket timeout: " + e);
             closeConnection();
-            return;
         }
-
-        do
-        {
-            // do something with the message
-            message = readMessage();
-        }
-        while(true);
-    }
-
-    private Message readMessage()
-    {
-        short bodyLen = readHeader();
-
-        if (0 == bodyLen)
-        {   // An error has occurred during header reading, end the task
-            return null;
-        }
-
-        byte bodyData[] = readBodyWithLength(bodyLen);
-        if (0 == bodyData.length)
-        {   // An error has occurred during body reading, end the task
-            return null;
-        }
-
-        return getParser().messageFromData(bodyData);
     }
 
     private short readHeader()
@@ -116,7 +102,8 @@ public class ClientConnection implements Runnable
             int bytesRead = 0;
 
             do
-            {
+            {   // The docs are ambiguous as to whether this will definitely try to read len or can return less than len
+                // so just in case iterating until len is read or shit happens
                 bytesRead = sock.getInputStream().read(headerData, 0, 2);
                 if (-1 == bytesRead)
                 {
@@ -132,12 +119,12 @@ public class ClientConnection implements Runnable
         }
         catch (EOFException e)
         {
-            SLog.write("Unexpected end of file reached while reading from socket");
+            SLog.write("Unexpected end of file reached while reading");
             closeConnection();
         }
         catch (SocketTimeoutException e)
         {
-            SLog.write("Initial timeout reached, closing socket");
+            SLog.write("Header read timed out");
             closeConnection();
         }
         catch (IOException e)
@@ -159,7 +146,7 @@ public class ClientConnection implements Runnable
 
             do
             {   // The docs are ambiguous as to whether this will definitely try to read len or can return less than len
-                // so just in case iterating until body is read or shit happens
+                // so just in case iterating until len is read or shit happens
                 bytesRead = sock.getInputStream().read(bodyData, 0, len);
 
                 if (-1 == bytesRead)
@@ -171,7 +158,12 @@ public class ClientConnection implements Runnable
         }
         catch (EOFException e)
         {
-            SLog.write("Unexpected end of file reached while reading from socket");
+            SLog.write("Unexpected end of file reached while reading");
+            closeConnection();
+        }
+        catch (SocketTimeoutException e)
+        {
+            SLog.write("Body read timed out");
             closeConnection();
         }
         catch (IOException e)
