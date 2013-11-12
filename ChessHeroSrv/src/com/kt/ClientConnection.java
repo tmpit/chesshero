@@ -23,7 +23,7 @@ public class ClientConnection implements Runnable
     {
         try
         {
-            sock.setSoTimeout(Config.SILENCE_TIMEOUT);
+            sock.setSoTimeout(Config.READ_TIMEOUT);
             this.sock = sock;
         }
         catch (SocketException e)
