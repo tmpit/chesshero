@@ -86,6 +86,6 @@ public class Message
 
     public byte[] toData()
     {
-        return null;
+        throw new RuntimeException("Message::toData method not implemented in subclass");
     }
 }

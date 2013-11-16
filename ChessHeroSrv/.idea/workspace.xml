@@ -12,7 +12,7 @@
     <file path="/Parser.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384211239511" ignored="false" />
     <file path="/ClientConnection.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384600327990" ignored="false" />
     <file path="/Config.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384290159688" ignored="false" />
-    <file path="/Message.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384603117240" ignored="false" />
+    <file path="/Message.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384603447114" ignored="false" />
     <file path="/ChessHeroException.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384601781695" ignored="false" />
     <file path="/Credentials.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384601708334" ignored="false" />
     <file path="/AuthMessage.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384601147161" ignored="false" />
@@ -108,10 +108,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Message.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Message.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Message.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="43" column="90" selection-start="1144" selection-end="1144" vertical-scroll-proportion="1.0591133">
+            <state line="88" column="89" selection-start="2479" selection-end="2479" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -119,10 +119,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AuthMessage.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="AuthMessage.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/kt/AuthMessage.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="27" column="27" selection-start="549" selection-end="549" vertical-scroll-proportion="0.0">
+            <state line="27" column="27" selection-start="549" selection-end="549" vertical-scroll-proportion="0.66502464">
               <folding />
             </state>
           </provider>
@@ -564,19 +564,19 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/kt/AuthMessage.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="27" selection-start="549" selection-end="549" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/Message.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="90" selection-start="1144" selection-end="1144" vertical-scroll-proportion="1.0591133">
+        <state line="88" column="89" selection-start="2479" selection-end="2479" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/AuthMessage.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="27" selection-start="549" selection-end="549" vertical-scroll-proportion="0.66502464">
+          <folding />
         </state>
       </provider>
     </entry>
