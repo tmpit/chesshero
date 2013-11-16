@@ -81,6 +81,11 @@ public class ClientConnection implements Runnable
             SLog.write("Could not set socket timeout: " + e);
             closeConnection();
         }
+        catch (ChessHeroException e)
+        {
+            SLog.write("Parsing error, code: " + e.code);
+            closeConnection();
+        }
     }
 
     private short readHeader()
