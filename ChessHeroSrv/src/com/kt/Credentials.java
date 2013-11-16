@@ -18,8 +18,17 @@ public class Credentials
     private String name;
     private String pass;
 
-    Credentials(String name, String pass)
+    Credentials(String name, String pass) throws ChessHeroException
     {
+        if (name.length() < MIN_NAME_LENGTH || name.length() > MAX_NAME_LENGTH)
+        {
+            throw new ChessHeroException(ChessHeroException.INVALID_NAME_ERROR);
+        }
+        if (pass.length() < MIN_PASS_LENGTH || pass.length() > MAX_PASS_LENGTH)
+        {
+            throw new ChessHeroException(ChessHeroException.INVALID_PASS_ERROR);
+        }
+
         this.name = name;
         this.pass = pass;
     }
