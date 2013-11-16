@@ -63,6 +63,7 @@ public class ClientConnection implements Runnable
                 sock.setSoTimeout(Config.READ_TIMEOUT);
 
                 byte bodyData[] = readBodyWithLength(bodyLen);
+
                 if (0 == bodyData.length)
                 {   // An error has occurred during body reading, end the task
                     closeConnection();
@@ -70,6 +71,7 @@ public class ClientConnection implements Runnable
                 }
 
                 Message msg = Message.fromData(bodyData);
+                SLog.write("Received message: " + msg);
                 // Pass message wherever
 
                 // Remove timeout when listening for header

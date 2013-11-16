@@ -1,7 +1,6 @@
 package com.kt;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,6 +15,12 @@ public class SLog
     private static Logger logger = Logger.getLogger("SLog");
     static {
         logger.setLevel((Config.DEBUG ? Level.ALL : Level.OFF));
+
+        Handler handlers[] = logger.getParent().getHandlers();
+        for (Handler handler : handlers)
+        {
+            handler.setFormatter(new _SLogFormatter());
+        }
     }
 
     public static void write(String str)
@@ -62,5 +67,15 @@ public class SLog
     {
         String str = new String(c);
         logger.info(str);
+    }
+
+    // Private formatter to remove the default timestamp before the log message
+    private static class _SLogFormatter extends SimpleFormatter
+    {
+        @Override
+        public String format(LogRecord record)
+        {
+            return record.getMessage() + "\r\n";
+        }
     }
 }
