@@ -11,13 +11,18 @@ import java.nio.ByteBuffer;
  * To change this template use File | Settings | File Templates.
  */
 
-public class Message
+abstract public class Message
 {
     public static final int HEADER_LENGTH = 2;
 
     public static final short ACTION_REGISTER = 1;
     public static final short ACTION_LOGIN = 2;
     public static final short ACTION_MOVE = 3;
+
+    public static boolean isActionValid(int action)
+    {
+        return (action == ACTION_REGISTER || action == ACTION_LOGIN || action == ACTION_MOVE);
+    }
 
     public static Message fromData(byte data[]) throws ChessHeroException
     {
@@ -84,8 +89,5 @@ public class Message
         }
     }
 
-    public byte[] toData()
-    {
-        throw new RuntimeException("Message::toData method not implemented in subclass");
-    }
+    abstract public byte[] toData();
 }
