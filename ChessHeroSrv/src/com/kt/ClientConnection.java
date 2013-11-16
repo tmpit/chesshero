@@ -83,7 +83,7 @@ public class ClientConnection implements Runnable
         }
         catch (ChessHeroException e)
         {
-            SLog.write("Parsing error, code: " + e.code);
+            SLog.write("Parsing error, code: " + e.getCode());
             closeConnection();
         }
     }
