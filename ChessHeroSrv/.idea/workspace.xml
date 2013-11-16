@@ -10,9 +10,12 @@
     <file path="/Main.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384032887152" ignored="false" />
     <file path="/ListenerDelegate.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1383838895209" ignored="false" />
     <file path="/Parser.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384211239511" ignored="false" />
-    <file path="/ClientConnection.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384296802772" ignored="false" />
+    <file path="/ClientConnection.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384600327990" ignored="false" />
     <file path="/Config.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384290159688" ignored="false" />
-    <file path="/Message.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384296759624" ignored="false" />
+    <file path="/Message.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384603117240" ignored="false" />
+    <file path="/ChessHeroException.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384601781695" ignored="false" />
+    <file path="/Credentials.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384601708334" ignored="false" />
+    <file path="/AuthMessage.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384601147161" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,25 +93,54 @@
       <file leaf-file-name="Listener.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Listener.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="23" column="39" selection-start="542" selection-end="542" vertical-scroll-proportion="0.0">
+            <state line="23" column="5" selection-start="542" selection-end="542" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ClientConnection.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="ClientConnection.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/ClientConnection.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="53" column="44" selection-start="1183" selection-end="1183" vertical-scroll-proportion="0.14240506">
+            <state line="86" column="30" selection-start="2279" selection-end="2279" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Message.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Message.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Message.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="11" column="46" selection-start="241" selection-end="241" vertical-scroll-proportion="0.0">
+            <state line="43" column="90" selection-start="1144" selection-end="1144" vertical-scroll-proportion="1.0591133">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AuthMessage.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/kt/AuthMessage.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="27" column="27" selection-start="549" selection-end="549" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Credentials.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/kt/Credentials.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="15" column="49" selection-start="403" selection-end="403" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ChessHeroException.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/kt/ChessHeroException.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="14" column="53" selection-start="429" selection-end="429" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -117,7 +149,7 @@
       <file leaf-file-name="SLog.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/SLog.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="64" selection-start="445" selection-end="445" vertical-scroll-proportion="0.0">
+            <state line="20" column="40" selection-start="445" selection-end="445" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -149,7 +181,11 @@
         <option value="$PROJECT_DIR$/src/com/kt/Parser.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Listener.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Config.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/ChessHeroError.java" />
         <option value="$PROJECT_DIR$/src/com/kt/ClientConnection.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/AuthMessage.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/Credentials.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/ChessHeroException.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Message.java" />
       </list>
     </option>
@@ -266,11 +302,14 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="project.structure.last.edited" value="Project" />
     <property name="GoToFile.includeJavaFiles" value="false" />
+    <property name="project.structure.proportion" value="0.0" />
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="MemberChooser.sorted" value="false" />
     <property name="recentsLimit" value="5" />
     <property name="options.lastSelected" value="preferences.updates" />
+    <property name="project.structure.side.proportion" value="0.2" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
@@ -439,21 +478,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/util/logging/Level.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="65" selection-start="809" selection-end="809" vertical-scroll-proportion="0.5575" />
-      </provider>
-    </entry>
-    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/util/concurrent/Executor.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="17" selection-start="167" selection-end="167" vertical-scroll-proportion="0.1923077" />
-      </provider>
-    </entry>
-    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/util/concurrent/Executors.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="64" selection-start="174" selection-end="174" vertical-scroll-proportion="0.198939" />
-      </provider>
-    </entry>
     <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/util/concurrent/ExecutorService.class">
       <provider selected="true" editor-type-id="text-editor">
         <state line="11" column="52" selection-start="325" selection-end="325" vertical-scroll-proportion="0.25252524" />
@@ -493,14 +517,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/Listener.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="39" selection-start="542" selection-end="542" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/kt/SLog.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="64" selection-start="445" selection-end="445" vertical-scroll-proportion="0.0">
+        <state line="23" column="5" selection-start="542" selection-end="542" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -512,20 +529,132 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/kt/Message.java">
+    <entry file="file://$PROJECT_DIR$/src/com/kt/SLog.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="46" selection-start="241" selection-end="241" vertical-scroll-proportion="0.0">
+        <state line="20" column="40" selection-start="445" selection-end="445" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/lang/Throwable.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="13" selection-start="152" selection-end="152" vertical-scroll-proportion="0.12583892">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/ClientConnection.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="53" column="44" selection-start="1183" selection-end="1183" vertical-scroll-proportion="0.14240506">
+        <state line="86" column="30" selection-start="2279" selection-end="2279" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/Credentials.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="15" column="49" selection-start="403" selection-end="403" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/ChessHeroException.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="53" selection-start="429" selection-end="429" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/AuthMessage.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="27" selection-start="549" selection-end="549" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/Message.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="43" column="90" selection-start="1144" selection-end="1144" vertical-scroll-proportion="1.0591133">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ArtifactsStructureConfigurable.UI">
+        <settings>
+          <artifact-editor />
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="FacetStructureConfigurable.UI">
+        <settings>
+          <last-edited>No facets are configured</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="GlobalLibrariesConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="JdkListConfigurable.UI">
+        <settings>
+          <last-edited>1.6</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ModuleStructureConfigurable.UI">
+        <settings>
+          <last-edited>ChessHeroSrv</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+                <option value="0.5" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectLibrariesConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
   </component>
 </project>
 
