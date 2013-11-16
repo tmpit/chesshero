@@ -44,8 +44,7 @@ public class AuthMessage extends Message
 
         int bodyLen = 2 + 2 + nameData.length + 2 + passData.length; // Action + name length + name + pass length + pass
 
-        ByteBuffer messageData = ByteBuffer.allocate(Message.HEADER_LENGTH + bodyLen);
-        messageData.putShort((short)bodyLen); // Put header
+        ByteBuffer messageData = ByteBuffer.allocate(bodyLen);
         messageData.putShort((short)action); // Put action
         messageData.putShort((short)nameData.length); // Put name length
         messageData.put(nameData); // Put name
@@ -53,5 +52,11 @@ public class AuthMessage extends Message
         messageData.put(passData); // Put pass
 
         return messageData.array();
+    }
+
+    @Override
+    public String toString()
+    {
+        return "<AuthMessage: action: " + action + ", credentials: " + credentials + ">";
     }
 }
