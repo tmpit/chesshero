@@ -28,12 +28,13 @@ abstract public class Message
     {
         ByteBuffer buf = ByteBuffer.allocate(data.length);
         buf.put(data);
-
-        // Read action number
-        short action = buf.getShort();
+        buf.rewind();
 
         try
         {
+            // Read action number
+            short action = buf.getShort();
+
             switch (action)
             {
                 case ACTION_REGISTER:
@@ -50,6 +51,10 @@ abstract public class Message
             }
 
             return null;
+        }
+        catch (BufferUnderflowException e)
+        {
+            throw new ChessHeroException(ChessHeroException.INVALID_MESSAGE_ERROR);
         }
         catch (ChessHeroException e)
         {
