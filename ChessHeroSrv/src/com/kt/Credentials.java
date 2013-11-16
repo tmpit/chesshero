@@ -42,4 +42,10 @@ public class Credentials
     {
         return pass;
     }
+
+    @Override
+    public String toString()
+    {
+        return "<Credentials: name: " + name + ", pass: " + pass + ">";
+    }
 }
