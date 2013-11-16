@@ -17,15 +17,17 @@ class DBManager
     private static String DB_USER = "chesshero_srv";
     private static String DB_PASS = "banichkasyssirene";
 
+    private static DBManager singleton = null;
+
     private Connection conn = null;
 
-    DBManager()
+    private DBManager()
     {
-        String driver = "com.mysql.jdbc.Driver";
+        String connector = "com.mysql.jdbc.Driver";
 
         try
         {
-            Class.forName(driver).newInstance();
+            Class.forName(connector).newInstance();
             conn = DriverManager.getConnection(DB_URL + DB_NAME, DB_USER, DB_PASS);
             SLog.write("Database connection established");
         }
@@ -33,5 +35,15 @@ class DBManager
         {
             SLog.write(e);
         }
+    }
+
+    public static synchronized DBManager getSingleton()
+    {
+        if (null == singleton)
+        {
+            singleton = new DBManager();
+        }
+
+        return singleton;
     }
 }

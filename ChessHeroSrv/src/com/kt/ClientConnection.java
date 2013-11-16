@@ -88,6 +88,11 @@ public class ClientConnection implements Runnable
             SLog.write("Parsing error, code: " + e.getCode());
             closeConnection();
         }
+        catch (Exception e)
+        {
+            SLog.write("Unhandled exception: " + e);
+            closeConnection();
+        }
     }
 
     private short readHeader()
