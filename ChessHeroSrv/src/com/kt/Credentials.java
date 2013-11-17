@@ -1,5 +1,9 @@
 package com.kt;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Formatter;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Toshko
@@ -41,6 +45,29 @@ public class Credentials
     public String getPass()
     {
         return pass;
+    }
+
+    public String getPassSHA1() throws ChessHeroException
+    {
+        try
+        {
+            MessageDigest converter = MessageDigest.getInstance("SHA-1");
+            byte converted[] = converter.digest(pass.getBytes());
+
+            Formatter formatter = new Formatter();
+
+            for (byte b : converted)
+            {
+                formatter.format("%02x", b);
+            }
+
+            return formatter.toString();
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            SLog.write("Could not create password sha1: " + e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
     }
 
     @Override
