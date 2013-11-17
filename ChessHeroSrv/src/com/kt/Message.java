@@ -13,8 +13,6 @@ import java.nio.ByteBuffer;
 
 abstract public class Message
 {
-    public static final int HEADER_LENGTH = 2;
-
     public static final short ACTION_REGISTER = 1;
     public static final short ACTION_LOGIN = 2;
     public static final short ACTION_MOVE = 3;
@@ -47,14 +45,14 @@ abstract public class Message
                     break;
 
                 default:
-                    throw new ChessHeroException(ChessHeroException.INVALID_ACTION_ERROR);
+                    throw new ChessHeroException(Result.INVALID_ACTION);
             }
 
             return null;
         }
         catch (BufferUnderflowException e)
         {
-            throw new ChessHeroException(ChessHeroException.INVALID_MESSAGE_ERROR);
+            throw new ChessHeroException(Result.INVALID_MESSAGE);
         }
         catch (ChessHeroException e)
         {
@@ -69,7 +67,7 @@ abstract public class Message
             short nameLen = buf.getShort();
             if (nameLen < Credentials.MIN_NAME_LENGTH || nameLen > Credentials.MAX_NAME_LENGTH)
             {
-                throw new ChessHeroException(ChessHeroException.INVALID_NAME_ERROR);
+                throw new ChessHeroException(Result.INVALID_NAME);
             }
 
             // Read name bytes
@@ -79,7 +77,7 @@ abstract public class Message
             short passLen = buf.getShort();
             if (passLen < Credentials.MIN_PASS_LENGTH || passLen > Credentials.MAX_PASS_LENGTH)
             {
-                throw new ChessHeroException(ChessHeroException.INVALID_PASS_ERROR);
+                throw new ChessHeroException(Result.INVALID_PASS);
             }
 
             // Read pass bytes
@@ -90,7 +88,7 @@ abstract public class Message
         }
         catch (BufferUnderflowException e)
         {
-            throw new ChessHeroException();
+            throw new ChessHeroException(Result.INVALID_MESSAGE);
         }
     }
 

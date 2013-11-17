@@ -99,21 +99,21 @@ public class ClientConnection implements Runnable
     {
         try
         {   // The first two bytes will be the body length
-            byte headerData[] = new byte[Message.HEADER_LENGTH];
+            byte headerData[] = new byte[2];
             int bytesRead = 0;
 
             do
             {   // The docs are ambiguous as to whether this will definitely try to read len or can return less than len
                 // so just in case iterating until len is read or shit happens
-                bytesRead = sock.getInputStream().read(headerData, 0, Message.HEADER_LENGTH);
+                bytesRead = sock.getInputStream().read(headerData, 0, 2);
                 if (-1 == bytesRead)
                 {
                     throw new EOFException();
                 }
             }
-            while (bytesRead != Message.HEADER_LENGTH);
+            while (bytesRead != 2);
 
-            ByteBuffer buf = ByteBuffer.allocate(Message.HEADER_LENGTH);
+            ByteBuffer buf = ByteBuffer.allocate(2);
             buf.put(headerData);
 
             return buf.getShort();

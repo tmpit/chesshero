@@ -19,7 +19,7 @@ public class AuthMessage extends Message
     {
         if (!Message.isActionValid(action))
         {
-            throw new ChessHeroException(ChessHeroException.INVALID_ACTION_ERROR);
+            throw new ChessHeroException(Result.INVALID_ACTION);
         }
 
         this.action = action;

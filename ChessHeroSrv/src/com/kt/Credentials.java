@@ -22,11 +22,11 @@ public class Credentials
     {
         if (name.length() < MIN_NAME_LENGTH || name.length() > MAX_NAME_LENGTH)
         {
-            throw new ChessHeroException(ChessHeroException.INVALID_NAME_ERROR);
+            throw new ChessHeroException(Result.INVALID_NAME);
         }
         if (pass.length() < MIN_PASS_LENGTH || pass.length() > MAX_PASS_LENGTH)
         {
-            throw new ChessHeroException(ChessHeroException.INVALID_PASS_ERROR);
+            throw new ChessHeroException(Result.INVALID_PASS);
         }
 
         this.name = name;

@@ -12,11 +12,12 @@
     <file path="/Parser.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384211239511" ignored="false" />
     <file path="/ClientConnection.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384644780245" ignored="false" />
     <file path="/Config.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384290159688" ignored="false" />
-    <file path="/Message.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384645032276" ignored="false" />
+    <file path="/Message.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384687930762" ignored="false" />
     <file path="/ChessHeroException.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384607878039" ignored="false" />
-    <file path="/Credentials.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384606524046" ignored="false" />
-    <file path="/AuthMessage.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384608666563" ignored="false" />
-    <file path="/DBManager.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384644978724" ignored="false" />
+    <file path="/Credentials.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384688023550" ignored="false" />
+    <file path="/AuthMessage.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384688037405" ignored="false" />
+    <file path="/DBManager.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384688364431" ignored="false" />
+    <file path="/APIResult.java" changelist="0b0b18fd-2102-4fb8-bb8a-c93f8b61741e" time="1384688199777" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,15 +83,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Main.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/kt/Main.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="5" selection-start="85" selection-end="85" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="Listener.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Listener.java">
           <provider selected="true" editor-type-id="text-editor">
@@ -103,7 +95,7 @@
       <file leaf-file-name="ClientConnection.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/ClientConnection.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="93" column="30" selection-start="2473" selection-end="2473" vertical-scroll-proportion="0.0">
+            <state line="115" column="51" selection-start="3186" selection-end="3186" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -112,7 +104,7 @@
       <file leaf-file-name="Message.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Message.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="35" column="42" selection-start="914" selection-end="914" vertical-scroll-proportion="0.0">
+            <state line="14" column="1" selection-start="275" selection-end="275" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -123,7 +115,7 @@
       <file leaf-file-name="DBManager.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/kt/DBManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="19" column="46" selection-start="523" selection-end="523" vertical-scroll-proportion="0.184514">
+            <state line="41" column="63" selection-start="1150" selection-end="1150" vertical-scroll-proportion="0.67874795">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -131,10 +123,19 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="Result.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/kt/Result.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="19" column="49" selection-start="533" selection-end="533" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="AuthMessage.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/AuthMessage.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="0" selection-start="87" selection-end="87" vertical-scroll-proportion="0.0">
+            <state line="21" column="62" selection-start="548" selection-end="548" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -145,7 +146,7 @@
       <file leaf-file-name="Credentials.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Credentials.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="48" column="66" selection-start="1193" selection-end="1193" vertical-scroll-proportion="0.0">
+            <state line="28" column="57" selection-start="842" selection-end="842" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -154,16 +155,7 @@
       <file leaf-file-name="ChessHeroException.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/kt/ChessHeroException.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="8" column="62" selection-start="171" selection-end="171" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SLog.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/kt/SLog.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="71" column="79" selection-start="1392" selection-end="1392" vertical-scroll-proportion="0.0">
+            <state line="11" column="21" selection-start="245" selection-end="245" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -194,14 +186,16 @@
         <option value="$PROJECT_DIR$/src/com/kt/Listener.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Config.java" />
         <option value="$PROJECT_DIR$/src/com/kt/ChessHeroError.java" />
-        <option value="$PROJECT_DIR$/src/com/kt/Credentials.java" />
-        <option value="$PROJECT_DIR$/src/com/kt/ChessHeroException.java" />
-        <option value="$PROJECT_DIR$/src/com/kt/AuthMessage.java" />
         <option value="$PROJECT_DIR$/src/com/kt/SLog.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Main.java" />
-        <option value="$PROJECT_DIR$/src/com/kt/ClientConnection.java" />
-        <option value="$PROJECT_DIR$/src/com/kt/DBManager.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/APIResult.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/ChessHeroException.java" />
         <option value="$PROJECT_DIR$/src/com/kt/Message.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/ClientConnection.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/Credentials.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/AuthMessage.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/Result.java" />
+        <option value="$PROJECT_DIR$/src/com/kt/DBManager.java" />
       </list>
     </option>
   </component>
@@ -415,7 +409,7 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.17804877" sideWeight="0.2857143" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32978722" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2495935" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3292683" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -494,51 +488,9 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/nio/ByteBuffer.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="85" column="26" selection-start="2715" selection-end="2715" vertical-scroll-proportion="0.33333334">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/net/Socket.class">
       <provider selected="true" editor-type-id="text-editor">
         <state line="101" column="37" selection-start="4035" selection-end="4035" vertical-scroll-proportion="0.30808082">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/kt/SLog.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="71" column="79" selection-start="1392" selection-end="1392" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/kt/ChessHeroException.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="62" selection-start="171" selection-end="171" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/kt/Credentials.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="66" selection-start="1193" selection-end="1193" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/lang/Class.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="13" selection-start="2855" selection-end="2855" vertical-scroll-proportion="0.33333334">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/sql/DriverManager.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="38" selection-start="918" selection-end="918" vertical-scroll-proportion="-0.13636364">
           <folding />
         </state>
       </provider>
@@ -578,25 +530,67 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/SLog.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="71" column="79" selection-start="1392" selection-end="1392" vertical-scroll-proportion="1.7545304">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/AuthMessage.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="0" selection-start="87" selection-end="87" vertical-scroll-proportion="0.0">
+        <state line="21" column="62" selection-start="548" selection-end="548" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/Credentials.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="57" selection-start="842" selection-end="842" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/ClientConnection.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="93" column="30" selection-start="2473" selection-end="2473" vertical-scroll-proportion="0.0">
+        <state line="115" column="51" selection-start="3186" selection-end="3186" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/ChessHeroException.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="11" column="21" selection-start="245" selection-end="245" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/lang/Class.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="44" column="106" selection-start="2613" selection-end="2613" vertical-scroll-proportion="0.23232323">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/sql/DriverManager.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="164" selection-start="1291" selection-end="1291" vertical-scroll-proportion="0.4090909">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/Result.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="49" selection-start="533" selection-end="533" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/Message.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="35" column="42" selection-start="914" selection-end="914" vertical-scroll-proportion="0.0">
+        <state line="14" column="1" selection-start="275" selection-end="275" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -605,7 +599,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/kt/DBManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="46" selection-start="523" selection-end="523" vertical-scroll-proportion="0.184514">
+        <state line="41" column="63" selection-start="1150" selection-end="1150" vertical-scroll-proportion="0.67874795">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

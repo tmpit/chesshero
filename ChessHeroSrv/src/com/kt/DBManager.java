@@ -21,7 +21,7 @@ class DBManager
 
     private Connection conn = null;
 
-    private DBManager()
+    private DBManager() throws ChessHeroException
     {
         String connector = "com.mysql.jdbc.Driver";
 
@@ -29,15 +29,15 @@ class DBManager
         {
             Class.forName(connector).newInstance();
             conn = DriverManager.getConnection(DB_URL + DB_NAME, DB_USER, DB_PASS);
-            SLog.write("Database connection established");
         }
         catch (Exception e)
         {
-            SLog.write(e);
+            SLog.write("Could not establish database connection: " + e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
     }
 
-    public static synchronized DBManager getSingleton()
+    public static synchronized DBManager getSingleton() throws ChessHeroException
     {
         if (null == singleton)
         {
