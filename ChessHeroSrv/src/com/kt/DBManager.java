@@ -46,11 +46,31 @@ class DBManager
         return singleton;
     }
 
-    public synchronized boolean userWithCredentialsExists(Credentials credentials) throws ChessHeroException
+    private void closeStatement(PreparedStatement stmt) throws ChessHeroException
     {
+        if (null == stmt)
+        {
+            return;
+        }
+
         try
         {
-            PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) FROM users WHERE name = ? AND pass = ?");
+            stmt.close();
+        }
+        catch (SQLException e)
+        {
+            SLog.write(e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+    }
+
+    public synchronized boolean userExists(Credentials credentials) throws ChessHeroException
+    {
+        PreparedStatement stmt = null;
+
+        try
+        {
+            stmt = conn.prepareStatement("SELECT COUNT(*) FROM users WHERE name = ? AND pass = ?");
             stmt.setString(1, credentials.getName());
             stmt.setString(2, credentials.getPassSHA1());
             ResultSet set = stmt.executeQuery();
@@ -61,14 +81,45 @@ class DBManager
                 exists = (set.getInt(1) == 1);
             }
 
-            stmt.close();
-
             return exists;
         }
         catch (SQLException e)
         {
             SLog.write(e);
             throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+        finally
+        {
+            closeStatement(stmt);
+        }
+    }
+
+    public synchronized boolean insertUser(Credentials credentials) throws ChessHeroException
+    {
+        PreparedStatement stmt = null;
+
+        try
+        {
+            stmt = conn.prepareStatement("INSERT INTO users (name, pass) VALUES (?, ?)");
+            stmt.setString(1, credentials.getName());
+            stmt.setString(2, credentials.getPassSHA1());
+            int val = stmt.executeUpdate();
+
+            if (val != 1)
+            {   // Update did nothing
+                throw new ChessHeroException(Result.INTERNAL_ERROR);
+            }
+
+            return true;
+        }
+        catch (SQLException e)
+        {
+            SLog.write(e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+        finally
+        {
+            closeStatement(stmt);
         }
     }
 }
