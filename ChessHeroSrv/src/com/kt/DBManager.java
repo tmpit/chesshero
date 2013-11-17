@@ -1,7 +1,6 @@
 package com.kt;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -45,5 +44,31 @@ class DBManager
         }
 
         return singleton;
+    }
+
+    public synchronized boolean userWithCredentialsExists(Credentials credentials) throws ChessHeroException
+    {
+        try
+        {
+            PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) FROM users WHERE name = ? AND pass = ?");
+            stmt.setString(1, credentials.getName());
+            stmt.setString(2, credentials.getPassSHA1());
+            ResultSet set = stmt.executeQuery();
+            boolean exists = false;
+
+            while (set.next())
+            {
+                exists = (set.getInt(1) == 1);
+            }
+
+            stmt.close();
+
+            return exists;
+        }
+        catch (SQLException e)
+        {
+            SLog.write(e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
     }
 }
