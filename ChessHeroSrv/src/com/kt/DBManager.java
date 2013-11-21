@@ -1,5 +1,6 @@
 package com.kt;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 
 /**
@@ -46,80 +47,33 @@ class DBManager
         return singleton;
     }
 
-    private void closeStatement(PreparedStatement stmt) throws ChessHeroException
+    public synchronized AuthPair getAuthPair(String username) throws SQLException
     {
-        if (null == stmt)
+        AuthPair auth = null;
+        PreparedStatement stmt = conn.prepareStatement("SELECT pass, salt FROM users WHERE name = ?");
+        stmt.setString(1, username);
+
+        ResultSet set = stmt.executeQuery();
+        while (set.next())
         {
-            return;
+            String passHash = set.getString(1);
+            int salt = set.getInt(2);
+            auth = new AuthPair(passHash, salt);
         }
 
-        try
-        {
-            stmt.close();
-        }
-        catch (SQLException e)
-        {
-            SLog.write(e);
-            throw new ChessHeroException(Result.INTERNAL_ERROR);
-        }
+        stmt.close();
+
+        return auth;
     }
 
-    public synchronized boolean userExists(Credentials credentials) throws ChessHeroException
+    public synchronized boolean insertUser(Credentials credentials) throws SQLException, NoSuchAlgorithmException
     {
-        PreparedStatement stmt = null;
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO users (name, pass, salt) VALUES (?, ?, ?)");
+        stmt.setString(1, credentials.getName());
+        stmt.setString(2, credentials.getAuthPair().getHash());
+        stmt.setInt(3, credentials.getAuthPair().getSalt());
+        int val = stmt.executeUpdate();
 
-        try
-        {
-            stmt = conn.prepareStatement("SELECT COUNT(*) FROM users WHERE name = ? AND pass = ?");
-            stmt.setString(1, credentials.getName());
-            stmt.setString(2, credentials.getPassSHA1());
-            ResultSet set = stmt.executeQuery();
-            boolean exists = false;
-
-            while (set.next())
-            {
-                exists = (set.getInt(1) == 1);
-            }
-
-            return exists;
-        }
-        catch (SQLException e)
-        {
-            SLog.write(e);
-            throw new ChessHeroException(Result.INTERNAL_ERROR);
-        }
-        finally
-        {
-            closeStatement(stmt);
-        }
-    }
-
-    public synchronized boolean insertUser(Credentials credentials) throws ChessHeroException
-    {
-        PreparedStatement stmt = null;
-
-        try
-        {
-            stmt = conn.prepareStatement("INSERT INTO users (name, pass) VALUES (?, ?)");
-            stmt.setString(1, credentials.getName());
-            stmt.setString(2, credentials.getPassSHA1());
-            int val = stmt.executeUpdate();
-
-            if (val != 1)
-            {   // Update did nothing
-                throw new ChessHeroException(Result.INTERNAL_ERROR);
-            }
-
-            return true;
-        }
-        catch (SQLException e)
-        {
-            SLog.write(e);
-            throw new ChessHeroException(Result.INTERNAL_ERROR);
-        }
-        finally
-        {
-            closeStatement(stmt);
-        }
+        return (val == 1);
     }
 }
