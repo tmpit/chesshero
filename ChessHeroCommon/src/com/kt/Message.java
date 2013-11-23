@@ -24,13 +24,15 @@ abstract public class Message
 
     public static Message fromData(byte data[]) throws ChessHeroException
     {
+        SLog.write("Parsing message");
+
         ByteBuffer buf = ByteBuffer.allocate(data.length);
         buf.put(data);
         buf.rewind();
 
         try
         {
-            // Read action number
+            // Read action
             short action = buf.getShort();
             SLog.write("Message action: " + action);
 
@@ -42,27 +44,23 @@ abstract public class Message
                     return new AuthMessage(action, credentials);
 
                 case ACTION_MOVE:
-
-                    break;
+                    return null;
 
                 default:
                     throw new ChessHeroException(Result.INVALID_ACTION);
             }
-
-            return null;
         }
         catch (BufferUnderflowException e)
         {
+            SLog.write(e);
             throw new ChessHeroException(Result.INVALID_MESSAGE);
-        }
-        catch (ChessHeroException e)
-        {
-            throw e;
         }
     }
 
     private static Credentials readCredentials(ByteBuffer buf) throws ChessHeroException
     {
+        SLog.write("Parsing credentials");
+
         try
         {
             short nameLen = buf.getShort();
@@ -89,6 +87,7 @@ abstract public class Message
         }
         catch (BufferUnderflowException e)
         {
+            SLog.write(e);
             throw new ChessHeroException(Result.INVALID_MESSAGE);
         }
     }
