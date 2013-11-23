@@ -7,6 +7,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
 /**
  * Created with IntelliJ IDEA.
@@ -61,6 +62,13 @@ public class ClientSocket
 
     public void writeMessage(Message message) throws IOException
     {
-        sock.getOutputStream().write(message.toData());
+        byte messageData[] = message.toData();
+        short bodyLen = (short)messageData.length;
+
+        ByteBuffer buf = ByteBuffer.allocate(2 + bodyLen);
+        buf.putShort(bodyLen);
+        buf.put(messageData);
+
+        sock.getOutputStream().write(buf.array());
     }
 }

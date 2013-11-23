@@ -32,6 +32,7 @@ abstract public class Message
         {
             // Read action number
             short action = buf.getShort();
+            SLog.write("Message action: " + action);
 
             switch (action)
             {
