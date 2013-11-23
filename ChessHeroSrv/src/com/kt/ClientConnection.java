@@ -2,6 +2,8 @@ package com.kt;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -25,22 +27,24 @@ public class ClientConnection implements Runnable
         this.sock = sock;
     }
 
-    private void closeConnection()
+    private void closeSocket()
     {
+        SLog.write("Closing socket...");
+
         if (sock.isClosed())
         {
+            SLog.write("Socket already closed");
             return;
         }
 
         try
         {
-            SLog.write("Closing connection...");
             sock.close();
-            SLog.write("Connection closed");
+            SLog.write("Socket closed");
         }
         catch (IOException e)
         {
-            SLog.write("Error closing connection: " + e.getMessage());
+            SLog.write("Error closing socket: " + e.getMessage());
         }
     }
 
@@ -53,33 +57,32 @@ public class ClientConnection implements Runnable
 
             while (true)
             {
-                SLog.write("about to read header");
-                short bodyLen = readHeader();
-                SLog.write("header read");
+                SLog.write("Reading header");
+
+                // Read header
+                byte header[] = readBytesWithLength(2);
+                short bodyLen = Utils.shortFromBytes(header, 0);
+
+                SLog.write("Header read, body length is: " + bodyLen);
 
                 if (0 == bodyLen)
                 {   // An error has occurred during header reading or header is invalid, end the task
-                    SLog.write("header is 0");
-                    closeConnection();
+                    closeSocket();
                     return;
                 }
 
                 // Set timeout for the body
                 sock.setSoTimeout(READ_TIMEOUT);
 
-                SLog.write("about to read body");
-                byte bodyData[] = readBodyWithLength(bodyLen);
-                SLog.write("body read");
+                SLog.write("Reading body");
 
-                if (0 == bodyData.length)
-                {   // An error has occurred during body reading, end the task
-                    SLog.write("Could not read body");
-                    closeConnection();
-                    return;
-                }
+                // Read body
+                byte body[] = readBytesWithLength(bodyLen);
 
-                SLog.write("about to parse message");
-                Message msg = Message.fromData(bodyData);
+                SLog.write("Body read");
+
+                Message msg = Message.fromData(body);
+
                 SLog.write("Received message: " + msg);
                 // Pass message wherever
 
@@ -87,102 +90,50 @@ public class ClientConnection implements Runnable
                 sock.setSoTimeout(0);
             }
         }
-        catch (IOException e)
+        catch (SocketTimeoutException e)
         {
-            SLog.write("Could not set socket timeout: " + e);
-            closeConnection();
-        }
-        catch (ChessHeroException e)
-        {
-            SLog.write("Parsing error, code: " + e.getCode());
-            closeConnection();
-        }
-        catch (Exception e)
-        {
-            SLog.write("Unhandled exception: " + e);
-            closeConnection();
-        }
-    }
-
-    private short readHeader()
-    {
-        try
-        {   // The first two bytes will be the body length
-            byte headerData[] = new byte[2];
-            int bytesRead = 0;
-
-            do
-            {   // The docs are ambiguous as to whether this will definitely try to read len or can return less than len
-                // so just in case iterating until len is read or shit happens
-                bytesRead = sock.getInputStream().read(headerData, 0, 2);
-                if (-1 == bytesRead)
-                {
-                    throw new EOFException();
-                }
-            }
-            while (bytesRead != 2);
-
-            ByteBuffer buf = ByteBuffer.allocate(2);
-            buf.put(headerData);
-            buf.rewind();
-
-            return buf.getShort();
+            SLog.write("Read timed out");
+            closeSocket();
         }
         catch (EOFException e)
         {
-            SLog.write("Unexpected end of file reached while reading");
-            closeConnection();
-        }
-        catch (SocketTimeoutException e)
-        {
-            SLog.write("Header read timed out");
-            closeConnection();
+            SLog.write("Socket reached unexpected EOF??? - " + e);
+            closeSocket();
         }
         catch (IOException e)
         {
             SLog.write("Error reading: " + e);
-            closeConnection();
+            closeSocket();
         }
-
-        return 0;
+        catch (ChessHeroException e)
+        {
+            SLog.write("Parsing error, code: " + e.getCode());
+            closeSocket();
+        }
+        catch (Exception e)
+        {
+            SLog.write("Surprise exception: " + e);
+            closeSocket();
+        }
     }
 
-    private byte[] readBodyWithLength(short len)
+    private byte[] readBytesWithLength(int len) throws IOException, EOFException
     {
-        byte bodyData[] = new byte[len];
+        InputStream stream = sock.getInputStream();
+        int bytesRead = 0;
+        byte data[] = new byte[len];
 
-        try
-        {
-            int bytesRead = 0;
-
-            do
-            {   // The docs are ambiguous as to whether this will definitely try to read len or can return less than len
-                // so just in case iterating until len is read or shit happens
-                bytesRead = sock.getInputStream().read(bodyData, 0, len);
-
-                if (-1 == bytesRead)
-                {   // -1 == OEF
-                    throw new EOFException();
-                }
+        do
+        {   // The docs are ambiguous as to whether this will definitely try to read len or can return less than len
+            // so just in case iterating until len is read or shit happens
+            bytesRead = stream.read(data, 0, len);
+            if (-1 == bytesRead)
+            {
+                throw new EOFException();
             }
-            while (bytesRead != len);
         }
-        catch (EOFException e)
-        {
-            SLog.write("Unexpected end of file reached while reading");
-            closeConnection();
-        }
-        catch (SocketTimeoutException e)
-        {
-            SLog.write("Body read timed out");
-            closeConnection();
-        }
-        catch (IOException e)
-        {
-            SLog.write("Could not read body of len: " + len);
-            closeConnection();
-        }
+        while (bytesRead != len);
 
-        return bodyData;
+        return data;
     }
 }
