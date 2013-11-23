@@ -53,10 +53,13 @@ public class ClientConnection implements Runnable
 
             while (true)
             {
+                SLog.write("about to read header");
                 short bodyLen = readHeader();
+                SLog.write("header read");
 
                 if (0 == bodyLen)
                 {   // An error has occurred during header reading or header is invalid, end the task
+                    SLog.write("header is 0");
                     closeConnection();
                     return;
                 }
@@ -64,14 +67,18 @@ public class ClientConnection implements Runnable
                 // Set timeout for the body
                 sock.setSoTimeout(READ_TIMEOUT);
 
+                SLog.write("about to read body");
                 byte bodyData[] = readBodyWithLength(bodyLen);
+                SLog.write("body read");
 
                 if (0 == bodyData.length)
                 {   // An error has occurred during body reading, end the task
+                    SLog.write("Could not read body");
                     closeConnection();
                     return;
                 }
 
+                SLog.write("about to parse message");
                 Message msg = Message.fromData(bodyData);
                 SLog.write("Received message: " + msg);
                 // Pass message wherever
@@ -117,6 +124,7 @@ public class ClientConnection implements Runnable
 
             ByteBuffer buf = ByteBuffer.allocate(2);
             buf.put(headerData);
+            buf.rewind();
 
             return buf.getShort();
         }
@@ -132,7 +140,7 @@ public class ClientConnection implements Runnable
         }
         catch (IOException e)
         {
-            SLog.write("Error reading: " + e.getMessage());
+            SLog.write("Error reading: " + e);
             closeConnection();
         }
 
