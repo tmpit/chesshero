@@ -17,14 +17,18 @@ import java.util.concurrent.ExecutorService;
 
 public class Listener
 {
+    public final static int SERVER_SOCK_PORT = 4848;
+
+    public final static int MAX_CONCURRENT_THREADS = 10;
+
     private ServerSocket _sock;
-    private ExecutorService pool = Executors.newFixedThreadPool(Config.MAX_CONCURRENT_THREADS);
+    private ExecutorService pool = Executors.newFixedThreadPool(MAX_CONCURRENT_THREADS);
 
     Listener()
     {
         try
         {
-            _sock = new ServerSocket(Config.SERVER_SOCK_PORT);
+            _sock = new ServerSocket(SERVER_SOCK_PORT);
             SLog.write("Server socket bound");
 
             listen();

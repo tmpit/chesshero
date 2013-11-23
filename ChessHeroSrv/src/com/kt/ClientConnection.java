@@ -16,6 +16,8 @@ import java.nio.ByteBuffer;
  */
 public class ClientConnection implements Runnable
 {
+    public final static int READ_TIMEOUT = 15 * 1000; // In milliseconds
+
     private Socket sock = null;
 
     ClientConnection(Socket sock)
@@ -47,7 +49,7 @@ public class ClientConnection implements Runnable
         try
         {
             // Set timeout for the first message, if someone connected, he must say something
-            sock.setSoTimeout(Config.READ_TIMEOUT);
+            sock.setSoTimeout(READ_TIMEOUT);
 
             while (true)
             {
@@ -60,7 +62,7 @@ public class ClientConnection implements Runnable
                 }
 
                 // Set timeout for the body
-                sock.setSoTimeout(Config.READ_TIMEOUT);
+                sock.setSoTimeout(READ_TIMEOUT);
 
                 byte bodyData[] = readBodyWithLength(bodyLen);
 
