@@ -10,9 +10,24 @@ import javax.swing.*;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class ChessHeroPage extends JPanel{
+    public static final String MAIN_TITLE = "Chess Hero";
 
+    public ClientMain holder = null;
     private JPanel pagePanel = null;
     private String pageTitle = "";
+
+//    public JFrame getHolder() {
+//        return this.holder;
+//    }
+//
+//
+//    protected void setHolder(JFrame holder) {
+//        this.holder = holder;
+//    }
+
+    public ChessHeroPage(){
+
+    }
 
     public JPanel getPagePanel() {
         return pagePanel;
@@ -29,6 +44,5 @@ public abstract class ChessHeroPage extends JPanel{
     protected void setPageTitle(String pageTitle) {
         this.pageTitle = pageTitle;
     }
-
 
 }

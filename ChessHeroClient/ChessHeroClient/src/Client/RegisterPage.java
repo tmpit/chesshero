@@ -1,5 +1,9 @@
 package Client;
 
+import com.kt.AuthMessage;
+import com.kt.Credentials;
+import com.kt.Message;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,13 +13,13 @@ import java.awt.event.ActionListener;
  * Created with IntelliJ IDEA.
  * User: kiro
  * Date: 11/23/13
- * Time: 1:15 PM
+ * Time: 2:27 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LoginPage extends ChessHeroPage {
+public class RegisterPage extends ChessHeroPage {
 
-    public  LoginPage(){
-        this.setPageTitle("Login Page");
+    public  RegisterPage(){
+        this.setPageTitle("Register Page");
         //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
         //Initialize Components
         JPanel mainPanel = new JPanel();
@@ -41,17 +45,20 @@ public class LoginPage extends ChessHeroPage {
 
         JLabel usernameLabel = new JLabel("Username");
         JLabel passwordLabel = new JLabel("Password");
+        JLabel confirmPasswordLabel = new JLabel("Confirm Password");
 
         JTextField usernameTextBox = new JTextField();
         JTextField passwordTextBox = new JPasswordField();
+        JTextField confirmPasswordTextBox = new JPasswordField();
 
         pageTitle.setHorizontalAlignment(SwingConstants.CENTER);
         usernameLabel.setHorizontalAlignment(SwingConstants.CENTER);
         passwordLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        confirmPasswordLabel.setHorizontalAlignment(SwingConstants.CENTER);
         passwordTextBox.setHorizontalAlignment(SwingConstants.CENTER);
         usernameTextBox.setHorizontalAlignment(SwingConstants.CENTER);
 
-        JButton loginButton = new JButton("Login");
+        //JButton loginButton = new JButton("Login");
         JButton registerButton = new JButton("Register");
 
         //Add Components
@@ -60,8 +67,8 @@ public class LoginPage extends ChessHeroPage {
 
         menuPanel.add(passwordLabel);
         menuPanel.add(passwordTextBox);
+        menuPanel.add(confirmPasswordTextBox);
 
-        menuPanel.add(loginButton);
         menuPanel.add(registerButton);
         new GridBagConstraints();
         GridBagConstraints gridOpt = new GridBagConstraints();
@@ -100,40 +107,22 @@ public class LoginPage extends ChessHeroPage {
         //this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         //Handle Buttons
-        loginButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e)
-            {
-                System.out.println("You clicked the LOGIN button");
-            }
-        });
-
 
         registerButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e)
             {
                 System.out.println("You clicked the REGISTER button");
-                holder.LoadPage(new RegisterPage());
+                Credentials cred = new Credentials("uname","pass");
+                AuthMessage authMsg = new AuthMessage(Message.ACTION_LOGIN, cred);
+                holder.getConnection().writeMessage(authMsg);
+
             }
         });
 
 
-
-
-
-
-
-
-
-        //pnlText.add(new TextField(10), BorderLayout.CENTER);
-        //add(mainPanel, BorderLayout.WEST);
-        //pnlGrid.setLayout(new GridLayout(2,3));
-        //for (int i = 0; i < 6; i++)
-        //    pnlGrid.add(new Button("" + (i + 1)));
-        //add(pnlGrid, BorderLayout.EAST);
-        //pnlButtons.add(new Button("Start"));
-        //pnlButtons.add(new Button("Quit"));
-        //add(pnlButtons, BorderLayout.SOUTH);
     }
+         public void handleRegister(){
+             //Credentials cred = new Credentials(th.getText(),)
+         }
 }

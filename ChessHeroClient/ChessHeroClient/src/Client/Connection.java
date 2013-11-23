@@ -20,7 +20,7 @@ import java.util.Vector;
  */
 public class Connection
 {
-    private static final String SERVER_ADDRESS = "domain.com";
+    private static final String SERVER_ADDRESS = "192.168.153.200";
     private static final int SERVER_PORT = 4848;
 
     private static Connection singleton = null;

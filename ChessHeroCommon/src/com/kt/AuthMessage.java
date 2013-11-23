@@ -15,11 +15,11 @@ public class AuthMessage extends Message
     private int action;
     private Credentials credentials;
 
-    AuthMessage(int action, Credentials credentials) throws ChessHeroException
+    public AuthMessage(int action, Credentials credentials) //throws ChessHeroException
     {
         if (!Message.isActionValid(action))
         {
-            throw new ChessHeroException(Result.INVALID_ACTION);
+            //throw new ChessHeroException(Result.INVALID_ACTION);
         }
 
         this.action = action;

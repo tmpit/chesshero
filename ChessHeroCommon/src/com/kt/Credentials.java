@@ -38,13 +38,13 @@ public class Credentials
         return (length >= MIN_PASS_LENGTH && length <= MAX_PASS_LENGTH);
     }
 
-    Credentials(String name, String pass)
+    public Credentials(String name, String pass)
     {
         this.name = name;
         this.pass = pass;
     }
 
-    Credentials(String name, String pass, AuthPair authPair)
+    public Credentials(String name, String pass, AuthPair authPair)
     {
         this.name = name;
         this.pass = pass;
