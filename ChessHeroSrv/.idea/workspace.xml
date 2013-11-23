@@ -86,10 +86,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Listener.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Listener.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/kt/Listener.java">
           <provider selected="true" editor-type-id="text-editor">
             <state line="36" column="34" selection-start="845" selection-end="845" vertical-scroll-proportion="0.0">
+			
               <folding />
             </state>
           </provider>
@@ -104,13 +105,20 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Message.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Message.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../ChessHeroCommon/src/com/kt/Message.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="29" column="58" selection-start="767" selection-end="767" vertical-scroll-proportion="0.9444444">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state line="2" column="44" selection-start="58" selection-end="58" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ChessHeroException.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../ChessHeroCommon/src/com/kt/ChessHeroException.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="9" column="53" selection-start="221" selection-end="221" vertical-scroll-proportion="0.0">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -302,7 +310,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.last.edited" value="Project" />
     <property name="GoToFile.includeJavaFiles" value="false" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="options.splitter.main.proportions" value="0.3" />
@@ -536,23 +544,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/kt/Listener.java">
+    <entry file="file://$PROJECT_DIR$/../ChessHeroCommon/src/com/kt/AuthMessage.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="36" column="34" selection-start="845" selection-end="845" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../ChessHeroCommon/src/com/kt/AuthMessage.java">
+    <entry file="file://$PROJECT_DIR$/../ChessHeroCommon/src/com/kt/ChessHeroException.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="53" selection-start="345" selection-end="345" vertical-scroll-proportion="0.0">
+        <state line="9" column="53" selection-start="221" selection-end="221" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../ChessHeroCommon/src/com/kt/Config.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="13" selection-start="185" selection-end="185" vertical-scroll-proportion="-6.12">
+        <state line="2" column="44" selection-start="58" selection-end="58" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/kt/Listener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="41" selection-start="390" selection-end="390" vertical-scroll-proportion="0.2857143">
           <folding />
         </state>
       </provider>
