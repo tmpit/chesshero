@@ -2,12 +2,12 @@ package Client;
 
 import com.kt.ChessHeroException;
 import com.kt.Message;
+import com.kt.Utils;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,11 +31,7 @@ public class ClientSocket
     {
         // The first two bytes will be the body length
         byte headerData[] = readBytesWithLength(2); // Read the header
-
-        // Converting bytes to int
-        int bodyLen = headerData[1];
-        bodyLen |= headerData[0] << 8;
-
+        short bodyLen = Utils.shortFromBytes(headerData, 0);
         byte bodyData[] = readBytesWithLength(bodyLen);
 
         return Message.fromData(bodyData);
@@ -65,10 +61,10 @@ public class ClientSocket
         byte messageData[] = message.toData();
         short bodyLen = (short)messageData.length;
 
-        ByteBuffer buf = ByteBuffer.allocate(2 + bodyLen);
-        buf.putShort(bodyLen);
-        buf.put(messageData);
+        byte all[] = new byte[2 + bodyLen];
+        Utils.bytesPutShort(all, bodyLen, 0);
+        Utils.bytesPutBytes(all, messageData, 2);
 
-        sock.getOutputStream().write(buf.array());
+        sock.getOutputStream().write(all);
     }
 }

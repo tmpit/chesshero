@@ -58,7 +58,6 @@ public class Connection
                 {
                     this.msg = sock.readMessage();
                     this.messageResolved = true;
-                    return null;
                 }
                 catch (Throwable e)
                 {
@@ -109,7 +108,7 @@ public class Connection
             {
                 for (ConnectionListener listener : listeners)
                 {
-                    listener.messageWritten(this.messageResolved ,this.msg);
+                    listener.messageWritten(this.messageResolved, this.msg);
                 }
             }
         }.execute();
