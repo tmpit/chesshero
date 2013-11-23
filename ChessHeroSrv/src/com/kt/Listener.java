@@ -19,10 +19,7 @@ public class Listener
 {
     public final static int SERVER_SOCK_PORT = 4848;
 
-    public final static int MAX_CONCURRENT_THREADS = 10;
-
     private ServerSocket _sock;
-    private ExecutorService pool = Executors.newFixedThreadPool(MAX_CONCURRENT_THREADS);
 
     Listener()
     {
@@ -49,7 +46,7 @@ public class Listener
             SLog.write("Client socket accepted");
 
             ClientConnection connection = new ClientConnection(clientSock);
-            pool.submit(connection);
+            connection.start();
         }
     }
 }

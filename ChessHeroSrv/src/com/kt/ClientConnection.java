@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
  * Time: 7:56 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ClientConnection implements Runnable
+public class ClientConnection extends Thread
 {
     public final static int READ_TIMEOUT = 15 * 1000; // In milliseconds
 
