@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ChessHeroClient/ChessHeroClient.iml" filepath="$PROJECT_DIR$/ChessHeroClient/ChessHeroClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../ChessHeroCommon/ChessHeroCommon.iml" filepath="$PROJECT_DIR$/../ChessHeroCommon/ChessHeroCommon.iml" />
     </modules>
   </component>
 </project>
