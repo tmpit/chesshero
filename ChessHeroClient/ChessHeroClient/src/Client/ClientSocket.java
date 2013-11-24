@@ -6,6 +6,7 @@ import com.kt.Utils;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -57,13 +58,14 @@ public class ClientSocket
 
     private byte[] readBytesWithLength(int len) throws IOException, EOFException
     {
+        InputStream stream = sock.getInputStream();
         int bytesRead = 0;
         byte data[] = new byte[len];
 
         do
         {   // The docs are ambiguous as to whether this will definitely try to read len or can return less than len
             // so just in case iterating until len is read or shit happens
-            bytesRead = sock.getInputStream().read(data, 0, len);
+            bytesRead = stream.read(data, 0, len);
             if (-1 == bytesRead)
             {
                 throw new EOFException();

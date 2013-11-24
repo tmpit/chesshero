@@ -70,7 +70,7 @@ public class Connection
                 try
                 {
                     sock = new ClientSocket(SERVER_ADDRESS, SERVER_PORT);
-                    done = true;
+                    success = true;
                 }
                 catch (IOException e)
                 {
@@ -85,7 +85,7 @@ public class Connection
             {
                 isConnecting = false;
 
-                if (done)
+                if (success)
                 {
                     for (ConnectionListener listener : listeners)
                     {
@@ -128,7 +128,7 @@ public class Connection
                 try
                 {
                     sock.disconnect();
-                    done = true;
+                    success = true;
                 }
                 catch (IOException e)
                 {
@@ -143,12 +143,9 @@ public class Connection
             {
                 isDisconnecting = false;
 
-                if (done)
+                if (success)
                 {
-                    for (ConnectionListener listener : listeners)
-                    {
-                        listener.socketDisconnected(false);
-                    }
+                    notifySocketDisconnected(false);
                 }
             }
         }.execute();
@@ -176,7 +173,7 @@ public class Connection
                 try
                 {
                     this.msg = sock.readMessage();
-                    this.done = true;
+                    this.success = true;
                 }
                 catch (Throwable e)
                 {
@@ -189,8 +186,17 @@ public class Connection
             @Override
             public void done()
             {
-                if (!this.done)
+                if (!this.success)
                 {
+                    if (!sock.isConnected())
+                    {
+                        SLog.write("Socket disconnected unexpectedly");
+                        notifySocketDisconnected(true);
+
+                        return;
+                    }
+
+                    SLog.write("Failed to read message, retrying...");
                     readMessage(); // Something bad happened, retry
                     return;
                 }
@@ -225,7 +231,7 @@ public class Connection
                 try
                 {
                     sock.writeMessage(this.msg);
-                    this.done = true;
+                    this.success = true;
                 }
                 catch (IOException e)
                 {
@@ -240,15 +246,28 @@ public class Connection
             {
                 for (ConnectionListener listener : listeners)
                 {
-                    listener.messageWritten(this.done, this.msg);
+                    listener.messageWritten(this.success, this.msg);
+                }
+
+                if (!this.success && !sock.isConnected())
+                {
+                    notifySocketDisconnected(true);
                 }
             }
         }.execute();
     }
 
+    private void notifySocketDisconnected(boolean error)
+    {
+        for (ConnectionListener listener : listeners)
+        {
+            listener.socketDisconnected(error);
+        }
+    }
+
     private abstract class BackgroundTask extends SwingWorker<Void, Void>
     {
-        protected boolean done = false;
+        protected boolean success = false;
     }
 
     private abstract class ReadTask extends BackgroundTask
