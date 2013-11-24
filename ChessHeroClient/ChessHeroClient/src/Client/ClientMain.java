@@ -51,12 +51,12 @@ public class ClientMain extends JFrame implements ConnectionListener {
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 
-        this.LoadPage(new LoginPage());
+        this.NavigateToPage(new LoginPage());
 
 
     }
 
-    public void LoadPage(ChessHeroPage page){
+    public void NavigateToPage(ChessHeroPage page){
         currentPanel = page;
         this.LoadCurrentPage();
     }

@@ -155,6 +155,6 @@ public class RegisterPage extends ChessHeroPage {
      }
 
     public void handleBackButton(){
-         this.holder.LoadPage(new LoginPage());
+         this.holder.NavigateToPage(new LoginPage());
     }
 }

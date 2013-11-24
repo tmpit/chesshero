@@ -140,6 +140,8 @@ public class LoginPage extends ChessHeroPage {
     public void handleLogin(){
         //System.out.println(new String(this.passwordTextBox.getPassword()));
 
+        holder.NavigateToPage(new LobbyPage());
+
         Credentials credentials = new Credentials(
                 this.usernameTextBox.getText(),
                 new String(this.passwordTextBox.getPassword())
@@ -150,6 +152,6 @@ public class LoginPage extends ChessHeroPage {
     }
 
     public void handleRegister(){
-        this.holder.LoadPage(new RegisterPage());
+        this.holder.NavigateToPage(new RegisterPage());
     }
 }
