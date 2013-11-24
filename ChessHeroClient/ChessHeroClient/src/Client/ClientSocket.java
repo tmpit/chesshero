@@ -24,11 +24,19 @@ public class ClientSocket
     {
         InetAddress addr = InetAddress.getByName(address);
         sock = new Socket(addr, port);
+        sock.setKeepAlive(true);
         sock.setSoTimeout(0);
     }
 
     public boolean isConnected()
     {
+        // isConnected returns true if the socket has ever been connected, meaning it will return true even after
+        // closing the socket. Vice-versa, isClosed returns true only if the socket has ever been closed
+        if (sock.isClosed())
+        {
+            return false;
+        }
+
         return sock.isConnected();
     }
 
