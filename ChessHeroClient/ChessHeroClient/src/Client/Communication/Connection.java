@@ -1,14 +1,10 @@
-package Client;
+package Client.Communication;
 
-import com.kt.ChessHeroException;
 import com.kt.Message;
-import com.kt.Result;
 import com.kt.SLog;
 
 import javax.swing.*;
-import java.io.EOFException;
 import java.io.IOException;
-import java.util.List;
 import java.util.Vector;
 
 /**

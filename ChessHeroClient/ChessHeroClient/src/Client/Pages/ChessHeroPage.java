@@ -1,4 +1,6 @@
-package Client;
+package Client.Pages;
+
+import Client.ClientMain;
 
 import javax.swing.*;
 
@@ -10,9 +12,13 @@ import javax.swing.*;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class ChessHeroPage extends JPanel{
+
     public static final String MAIN_TITLE = "Chess Hero";
 
     public ClientMain holder = null;
+
+    //protected JList<JComponent> pageComponents = new JList<JComponent>();
+
     private JPanel pagePanel = null;
     private String pageTitle = "";
 

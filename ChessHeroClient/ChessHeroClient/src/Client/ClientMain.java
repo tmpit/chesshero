@@ -7,15 +7,18 @@ package Client;
  * Time: 12:58 PM
  * To change this template use File | Settings | File Templates.
  */
+import Client.Communication.Connection;
+import Client.Communication.ConnectionListener;
+import Client.Pages.ChessHeroPage;
+import Client.Pages.LoginPage;
 import com.kt.Message;
+import com.kt.SLog;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 
-public class ClientMain extends JFrame implements ConnectionListener{
+public class ClientMain extends JFrame implements ConnectionListener {
 
     private Connection con = null;
 
@@ -82,6 +85,7 @@ public class ClientMain extends JFrame implements ConnectionListener{
     @Override
     public void messageWritten(boolean result, Message msg) {
         //To change body of implemented methods use File | Settings | File Templates.
+        SLog.write("handler invoked " + result);
     }
 
     @Override

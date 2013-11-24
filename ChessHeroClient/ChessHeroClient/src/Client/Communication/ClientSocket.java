@@ -1,4 +1,4 @@
-package Client;
+package Client.Communication;
 
 import com.kt.ChessHeroException;
 import com.kt.Message;
