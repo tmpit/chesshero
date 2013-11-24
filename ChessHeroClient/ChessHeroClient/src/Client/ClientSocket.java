@@ -27,6 +27,16 @@ public class ClientSocket
         sock.setSoTimeout(0);
     }
 
+    public boolean isConnected()
+    {
+        return sock.isConnected();
+    }
+
+    public void disconnect() throws IOException
+    {
+        sock.close();
+    }
+
     public Message readMessage() throws IOException, EOFException, ChessHeroException
     {
         // The first two bytes will be the body length
