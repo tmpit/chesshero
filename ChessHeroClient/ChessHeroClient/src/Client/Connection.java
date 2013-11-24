@@ -28,6 +28,9 @@ public class Connection
     private ClientSocket sock;
     private Vector<ConnectionListener> listeners = new Vector<ConnectionListener>();
 
+    private boolean isConnecting = false;
+    private boolean didConnect = false;
+
     public static synchronized Connection getSingleton() throws IOException
     {
         if (null == singleton)
@@ -38,26 +41,115 @@ public class Connection
         return singleton;
     }
 
-    Connection() throws IOException
-    {
-        sock = new ClientSocket(SERVER_ADDRESS, SERVER_PORT);
-    }
-
     public void addEventListener(ConnectionListener listener)
     {
         listeners.add(listener);
     }
 
+    public void connect() throws IOException
+    {
+        if (sock.isConnected() || isConnecting)
+        {
+            SLog.write("Attempting to connect socket when socket is connecting or already connected");
+            return;
+        }
+
+        isConnecting = true;
+
+        new BackgroundTask()
+        {
+            @Override
+            protected Void doInBackground()
+            {
+                try
+                {
+                    sock = new ClientSocket(SERVER_ADDRESS, SERVER_PORT);
+                    done = true;
+                }
+                catch (IOException e)
+                {
+                    SLog.write("Failed to connect: " + e);
+                }
+
+                return null;
+            }
+
+            @Override
+            public void done()
+            {
+                if (done)
+                {
+                    for (ConnectionListener listener : listeners)
+                    {
+                        listener.socketConnected();
+                    }
+                }
+                else
+                {
+                    for (ConnectionListener listener : listeners)
+                    {
+                        listener.socketFailedToConnect();
+                    }
+                }
+
+                didConnect = done;
+                isConnecting = false;
+            }
+
+        }.execute();
+    }
+
+    public void disconnect() throws IOException
+    {
+        if (!sock.isConnected())
+        {
+            SLog.write("Attempting to close socket when socket is already closed");
+            return;
+        }
+
+        new BackgroundTask()
+        {
+            @Override
+            protected Void doInBackground()
+            {
+                try
+                {
+                    sock.disconnect();
+                    done = true;
+                }
+                catch (IOException e)
+                {
+                    SLog.write("Failed to disconnect: " + e);
+                }
+
+                return null;
+            }
+
+            @Override
+            public void done()
+            {
+                if (done)
+                {
+                    for (ConnectionListener listener : listeners)
+                    {
+                        listener.socketDisconnected(false);
+                    }
+                }
+            }
+        }.execute();
+    }
+
     public void readMessage()
     {
-        new ReadTask() {
+        new ReadTask()
+        {
             @Override
-            public Void doInBackground()
+            protected Void doInBackground()
             {
                 try
                 {
                     this.msg = sock.readMessage();
-                    this.messageResolved = true;
+                    this.done = true;
                 }
                 catch (Throwable e)
                 {
@@ -70,7 +162,7 @@ public class Connection
             @Override
             public void done()
             {
-                if (!this.messageResolved)
+                if (!this.done)
                 {
                     readMessage(); // Something bad happened, retry
                     return;
@@ -86,14 +178,15 @@ public class Connection
 
     public void writeMessage(Message msg)
     {
-        new WriteTask(msg) {
+        new WriteTask(msg)
+        {
             @Override
-            public Void doInBackground()
+            protected Void doInBackground()
             {
                 try
                 {
                     sock.writeMessage(this.msg);
-                    this.messageResolved = true;
+                    this.done = true;
                 }
                 catch (IOException e)
                 {
@@ -108,16 +201,19 @@ public class Connection
             {
                 for (ConnectionListener listener : listeners)
                 {
-                    listener.messageWritten(this.messageResolved, this.msg);
+                    listener.messageWritten(this.done, this.msg);
                 }
             }
         }.execute();
     }
 
-    private abstract class ReadTask extends SwingWorker<Void, Void>
+    private abstract class BackgroundTask extends SwingWorker<Void, Void>
     {
-        protected boolean messageResolved = false;
+        protected boolean done = false;
+    }
 
+    private abstract class ReadTask extends BackgroundTask
+    {
         protected Message msg;
     }
 
