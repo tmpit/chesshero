@@ -30,11 +30,11 @@ public class ClientMain extends JFrame implements ConnectionListener {
 
     public Connection getConnection(){
         if (con == null)    {
-            try {
-                this.con = Connection.getSingleton();
-            } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
+//            try {
+//                this.con = Connection.getSingleton();
+//            } catch (IOException e) {
+//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//            }
             this.con.addEventListener(this);
         }
         return con;
@@ -75,7 +75,20 @@ public class ClientMain extends JFrame implements ConnectionListener {
     }
 
 
+    @Override
+    public void socketConnected() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 
+    @Override
+    public void socketDisconnected(boolean error) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void socketFailedToConnect() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 
     @Override
     public void messageRead(Message msg) {
@@ -84,12 +97,6 @@ public class ClientMain extends JFrame implements ConnectionListener {
 
     @Override
     public void messageWritten(boolean result, Message msg) {
-        //To change body of implemented methods use File | Settings | File Templates.
-        SLog.write("handler invoked " + result);
-    }
-
-    @Override
-    public void socketDisconnected() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 }
