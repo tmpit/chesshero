@@ -29,9 +29,9 @@ public class Connection
     private Vector<ConnectionListener> listeners = new Vector<ConnectionListener>();
 
     private boolean isConnecting = false;
-    private boolean didConnect = false;
+    private boolean isDisconnecting = false;
 
-    public static synchronized Connection getSingleton() throws IOException
+    public static synchronized Connection getSingleton()
     {
         if (null == singleton)
         {
@@ -48,9 +48,15 @@ public class Connection
 
     public void connect() throws IOException
     {
+        if (isDisconnecting)
+        {
+            SLog.write("Attempting to connect when socket is disconnecting");
+            return;
+        }
+
         if (sock.isConnected() || isConnecting)
         {
-            SLog.write("Attempting to connect socket when socket is connecting or already connected");
+            SLog.write("Attempting to connect when socket is connecting, or already connected");
             return;
         }
 
@@ -77,6 +83,8 @@ public class Connection
             @Override
             public void done()
             {
+                isConnecting = false;
+
                 if (done)
                 {
                     for (ConnectionListener listener : listeners)
@@ -91,9 +99,6 @@ public class Connection
                         listener.socketFailedToConnect();
                     }
                 }
-
-                didConnect = done;
-                isConnecting = false;
             }
 
         }.execute();
@@ -101,11 +106,19 @@ public class Connection
 
     public void disconnect() throws IOException
     {
-        if (!sock.isConnected())
+        if (isConnecting)
         {
-            SLog.write("Attempting to close socket when socket is already closed");
+            SLog.write("Attempting to disconnect when socket is connecting");
             return;
         }
+
+        if (!sock.isConnected() || isDisconnecting)
+        {
+            SLog.write("Attempting to disconnect when socket is disconnecting or already disconnected");
+            return;
+        }
+
+        isDisconnecting = true;
 
         new BackgroundTask()
         {
@@ -128,6 +141,8 @@ public class Connection
             @Override
             public void done()
             {
+                isDisconnecting = false;
+
                 if (done)
                 {
                     for (ConnectionListener listener : listeners)
@@ -141,6 +156,18 @@ public class Connection
 
     public void readMessage()
     {
+        if (isConnecting || isDisconnecting)
+        {
+            SLog.write("Attempting to read message when socket is connecting or disconnecting");
+            return;
+        }
+
+        if (!sock.isConnected())
+        {
+            SLog.write("Attempting to read message when socket is not connected");
+            return;
+        }
+
         new ReadTask()
         {
             @Override
@@ -178,6 +205,18 @@ public class Connection
 
     public void writeMessage(Message msg)
     {
+        if (isConnecting || isDisconnecting)
+        {
+            SLog.write("Attempting to write message when socket is connecting or disconnecting");
+            return;
+        }
+
+        if (!sock.isConnected())
+        {
+            SLog.write("Attempting to write message when socket is not connected");
+            return;
+        }
+
         new WriteTask(msg)
         {
             @Override
