@@ -46,6 +46,16 @@ public class ClientSocket
         sock.close();
     }
 
+    public void setTimeout(int millis) throws IOException
+    {
+        sock.setSoTimeout(millis);
+    }
+
+    public int getTimeout() throws IOException
+    {
+        return sock.getSoTimeout();
+    }
+
     public Message readMessage() throws IOException, EOFException, ChessHeroException
     {
         // The first two bytes will be the body length
