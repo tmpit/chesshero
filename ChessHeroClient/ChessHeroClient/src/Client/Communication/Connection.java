@@ -305,6 +305,14 @@ public class Connection
         }.execute();
     }
 
+    // Important!!!
+    // Only attempt to use before you are expecting a message to arrive
+    // It will cancel the current read and if the socket has completed reading but the task
+    // has not finished yet, the message will be lost.
+    // Even worse, if the socket is still reading when this task is cancelled, unread bytes of
+    // the message will remain in the buffer which not only means the message is lost, but also
+    // that communication through this socket will almost certainly become impossible,
+    // in which case you will have to disconnect and connect again to continue normal communication
     public boolean cancelCurrentRead()
     {
         if (null == currentReadTask)
