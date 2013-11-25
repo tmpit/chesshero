@@ -1,12 +1,7 @@
 package Client.Pages;
 
-import com.kt.AuthMessage;
-import com.kt.Credentials;
-import com.kt.Message;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,27 +11,27 @@ import java.util.Vector;
 /**
  * Created with IntelliJ IDEA.
  * User: kiro
- * Date: 11/24/13
- * Time: 5:11 PM
+ * Date: 11/25/13
+ * Time: 9:13 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LobbyPage extends ChessHeroPage{
+public class HallOfFamePage extends ChessHeroPage{
 
     public static final Vector<String> LOBBY_TABLE_COLUMNS = new Vector<String>(Arrays.asList(
             "ID#", "Game Name", "Created By")
     );
 
-    public Vector<LobbyTableEntry> gameList = null;
+    public Vector<HallOfFameEntry> gameList = null;
     public JTable table = null;
 
     // HELPER INNER CLASSES
 
-    class LobbyTableEntry {
+    class HallOfFameEntry {
         public String gameID = null;
         public String gameName = null;
         public String createdBy = null;
 
-        public LobbyTableEntry(String gameID, String gameName, String createdBy){
+        public HallOfFameEntry(String gameID, String gameName, String createdBy){
             this.gameID = gameID;
             this.gameName = gameName;
             this.createdBy = createdBy;
@@ -48,13 +43,13 @@ public class LobbyPage extends ChessHeroPage{
         }
     }
 
-    class LobbyTableModel extends DefaultTableModel {
+    class HallOfFameTableModel extends DefaultTableModel {
 
-        public LobbyTableModel(Object[][] tableData, Object[] colNames) {
+        public HallOfFameTableModel(Object[][] tableData, Object[] colNames) {
             super(tableData, colNames);
         }
 
-        public LobbyTableModel(Vector tableData, Vector colNames) {
+        public HallOfFameTableModel(Vector tableData, Vector colNames) {
             super(tableData, colNames);
         }
 
@@ -65,8 +60,8 @@ public class LobbyPage extends ChessHeroPage{
         }
     }
 
-    public  LobbyPage(){
-        this.setPageTitle("Lobby Page");
+    public  HallOfFamePage(){
+        this.setPageTitle("Hall Of Fame Page");
         //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
         //Initialize Components
         JPanel mainPanel = new JPanel();
@@ -102,11 +97,10 @@ public class LobbyPage extends ChessHeroPage{
 //        passwordTextBox.setHorizontalAlignment(SwingConstants.CENTER);
 //        usernameTextBox.setHorizontalAlignment(SwingConstants.CENTER);
 //
-        JButton joinGameButton = new JButton("Join Game");
-        JButton createGameButton = new JButton("Create Game");
-        JButton hallOfFameButton = new JButton("Hall Of Fame");
+        JButton previousPageButton = new JButton("Previous Page");
+        JButton nextPageButton = new JButton("Next Page");
+        JButton lobbyPageButton = new JButton("Back To Lobby");
         JButton logoutButton = new JButton("Logout");
-        JButton refreshGameButton = new JButton("Refresh Games");
 
         table = new JTable();
         JScrollPane tableHolder = new JScrollPane(table);
@@ -139,27 +133,22 @@ public class LobbyPage extends ChessHeroPage{
         gridOpt.weighty = 6;
         mainPanel.add(tableHolder, gridOpt);
 
-        gridOpt.insets = new Insets(0,100,20,100);
-        gridOpt.gridy = 4;
-        gridOpt.weighty = 0.5;
-        gridOpt.gridwidth = 2;
-        mainPanel.add(refreshGameButton, gridOpt);
 
         gridOpt.insets = new Insets(0,100,20,10);
         gridOpt.gridy = 5;
         gridOpt.weighty = 0.5;
         gridOpt.gridwidth = 1;
         gridOpt.fill = GridBagConstraints.BOTH;
-        mainPanel.add(joinGameButton, gridOpt);
+        mainPanel.add(previousPageButton, gridOpt);
 
         gridOpt.insets = new Insets(0,10,20,100);
         gridOpt.gridx = 1;
-        mainPanel.add(createGameButton, gridOpt);
+        mainPanel.add(nextPageButton, gridOpt);
 
         gridOpt.insets = new Insets(0,100,20,10);
         gridOpt.gridx = 0;
         gridOpt.gridy = 6;
-        mainPanel.add(hallOfFameButton, gridOpt);
+        mainPanel.add(lobbyPageButton, gridOpt);
 
         gridOpt.insets = new Insets(0,10,20,100);
         gridOpt.gridx = 1;
@@ -168,34 +157,27 @@ public class LobbyPage extends ChessHeroPage{
 
         this.setPagePanel(mainPanel);
 
+        loadHallOfFame();
+
 
         //Add Listeners
 
-        refreshGameButton.addActionListener(new ActionListener() {
+        previousPageButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the REFRESH GAME button");
-                handleRefreshGameButton();
+                System.out.println("You clicked the previous page button");
+                //HallOfFameEntry SelectedGame = gameList.get(table.getSelectedRow());
+                handlePreviousPageButton();
             }
         });
 
-        joinGameButton.addActionListener(new ActionListener() {
+        nextPageButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the JOIN GAME button");
-                LobbyTableEntry SelectedGame = gameList.get(table.getSelectedRow());
-                handleJoinGameButton(SelectedGame);
-            }
-        });
-
-        createGameButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e)
-            {
-                System.out.println("You clicked the CREATE GAME button");
-                handleCreateGameButton();
+                System.out.println("You clicked the next page button");
+                handleNextPageButton();
             }
         });
 
@@ -207,12 +189,12 @@ public class LobbyPage extends ChessHeroPage{
             }
         });
 
-        hallOfFameButton.addActionListener(new ActionListener() {
+        lobbyPageButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the HALL OF FAME button");
-                handleHallOfFameButton();
+                System.out.println("You clicked the Lobby page button");
+                handleLobbyPageButton();
             }
         });
     }
@@ -220,60 +202,61 @@ public class LobbyPage extends ChessHeroPage{
 
 
     //Handle Buttons
-    private void handleRefreshGameButton() {
-        gameList = new Vector<LobbyTableEntry>(Arrays.asList(
-                new LobbyTableEntry(
+    private void loadHallOfFame() {
+        gameList = new Vector<HallOfFameEntry>(Arrays.asList(
+                new HallOfFameEntry(
                         "867954","game1","user1"
-                ),new LobbyTableEntry(
+                ),new HallOfFameEntry(
                 "522532", "game2", "user2"
-                ), new LobbyTableEntry(
-                        "4213532", "game3","user3"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
+        ), new HallOfFameEntry(
+                "4213532", "game3","user3"
+        ),new HallOfFameEntry(
                 "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                )
-            )
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        ),new HallOfFameEntry(
+                "5135132", "game4","user4"
+        )
+        )
         );
-        table.setModel(new LobbyTableModel(transformTableData(gameList), LOBBY_TABLE_COLUMNS));
+        table.setModel(new HallOfFameTableModel(transformTableData(gameList), LOBBY_TABLE_COLUMNS));
 
     }
 
-    private void handleHallOfFameButton() {
-        System.out.println("Entered HALL OF FAME button HANDLER");
-        holder.NavigateToPage(new HallOfFamePage());
+    private void handleLobbyPageButton() {
+        System.out.println("Entered Lobby button HANDLER");
+        holder.NavigateToPage(new LobbyPage());
     }
 
 
-    private void handleJoinGameButton(LobbyTableEntry selectedGame) {
-        System.out.println("Entered Join Game with Name " + selectedGame.gameName);
+    private void handlePreviousPageButton() {
+        System.out.println("Should load previous results");
     }
 
-    public void handleCreateGameButton(){
-        this.holder.NavigateToPage(new CreateGamePage());
-        //System.out.println(new String(this.passwordTextBox.getPassword()));
+    public void handleNextPageButton(){
+
+        //this.holder.NavigateToPage(new CreateGamePage());
+        System.out.println("Should load more results");
 //        Credentials credentials = new Credentials(
 //                this.usernameTextBox.getText(),
 //                new String(this.passwordTextBox.getPassword())
@@ -289,9 +272,9 @@ public class LobbyPage extends ChessHeroPage{
 
 
     //HELPER METHODS
-    private Vector<Vector<String>> transformTableData(Vector<LobbyTableEntry> data){
+    private Vector<Vector<String>> transformTableData(Vector<HallOfFameEntry> data){
         Vector<Vector<String>> transformedData = new Vector<Vector<String>>();
-        for (LobbyTableEntry entry : data){
+        for (HallOfFameEntry entry : data){
             transformedData.add(new Vector<String>(Arrays.asList(entry.toString().split("\\|"))));
         }
         return  transformedData;
