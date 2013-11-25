@@ -5,7 +5,7 @@ import com.kt.SLog;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,10 +22,13 @@ public class Connection
     private static Connection singleton = null;
 
     private ClientSocket sock;
-    private Vector<ConnectionListener> listeners = new Vector<ConnectionListener>();
+    private ArrayList<ConnectionListener> listeners = new ArrayList<ConnectionListener>();
 
     private boolean isConnecting = false;
     private boolean isDisconnecting = false;
+    private boolean isWriting = false;
+
+    private ReadTask currentReadTask = null;
 
     public static synchronized Connection getSingleton()
     {
@@ -42,7 +45,7 @@ public class Connection
         listeners.add(listener);
     }
 
-    public void connect() throws IOException
+    public void connect()
     {
         if (isDisconnecting)
         {
@@ -100,7 +103,7 @@ public class Connection
         }.execute();
     }
 
-    public void disconnect() throws IOException
+    public void disconnect()
     {
         if (isConnecting)
         {
@@ -147,7 +150,7 @@ public class Connection
         }.execute();
     }
 
-    public void readMessage()
+    public void readMessage(int timeout)
     {
         if (isConnecting || isDisconnecting)
         {
@@ -161,15 +164,34 @@ public class Connection
             return;
         }
 
-        new ReadTask()
+        if (currentReadTask != null)
+        {
+            SLog.write("Attempting to read message when socket is already reading");
+            return;
+        }
+
+        currentReadTask = new ReadTask(timeout)
         {
             @Override
             protected Void doInBackground()
             {
                 try
                 {
+                    if (sock.getTimeout() != timeout)
+                    {
+                        sock.setTimeout(timeout);
+                        didChangeTimeout = true;
+                        lastTimeout = sock.getTimeout();
+                    }
+
+                    sock.setTimeout(timeout);
                     this.msg = sock.readMessage();
                     this.success = true;
+
+                    if (didChangeTimeout)
+                    {
+                        sock.setTimeout(lastTimeout);
+                    }
                 }
                 catch (Throwable e)
                 {
@@ -182,6 +204,8 @@ public class Connection
             @Override
             public void done()
             {
+                currentReadTask = null;
+
                 if (!this.success)
                 {
                     if (!sock.isConnected())
@@ -192,8 +216,12 @@ public class Connection
                         return;
                     }
 
-                    SLog.write("Failed to read message, retrying...");
-                    readMessage(); // Something bad happened, retry
+                    if (0 == timeout)
+                    {
+                        SLog.write("Failed to read message, retrying...");
+                        readMessage(0); // Something bad happened, retry
+                    }
+
                     return;
                 }
 
@@ -202,10 +230,12 @@ public class Connection
                     listener.messageRead(this.msg);
                 }
             }
-        }.execute();
+        };
+
+        currentReadTask.execute();
     }
 
-    public void writeMessage(Message msg)
+    public void writeMessage(Message msg, int timeout)
     {
         if (isConnecting || isDisconnecting)
         {
@@ -219,15 +249,35 @@ public class Connection
             return;
         }
 
-        new WriteTask(msg)
+        if (isWriting)
+        {
+            SLog.write("Attempting to write message while another is already being written");
+            return;
+        }
+
+        isWriting = true;
+
+        new WriteTask(msg, timeout)
         {
             @Override
             protected Void doInBackground()
             {
                 try
                 {
+                    if (sock.getTimeout() != timeout)
+                    {
+                        sock.setTimeout(timeout);
+                        didChangeTimeout = true;
+                        lastTimeout = sock.getTimeout();
+                    }
+
                     sock.writeMessage(this.msg);
                     this.success = true;
+
+                    if (didChangeTimeout)
+                    {
+                        sock.setTimeout(lastTimeout);
+                    }
                 }
                 catch (IOException e)
                 {
@@ -240,6 +290,8 @@ public class Connection
             @Override
             public void done()
             {
+                isWriting = false;
+
                 for (ConnectionListener listener : listeners)
                 {
                     listener.messageWritten(this.success, this.msg);
@@ -251,6 +303,24 @@ public class Connection
                 }
             }
         }.execute();
+    }
+
+    public boolean cancelCurrentRead()
+    {
+        if (null == currentReadTask)
+        {
+            SLog.write("Attempting to cancel read task when there is no current read task");
+            return true;
+        }
+
+        boolean cancelled = currentReadTask.cancel(true);
+
+        if (cancelled)
+        {
+            currentReadTask = null;
+        }
+
+        return cancelled;
     }
 
     private void notifySocketDisconnected(boolean error)
@@ -269,12 +339,22 @@ public class Connection
     private abstract class ReadTask extends BackgroundTask
     {
         protected Message msg;
+
+        protected int timeout;
+        protected int lastTimeout;
+        protected boolean didChangeTimeout = false;
+
+        ReadTask(int timeout)
+        {
+            this.timeout = timeout;
+        }
     }
 
     private abstract class WriteTask extends ReadTask
     {
-        WriteTask(Message msg)
+        WriteTask(Message msg, int timeout)
         {
+            super(timeout);
             this.msg = msg;
         }
     }

@@ -12,8 +12,8 @@ import com.kt.Message;
 public interface ConnectionListener
 {
     public void socketConnected();
-    public void socketDisconnected(boolean error);
     public void socketFailedToConnect();
+    public void socketDisconnected(boolean error);
 
     public void messageRead(Message msg);
     public void messageWritten(boolean result, Message msg);
