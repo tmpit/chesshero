@@ -168,6 +168,7 @@ public class LobbyPage extends ChessHeroPage{
 
         this.setPagePanel(mainPanel);
 
+        handleRefreshGameButton();
 
         //Add Listeners
 
