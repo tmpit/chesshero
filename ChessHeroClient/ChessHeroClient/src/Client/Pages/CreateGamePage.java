@@ -17,9 +17,11 @@ import java.util.Vector;
  */
 public class CreateGamePage extends ChessHeroPage {
 
-         public static GameSettings createGameSettings = null;//new CreateGameSettings();
-
-        private JTextField  gameNameTextBox;
+    public static GameSettings createGameSettings = null;//new CreateGameSettings();
+    private JTextField  gameNameTextBox;
+    private ButtonGroup radioButtonGroup;
+    private JSpinner turnTimeLimitSpinbox;
+    private JSpinner gameTimeLimitSpinbox;
 
         // HELPER INNER CLASSES
 
@@ -88,16 +90,32 @@ public class CreateGamePage extends ChessHeroPage {
             JButton lobbyPageButton = new JButton("Back To Lobby");
             JButton createGameButton = new JButton("Create Game");
 
+            JRadioButton toggleButtonWhite = new JRadioButton("White");
+            toggleButtonWhite.setSelected(true);
+            JRadioButton toggleButtonBlack = new JRadioButton("Black");
+
+            SpinnerNumberModel spinnerTurnTimeModel = new SpinnerNumberModel(10, 0, 6000, 10);
+            SpinnerNumberModel spinnerGameTimeModel = new SpinnerNumberModel(10, 0, 300, 10);
+            turnTimeLimitSpinbox = new JSpinner(spinnerTurnTimeModel);
+            gameTimeLimitSpinbox = new JSpinner(spinnerGameTimeModel);
 
 
             mainPanel.setLayout(new GridBagLayout());
             menuPanel.setLayout(new GridLayout(6,1));
 
-
             //Add Components
             menuPanel.add(gameNameLabel);
             menuPanel.add(gameNameTextBox);
 
+            menuPanel.add(toggleButtonWhite);
+            menuPanel.add(toggleButtonBlack);
+            menuPanel.add(turnTimeLimitSpinbox);
+            menuPanel.add(gameTimeLimitSpinbox);
+
+            radioButtonGroup = new ButtonGroup();
+
+            radioButtonGroup.add(toggleButtonWhite);
+            radioButtonGroup.add(toggleButtonBlack);
             new GridBagConstraints();
             GridBagConstraints gridOpt = new GridBagConstraints();
             gridOpt.fill = GridBagConstraints.BOTH;
