@@ -2,11 +2,16 @@ package Client.Pages;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.DateFormatter;
+import javax.swing.text.DefaultFormatterFactory;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
-import java.util.Vector;
+import java.sql.Time;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,20 +22,26 @@ import java.util.Vector;
  */
 public class CreateGamePage extends ChessHeroPage {
 
-    public static GameSettings createGameSettings = null;//new CreateGameSettings();
+    public static GameSettings createGameSettings;//new CreateGameSettings();
     private JTextField  gameNameTextBox;
     private ButtonGroup radioButtonGroup;
+    private JRadioButton toggleButtonWhite;
     private JSpinner turnTimeLimitSpinbox;
     private JSpinner gameTimeLimitSpinbox;
+    private JSpinner minimumOpponentLevelSpinbox;
+    private JSpinner maximumOpponentLevelSpinbox;
+
+    private int playerLevel;
 
         // HELPER INNER CLASSES
 
         class GameSettings {
             public String GameName = "";
             public boolean IsWithWhite = true;
-            public int TurnLimit = 0;
-            public int TurnTimeLimitInSec = 0;
-            public int GameTimeLimitInSec = 0;
+            public int TurnTimeLimit = 0;
+            public int GameTimeLimit = 0;
+            public int minOpponentLvL = 0;
+            public int maxOpponentLvL = 0;
 
             public GameSettings(){
 
@@ -38,35 +49,40 @@ public class CreateGamePage extends ChessHeroPage {
             public GameSettings(
                     String gameName,
                     boolean isWithWhite,
-                    int turnLimit,
-                    int turnTimeLimitInSec,
-                    int gameTimeLimitInSec){
+                    int turnTimeLimit,
+                    int gameTimeLimit,
+                    int minOpponentLvL,
+                    int maxOpponentLvL
+            ){
                 this.GameName = gameName;
                 this.IsWithWhite = isWithWhite;
-                this.TurnLimit = turnLimit;
-                this.TurnTimeLimitInSec = turnTimeLimitInSec;
-                this.GameTimeLimitInSec = gameTimeLimitInSec;
+                this.TurnTimeLimit = turnTimeLimit;
+                this.GameTimeLimit = gameTimeLimit;
+                this.minOpponentLvL = minOpponentLvL;
+                this.maxOpponentLvL = maxOpponentLvL;
             }
 
             @Override
             public String toString(){
-                return this.GameName +"|"+
-                        this.IsWithWhite +"|"+
-                        this.TurnLimit + "|" +
-                        this.TurnTimeLimitInSec + "|" +
-                        this.GameTimeLimitInSec;
+                String isWithWhiteString = this.IsWithWhite ? "TRUE": "FALSE";
+                return
+                        this.GameName +"|"+
+                        isWithWhiteString +"|"+
+                        this.TurnTimeLimit + "|" +
+                        this.GameTimeLimit + "|" +
+                        this.minOpponentLvL + "|" +
+                        this.maxOpponentLvL
+                        ;
             }
         }
-
-
 
         public  CreateGamePage(){
             this.setPageTitle("Create Game Page");
             //Initialize Components
             JPanel mainPanel = new JPanel();
             JPanel menuPanel = new JPanel();
-            mainPanel.setLayout(new GridBagLayout());
-            menuPanel.setLayout(new GridBagLayout());
+//            mainPanel.setLayout(new GridBagLayout());
+//            menuPanel.setLayout(new GridBagLayout());
 
             JLabel pageTitle = new JLabel(MAIN_TITLE);
 
@@ -81,79 +97,106 @@ public class CreateGamePage extends ChessHeroPage {
             pageSubTitle.setFont(new Font("Serif", Font.BOLD, 32));
 
             JLabel gameNameLabel = new JLabel("Enter a name for your Game");
+            JLabel turnTimeLimitLabel = new JLabel("Turn Time Limit In Minutes");
+            JLabel gameTimeLimitLabel = new JLabel("Game Time Limit In Minutes");
 
             this.gameNameTextBox = new JTextField();
 
-            gameNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            gameNameTextBox.setHorizontalAlignment(SwingConstants.CENTER);
+//            gameNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+//            gameNameTextBox.setHorizontalAlignment(SwingConstants.CENTER);
 
             JButton lobbyPageButton = new JButton("Back To Lobby");
             JButton createGameButton = new JButton("Create Game");
 
-            JRadioButton toggleButtonWhite = new JRadioButton("White");
+            toggleButtonWhite = new JRadioButton("Play With White");
             toggleButtonWhite.setSelected(true);
-            JRadioButton toggleButtonBlack = new JRadioButton("Black");
+            JRadioButton toggleButtonBlack = new JRadioButton("Play With Black");
 
-            SpinnerNumberModel spinnerTurnTimeModel = new SpinnerNumberModel(10, 0, 6000, 10);
+            JLabel minimumOpponentLevelLabel = new JLabel("Minimum Opponent Level");
+            JLabel maximumOpponentLevelLabel = new JLabel("Maximum Opponent Level");
+
+            SpinnerNumberModel spinnerTurnTimeModel = new SpinnerNumberModel(1, 0, 60,1);
             SpinnerNumberModel spinnerGameTimeModel = new SpinnerNumberModel(10, 0, 300, 10);
+            //SpinnerNumberModel spinnerGameTimeModel = new SpinnerNumberModel(10, 0, 300, 10);
+            playerLevel = 2;
+            SpinnerNumberModel spinnerMinimumOpponentLevelModel = new SpinnerNumberModel(playerLevel, playerLevel > 10 ? playerLevel-10:0, playerLevel, 1);
+            SpinnerNumberModel spinnerMaximumOpponentLevelModel = new SpinnerNumberModel(playerLevel, playerLevel, playerLevel < 90 ? playerLevel+10:99, 1);
+
+//            SimpleDateFormat formatDate = new SimpleDateFormat("HH:mm:ss");
+//            formatDate.setTimeZone(TimeZone.getTimeZone("UTC"));
+//
+//            minimumOpponentLevelSpinbox = new JSpinner(spinnerTurnTimeModel);
+//            minimumOpponentLevelSpinbox.setModel(new SpinnerDateModel(new Date(0), null, null, Calendar.MINUTE));
+//            ((JSpinner.DefaultEditor) minimumOpponentLevelSpinbox.getEditor()).getTextField().setFormatterFactory(
+//                    new DefaultFormatterFactory(new DateFormatter(formatDate)));//DateFormat.getDateInstance())));
+
             turnTimeLimitSpinbox = new JSpinner(spinnerTurnTimeModel);
             gameTimeLimitSpinbox = new JSpinner(spinnerGameTimeModel);
+            minimumOpponentLevelSpinbox = new JSpinner(spinnerMinimumOpponentLevelModel);
+            maximumOpponentLevelSpinbox = new JSpinner(spinnerMaximumOpponentLevelModel);
 
+            toggleButtonWhite.setHorizontalAlignment(SwingConstants.CENTER);
+            toggleButtonBlack.setHorizontalAlignment(SwingConstants.CENTER);
+            gameNameTextBox.setHorizontalAlignment(SwingConstants.CENTER);
 
             mainPanel.setLayout(new GridBagLayout());
-            menuPanel.setLayout(new GridLayout(6,1));
+            menuPanel.setLayout(new GridLayout(6,2));
 
             //Add Components
-            menuPanel.add(gameNameLabel);
-            menuPanel.add(gameNameTextBox);
-
-            menuPanel.add(toggleButtonWhite);
-            menuPanel.add(toggleButtonBlack);
-            menuPanel.add(turnTimeLimitSpinbox);
-            menuPanel.add(gameTimeLimitSpinbox);
 
             radioButtonGroup = new ButtonGroup();
 
             radioButtonGroup.add(toggleButtonWhite);
             radioButtonGroup.add(toggleButtonBlack);
+
+            menuPanel.add(toggleButtonWhite);
+            menuPanel.add(toggleButtonBlack);
+
+            menuPanel.add(gameNameLabel);
+            menuPanel.add(gameNameTextBox);
+
+            menuPanel.add(turnTimeLimitLabel);
+            menuPanel.add(turnTimeLimitSpinbox);
+
+            menuPanel.add(gameTimeLimitLabel);
+            menuPanel.add(gameTimeLimitSpinbox);
+
+
+            menuPanel.add(minimumOpponentLevelLabel);
+            menuPanel.add(minimumOpponentLevelSpinbox);
+            menuPanel.add(maximumOpponentLevelLabel);
+            menuPanel.add(maximumOpponentLevelSpinbox);
+
+            //menuPanel.add(innerPanel);
+
             new GridBagConstraints();
             GridBagConstraints gridOpt = new GridBagConstraints();
             gridOpt.fill = GridBagConstraints.BOTH;
             gridOpt.insets = new Insets(20,200,20,200);
             gridOpt.gridx = 0;
             gridOpt.gridy = 0;
-            //gridOpt.gridheight = 1;
-            //gridOpt.ipady = 20;
-            //gridOpt.ipadx = 100;
             gridOpt.weightx = 1;
             gridOpt.weighty = 0;
             mainPanel.add(pageTitle,gridOpt);
 
             gridOpt.insets = new Insets(0,200,20,200);
             gridOpt.gridy = 1;
-            //gridOpt.weighty = 0;
             mainPanel.add(pageSubTitle, gridOpt);
 
-            //gridOpt.fill = GridBagConstraints.BOTH;
             gridOpt.insets = new Insets(0,200,40,200);
-            //gridOpt.ipadx = 10;
             gridOpt.gridx = 0;
             gridOpt.gridy = 2;
-            //gridOpt.gridheight = 4;
-            //gridOpt.weightx = 1;
             gridOpt.weighty = 6;
-            //gridOpt.fill = GridBagConstraints.HORIZONTAL;
             mainPanel.add(menuPanel, gridOpt);
 
             gridOpt.insets = new Insets(0,200,20,200);
             gridOpt.gridy = 4;
             gridOpt.weighty = 0.5;
-            mainPanel.add(lobbyPageButton, gridOpt);
+            mainPanel.add(createGameButton, gridOpt);
 
             gridOpt.gridy = 5;
             gridOpt.weighty = 0.5;
-            mainPanel.add(createGameButton, gridOpt);
-
+            mainPanel.add(lobbyPageButton, gridOpt);
 
             this.setPagePanel(mainPanel);
 
@@ -161,33 +204,6 @@ public class CreateGamePage extends ChessHeroPage {
 
             //Add Listeners
 
-//            previousPageButton.addActionListener(new ActionListener() {
-//
-//                public void actionPerformed(ActionEvent e)
-//                {
-//                    System.out.println("You clicked the previous page button");
-//                    //HallOfFameEntry SelectedGame = gameList.get(table.getSelectedRow());
-//                    handlePreviousPageButton();
-//                }
-//            });
-//
-//            nextPageButton.addActionListener(new ActionListener() {
-//
-//                public void actionPerformed(ActionEvent e)
-//                {
-//                    System.out.println("You clicked the next page button");
-//                    handleNextPageButton();
-//                }
-//            });
-//
-//            logoutButton.addActionListener(new ActionListener() {
-//
-//                public void actionPerformed(ActionEvent e) {
-//                    System.out.println("You clicked the LOGOUT button");
-//                    handleLogoutButton();
-//                }
-//            });
-//
             lobbyPageButton.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e)
@@ -207,10 +223,6 @@ public class CreateGamePage extends ChessHeroPage {
             });
         }
 
-    private void getSettings() {
-        createGameSettings.GameName = gameNameTextBox.getText();
-    }
-
     //Handle Buttons
 
     private void handleLobbyPageButton() {
@@ -220,35 +232,27 @@ public class CreateGamePage extends ChessHeroPage {
 
     private void handleCreateGameButton() {
         System.out.println("Entered Create Game button HANDLER");
-        getSettings();
+        createGameSettings = getCreateGameSettings();
         System.out.println(createGameSettings.toString());
         holder.NavigateToPage(new LobbyPage());
     }
 
 
-//        private void handlePreviousPageButton() {
-//            System.out.println("Should load previous results");
-//        }
-//
-//        public void handleNextPageButton(){
-//
-//            //this.holder.NavigateToPage(new CreateGamePage());
-//            System.out.println("Should load more results");
-////        Credentials credentials = new Credentials(
-////                this.usernameTextBox.getText(),
-////                new String(this.passwordTextBox.getPassword())
-////        );
-////
-////        AuthMessage authMsg = new AuthMessage(Message.ACTION_REGISTER, credentials);
-//            //holder.getConnection().writeMessage(authMsg);
-//        }
-//
-//        public void handleLogoutButton(){
-//            this.holder.NavigateToPage(new LoginPage());
-//        }
-//
-//
-//        //HELPER METHODS
+    //HELPER METHODS
+
+    private GameSettings getCreateGameSettings (){
+        GameSettings newGameSettings = new GameSettings();
+        if (gameNameTextBox != null && gameNameTextBox.getText() != null){
+            newGameSettings.GameName = gameNameTextBox.getText();
+        }
+        newGameSettings.TurnTimeLimit = Integer.parseInt(turnTimeLimitSpinbox.getValue().toString());
+        newGameSettings.GameTimeLimit = Integer.parseInt(gameTimeLimitSpinbox.getValue().toString());
+        newGameSettings.minOpponentLvL = Integer.parseInt(minimumOpponentLevelSpinbox.getValue().toString());
+        newGameSettings.maxOpponentLvL = Integer.parseInt(maximumOpponentLevelSpinbox.getValue().toString());
+        newGameSettings.IsWithWhite = toggleButtonWhite.isSelected();
+        return newGameSettings;
+    }
+
 //        private Vector<Vector<String>> transformTableData(Vector<HallOfFameEntry> data){
 //            Vector<Vector<String>> transformedData = new Vector<Vector<String>>();
 //            for (HallOfFameEntry entry : data){
