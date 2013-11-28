@@ -26,8 +26,17 @@ public class Utils
     // Writes 's' as two bytes into 'bytes' starting at index 'index'
     public static void bytesPutShort(byte bytes[], short s, int index)
     {
-        bytes[index] = (byte)((s >>> 8) & 0xFF);
-        bytes[index + 1] = (byte)(s & 0xFF);
+        bytes[index] = (byte)(s >>> 8);
+        bytes[index + 1] = (byte)s;
+    }
+
+    // Writes 'i' as four bytes into 'bytes' starting at index 'index'
+    public static void bytesPutInt(byte bytes[], int i, int index)
+    {
+        bytes[index] = (byte)(i >>> 24);
+        bytes[index + 1] = (byte)(i >>> 16);
+        bytes[index + 2] = (byte)(i >>> 8);
+        bytes[index + 3] = (byte)i;
     }
 
     // Writes all bytes from 'data' into 'bytes' starting at index 'index'
