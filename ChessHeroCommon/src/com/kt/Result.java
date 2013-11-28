@@ -11,11 +11,14 @@ public class Result
 {
     public static final int OK = 0;
 
-    public static final int INVALID_MESSAGE = 100;
-    public static final int INVALID_ACTION = 101;
+    public static final int AUTH_REQUIRED = 100;
+    public static final int INVALID_TYPE = 101;
     public static final int INVALID_NAME = 102;
     public static final int INVALID_PASS = 103;
     public static final int INVALID_CREDENTIALS = 104;
+    public static final int USER_EXISTS = 105;
+
+    public static final int INVALID_MESSAGE = 400;
 
     public static final int INTERNAL_ERROR = 500;
 }
