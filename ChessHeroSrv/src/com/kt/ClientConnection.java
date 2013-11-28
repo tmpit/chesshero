@@ -3,11 +3,8 @@ package com.kt;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.nio.ByteBuffer;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,11 +17,15 @@ public class ClientConnection extends Thread
 {
     public final static int READ_TIMEOUT = 15 * 1000; // In milliseconds
 
+    private boolean running = true;
     private Socket sock = null;
+    private boolean hasAuthenticated = false;
+    private Database db = null;
 
     ClientConnection(Socket sock)
     {
         this.sock = sock;
+        db = new Database();
     }
 
     private void closeSocket()
@@ -55,7 +56,7 @@ public class ClientConnection extends Thread
             // Set timeout for the first message, if someone connected, he must say something
             sock.setSoTimeout(READ_TIMEOUT);
 
-            while (true)
+            while (running)
             {
                 SLog.write("Reading header");
 
@@ -81,39 +82,40 @@ public class ClientConnection extends Thread
 
                 SLog.write("Body read");
 
-                Message msg = Message.fromData(body);
-
-                SLog.write("Received message: " + msg);
-                // Pass message wherever
+                handleMessage(Message.fromData(body));
 
                 // Remove timeout when listening for header
                 sock.setSoTimeout(0);
             }
+
+            closeSocket();
         }
         catch (SocketTimeoutException e)
         {
             SLog.write("Read timed out");
-            closeSocket();
+            running = false;
         }
         catch (EOFException e)
         {
             SLog.write("Socket reached unexpected EOF??? - " + e);
-            closeSocket();
+            running = false;
         }
         catch (IOException e)
         {
             SLog.write("Error reading: " + e);
-            closeSocket();
+            running = false;
         }
         catch (ChessHeroException e)
         {
-            SLog.write("Parsing error, code: " + e.getCode());
-            closeSocket();
+            int code = e.getCode();
+            SLog.write("Chess hero exception: " + code);
+            writeMessage(new ResultMessage(code));
+            running = false;
         }
         catch (Exception e)
         {
             SLog.write("Surprise exception: " + e);
-            closeSocket();
+            running = false;
         }
     }
 
@@ -135,5 +137,73 @@ public class ClientConnection extends Thread
         while (bytesRead != len);
 
         return data;
+    }
+
+    private void writeMessage(Message msg)
+    {
+        try
+        {
+            sock.getOutputStream().write(msg.toData());
+        }
+        catch (IOException e)
+        {
+            SLog.write("Exception raised while writing to socket: " + e);
+            running = false;
+        }
+    }
+
+    private void handleMessage(Message msg) throws ChessHeroException
+    {
+        SLog.write("Received message: " + msg);
+
+        short type = msg.getType();
+
+        if (!hasAuthenticated && type != Message.TYPE_LOGIN && type != Message.TYPE_REGISTER)
+        {
+            SLog.write("Client attempting unauthorized type");
+            throw new ChessHeroException(Result.AUTH_REQUIRED);
+        }
+
+        switch(type)
+        {
+            case Message.TYPE_REGISTER:
+                handleRegister((AuthMessage)msg);
+                break;
+        }
+    }
+
+    private void handleRegister(AuthMessage msg) throws ChessHeroException
+    {
+        try
+        {
+            db.setKeepAlive(true);
+
+            Credentials credentials = msg.getCredentials();
+
+            if (db.userExists(credentials.getName()))
+            {
+                throw new ChessHeroException(Result.USER_EXISTS);
+            }
+
+            boolean success = db.insertUser(credentials);
+
+            if (!success)
+            {
+                throw new ChessHeroException(Result.INTERNAL_ERROR);
+            }
+
+            hasAuthenticated = true;
+            ResultMessage result = new ResultMessage(Result.OK);
+            writeMessage(result);
+        }
+        catch (Exception e)
+        {
+            SLog.write(e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+        finally
+        {
+            db.setKeepAlive(false);
+        }
     }
 }
