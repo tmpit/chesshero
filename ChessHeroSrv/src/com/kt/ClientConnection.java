@@ -89,6 +89,11 @@ public class ClientConnection extends Thread
             }
 
             closeSocket();
+
+            if (db.getKeepAlive())
+            {
+                db.setKeepAlive(false);
+            }
         }
         catch (SocketTimeoutException e)
         {
