@@ -13,13 +13,26 @@ import java.nio.ByteBuffer;
 
 abstract public class Message
 {
-    public static final short ACTION_REGISTER = 1;
-    public static final short ACTION_LOGIN = 2;
-    public static final short ACTION_MOVE = 3;
+    public static final short TYPE_REGISTER = 1;
+    public static final short TYPE_LOGIN = 2;
+    public static final short TYPE_MOVE = 3;
+    public static final short TYPE_RESULT = 4;
 
-    public static boolean isActionValid(int action)
+    protected short type;
+
+    public static boolean isTypeValid(int type)
     {
-        return (action == ACTION_REGISTER || action == ACTION_LOGIN || action == ACTION_MOVE);
+        return (type == TYPE_REGISTER || type == TYPE_LOGIN || type == TYPE_MOVE);
+    }
+
+    protected Message(short type)
+    {
+        this.type = type;
+    }
+
+    public short getType()
+    {
+        return type;
     }
 
     public static Message fromData(byte data[]) throws ChessHeroException
@@ -32,22 +45,26 @@ abstract public class Message
 
         try
         {
-            // Read action
-            short action = buf.getShort();
-            SLog.write("Message action: " + action);
+            // Read type
+            short type = buf.getShort();
+            SLog.write("Message type: " + type);
 
-            switch (action)
+            switch (type)
             {
-                case ACTION_REGISTER:
-                case ACTION_LOGIN:
+                case TYPE_REGISTER:
+                case TYPE_LOGIN:
                     Credentials credentials = readCredentials(buf);
-                    return new AuthMessage(action, credentials);
+                    return new AuthMessage(type, credentials);
 
-                case ACTION_MOVE:
+                case TYPE_RESULT:
+                    int result = buf.getInt();
+                    return new ResultMessage(result);
+
+                case TYPE_MOVE:
                     return null;
 
                 default:
-                    throw new ChessHeroException(Result.INVALID_ACTION);
+                    throw new ChessHeroException(Result.INVALID_TYPE);
             }
         }
         catch (BufferUnderflowException e)
