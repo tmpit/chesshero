@@ -1,6 +1,5 @@
 package com.kt;
 
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 
 /**
@@ -12,18 +11,13 @@ import java.nio.ByteBuffer;
  */
 public class AuthMessage extends Message
 {
-    private int action;
     private Credentials credentials;
 
-    public AuthMessage(int action, Credentials credentials)
+    public AuthMessage(short type, Credentials credentials)
     {
-        this.action = action;
-        this.credentials = credentials;
-    }
+        super(type);
 
-    public int getAction()
-    {
-        return action;
+        this.credentials = credentials;
     }
 
     public Credentials getCredentials()
@@ -37,10 +31,10 @@ public class AuthMessage extends Message
         byte nameData[] = credentials.getName().getBytes();
         byte passData[] = credentials.getPass().getBytes();
 
-        int bodyLen = 2 + 2 + nameData.length + 2 + passData.length; // Action + name length + name + pass length + pass
+        int bodyLen = 2 + 2 + nameData.length + 2 + passData.length; // Type + name length + name + pass length + pass
 
         ByteBuffer messageData = ByteBuffer.allocate(bodyLen);
-        messageData.putShort((short)action); // Put action
+        messageData.putShort((short)type); // Put type
         messageData.putShort((short)nameData.length); // Put name length
         messageData.put(nameData); // Put name
         messageData.putShort((short)passData.length); // Put pass length
@@ -52,6 +46,6 @@ public class AuthMessage extends Message
     @Override
     public String toString()
     {
-        return "<AuthMessage: action: " + action + ", credentials: " + credentials + ">";
+        return "<AuthMessage: type: " + type + ", credentials: " + credentials + ">";
     }
 }
