@@ -1,5 +1,7 @@
 package com.kt;
 
+import com.sun.org.apache.bcel.internal.generic.GOTO;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,13 +45,24 @@ public class ClientConnection extends Thread
             sock.close();
             SLog.write("Socket closed");
         }
-        catch (IOException e)
+        catch (IOException ignore)
         {
-            SLog.write("Error closing socket: " + e.getMessage());
         }
     }
 
     public void run()
+    {
+        listen();
+
+        closeSocket();
+
+        if (db.getKeepAlive())
+        {
+            db.setKeepAlive(false);
+        }
+    }
+
+    private void listen()
     {
         try
         {
@@ -58,8 +71,6 @@ public class ClientConnection extends Thread
 
             while (running)
             {
-                SLog.write("Reading header");
-
                 // Read header
                 byte header[] = readBytesWithLength(2);
                 short bodyLen = Utils.shortFromBytes(header, 0);
@@ -68,8 +79,7 @@ public class ClientConnection extends Thread
 
                 if (0 == bodyLen)
                 {   // An error has occurred during header reading or header is invalid, end the task
-                    closeSocket();
-                    return;
+                    throw new ChessHeroException(Result.INVALID_MESSAGE);
                 }
 
                 // Set timeout for the body
@@ -87,40 +97,28 @@ public class ClientConnection extends Thread
                 // Remove timeout when listening for header
                 sock.setSoTimeout(0);
             }
-
-            closeSocket();
-
-            if (db.getKeepAlive())
-            {
-                db.setKeepAlive(false);
-            }
         }
         catch (SocketTimeoutException e)
         {
             SLog.write("Read timed out");
-            running = false;
         }
         catch (EOFException e)
         {
             SLog.write("Socket reached unexpected EOF??? - " + e);
-            running = false;
         }
         catch (IOException e)
         {
             SLog.write("Error reading: " + e);
-            running = false;
         }
         catch (ChessHeroException e)
         {
             int code = e.getCode();
             SLog.write("Chess hero exception: " + code);
             writeMessage(new ResultMessage(code));
-            running = false;
         }
         catch (Exception e)
         {
             SLog.write("Surprise exception: " + e);
-            running = false;
         }
     }
 
@@ -148,7 +146,15 @@ public class ClientConnection extends Thread
     {
         try
         {
-            sock.getOutputStream().write(msg.toData());
+            byte body[] = msg.toData();
+            byte header[] = Utils.bytesFromShort((short)body.length);
+
+            SLog.write("Writing message: " + msg + "...");
+
+            sock.getOutputStream().write(header);
+            sock.getOutputStream().write(body);
+
+            SLog.write("Message written");
         }
         catch (IOException e)
         {
