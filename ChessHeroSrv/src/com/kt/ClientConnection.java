@@ -104,7 +104,7 @@ public class ClientConnection extends Thread
         }
         catch (EOFException e)
         {
-            SLog.write("Socket reached unexpected EOF??? - " + e);
+            SLog.write("Client closed connection: " + e);
         }
         catch (IOException e)
         {
