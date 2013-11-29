@@ -81,20 +81,12 @@ abstract public class Message
         try
         {
             short nameLen = buf.getShort();
-            if (nameLen < Credentials.MIN_NAME_LENGTH || nameLen > Credentials.MAX_NAME_LENGTH)
-            {
-                throw new ChessHeroException(Result.INVALID_NAME);
-            }
 
             // Read name bytes
             byte nameData[] = new byte[nameLen];
             buf.get(nameData, 0, nameLen);
 
             short passLen = buf.getShort();
-            if (passLen < Credentials.MIN_PASS_LENGTH || passLen > Credentials.MAX_PASS_LENGTH)
-            {
-                throw new ChessHeroException(Result.INVALID_PASS);
-            }
 
             // Read pass bytes
             byte passData[] = new byte[passLen];
@@ -107,6 +99,12 @@ abstract public class Message
             SLog.write(e);
             throw new ChessHeroException(Result.INVALID_MESSAGE);
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "<Message: type: " + type + ">";
     }
 
     abstract public byte[] toData();
