@@ -32,4 +32,10 @@ public class ResultMessage extends Message
 
         return data;
     }
+
+    @Override
+    public String toString()
+    {
+        return "<ResultMessage: result: " + result + ">";
+    }
 }
