@@ -165,7 +165,7 @@ public class ClientConnection extends Thread
 
         if (!hasAuthenticated && type != Message.TYPE_LOGIN && type != Message.TYPE_REGISTER)
         {
-            SLog.write("Client attempting unauthorized type");
+            SLog.write("Client attempting unauthorized action");
             throw new ChessHeroException(Result.AUTH_REQUIRED);
         }
 
@@ -181,13 +181,26 @@ public class ClientConnection extends Thread
     {
         try
         {
-            db.setKeepAlive(true);
-
             Credentials credentials = msg.getCredentials();
+
+            if (!Credentials.isNameValid(credentials.getName()))
+            {
+                writeMessage(new ResultMessage(Result.INVALID_NAME));
+                return;
+            }
+
+            if (!Credentials.isPassValid(credentials.getPass()))
+            {
+                writeMessage(new ResultMessage(Result.INVALID_PASS));
+                return;
+            }
+
+            db.setKeepAlive(true);
 
             if (db.userExists(credentials.getName()))
             {
-                throw new ChessHeroException(Result.USER_EXISTS);
+                writeMessage(new ResultMessage(Result.USER_EXISTS));
+                return;
             }
 
             boolean success = db.insertUser(credentials);
@@ -198,8 +211,7 @@ public class ClientConnection extends Thread
             }
 
             hasAuthenticated = true;
-            ResultMessage result = new ResultMessage(Result.OK);
-            writeMessage(result);
+            writeMessage(new ResultMessage(Result.OK));
         }
         catch (Exception e)
         {
