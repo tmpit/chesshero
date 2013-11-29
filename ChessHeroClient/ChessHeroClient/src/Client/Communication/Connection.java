@@ -26,6 +26,7 @@ public class Connection
 
     private ClientSocket sock;
     private ArrayList<ConnectionListener> listeners = new ArrayList<ConnectionListener>();
+    private ArrayList<Message> bufferredMessage = new ArrayList<Message>();
 
     private boolean isConnecting = false;
     private boolean isDisconnecting = false;
@@ -114,7 +115,7 @@ public class Connection
             return;
         }
 
-        if (!sock.isConnected() || isDisconnecting)
+        if (isDisconnecting || (sock != null && !sock.isConnected()))
         {
             SLog.write("Attempting to disconnect when socket is disconnecting or already disconnected");
             return;
@@ -161,7 +162,7 @@ public class Connection
             return;
         }
 
-        if (!sock.isConnected())
+        if (sock != null && !sock.isConnected())
         {
             SLog.write("Attempting to read message when socket is not connected");
             return;
@@ -258,7 +259,7 @@ public class Connection
             return;
         }
 
-        if (!sock.isConnected())
+        if (sock != null && !sock.isConnected())
         {
             SLog.write("Attempting to write message when socket is not connected");
             return;
