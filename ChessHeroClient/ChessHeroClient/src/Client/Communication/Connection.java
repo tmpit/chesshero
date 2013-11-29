@@ -53,7 +53,7 @@ public class Connection
             return;
         }
 
-        if (sock.isConnected() || isConnecting)
+        if (isConnecting || (sock != null && sock.isConnected()))
         {
             SLog.write("Attempting to connect when socket is connecting, or already connected");
             return;
@@ -195,7 +195,7 @@ public class Connection
                 }
                 catch (Throwable e)
                 {
-                    SLog.write(e);
+                    SLog.write("Failed to read message: " + e);
                 }
 
                 return null;
@@ -281,7 +281,7 @@ public class Connection
                 }
                 catch (IOException e)
                 {
-                    SLog.write(e);
+                    SLog.write("Failed to write message: " + e);
                 }
 
                 return null;
