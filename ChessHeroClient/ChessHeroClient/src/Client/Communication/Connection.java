@@ -4,7 +4,9 @@ import com.kt.Message;
 import com.kt.SLog;
 
 import javax.swing.*;
+import java.io.EOFException;
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 /**
@@ -16,7 +18,7 @@ import java.util.ArrayList;
  */
 public class Connection
 {
-    private static final String SERVER_ADDRESS = "192.168.153.200";
+    private static final String SERVER_ADDRESS = "127.0.0.1";
     private static final int SERVER_PORT = 4848;
     private static final int CONNECTION_TIMEOUT = 15 * 1000; // In milliseconds
 
@@ -74,7 +76,7 @@ public class Connection
                 }
                 catch (IOException e)
                 {
-                    SLog.write("Failed to connect: " + e);
+//                    SLog.write("Failed to connect: " + e);
                 }
 
                 return null;
@@ -132,7 +134,7 @@ public class Connection
                 }
                 catch (IOException e)
                 {
-                    SLog.write("Failed to disconnect: " + e);
+//                    SLog.write("Failed to disconnect: " + e);
                 }
 
                 return null;
@@ -194,9 +196,14 @@ public class Connection
                         sock.setTimeout(lastTimeout);
                     }
                 }
+                catch (EOFException e)
+                {
+//                    SLog.write("EOF reached while reading: " + e);
+                    this.pipeClosed = true;
+                }
                 catch (Throwable e)
                 {
-                    SLog.write("Failed to read message: " + e);
+//                    SLog.write("Failed to read message: " + e);
                 }
 
                 return null;
@@ -209,9 +216,16 @@ public class Connection
 
                 if (!this.success)
                 {
-                    if (!sock.isConnected())
-                    {
-                        SLog.write("Socket disconnected unexpectedly");
+                    if (!sock.isConnected() || this.pipeClosed)
+                    {   // EOF reached or socket is not accessible - close socket properly and notify
+                        try
+                        {
+                            sock.disconnect();
+                        }
+                        catch (IOException ignore)
+                        {
+                        }
+
                         notifySocketDisconnected(true);
 
                         return;
@@ -280,9 +294,14 @@ public class Connection
                         sock.setTimeout(lastTimeout);
                     }
                 }
+                catch (SocketException e)
+                {
+//                    SLog.write("Socket exception raised while writing: " + e);
+                    this.pipeClosed = true;
+                }
                 catch (IOException e)
                 {
-                    SLog.write("Failed to write message: " + e);
+//                    SLog.write("Failed to write message: " + e);
                 }
 
                 return null;
@@ -298,8 +317,16 @@ public class Connection
                     listener.messageWritten(this.success, this.msg);
                 }
 
-                if (!this.success && !sock.isConnected())
-                {
+                if (!this.success && (!sock.isConnected() || this.pipeClosed))
+                {   // Broken pipe or the socket cannot be accessed - close the socket properly and notify
+                    try
+                    {
+                        sock.disconnect();
+                    }
+                    catch (IOException ignore)
+                    {
+                    }
+
                     notifySocketDisconnected(true);
                 }
             }
@@ -352,6 +379,8 @@ public class Connection
         protected int timeout;
         protected int lastTimeout;
         protected boolean didChangeTimeout = false;
+
+        protected boolean pipeClosed = false;
 
         ReadTask(int timeout)
         {
