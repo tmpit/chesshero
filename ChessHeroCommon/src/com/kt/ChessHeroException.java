@@ -20,4 +20,10 @@ public class ChessHeroException extends Throwable
     {
         return code;
     }
+
+    @Override
+    public String toString()
+    {
+        return "<ChessHeroException: code: " + code + ">";
+    }
 }
