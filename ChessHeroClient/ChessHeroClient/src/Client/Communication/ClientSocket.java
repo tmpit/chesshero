@@ -8,6 +8,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
@@ -21,10 +22,11 @@ public class ClientSocket
 {
     private Socket sock = null;
 
-    ClientSocket(String address, int port) throws IOException
+    ClientSocket(String address, int port, int connectionTimeout) throws IOException
     {
         InetAddress addr = InetAddress.getByName(address);
-        sock = new Socket(addr, port);
+        sock = new Socket();
+        sock.connect(new InetSocketAddress(addr, port), connectionTimeout);
         sock.setKeepAlive(true);
         sock.setSoTimeout(0);
     }
@@ -88,13 +90,10 @@ public class ClientSocket
 
     public void writeMessage(Message message) throws IOException
     {
-        byte messageData[] = message.toData();
-        short bodyLen = (short)messageData.length;
+        byte body[] = message.toData();
+        byte header[] = Utils.bytesFromShort((short)body.length);
 
-        byte all[] = new byte[2 + bodyLen];
-        Utils.bytesPutShort(all, bodyLen, 0);
-        Utils.bytesPutBytes(all, messageData, 2);
-
-        sock.getOutputStream().write(all);
+        sock.getOutputStream().write(header);
+        sock.getOutputStream().write(body);
     }
 }
