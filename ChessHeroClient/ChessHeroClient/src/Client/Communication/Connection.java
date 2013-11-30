@@ -2,12 +2,17 @@ package Client.Communication;
 
 import com.kt.Message;
 import com.kt.SLog;
+import com.sun.swing.internal.plaf.synth.resources.synth_zh_CN;
+import sun.security.x509.IssuerAlternativeNameExtension;
 
 import javax.swing.*;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,18 +26,21 @@ public class Connection
     private static final String SERVER_ADDRESS = "127.0.0.1";
     private static final int SERVER_PORT = 4848;
     private static final int CONNECTION_TIMEOUT = 15 * 1000; // In milliseconds
+    private static final int READ_TIMEOUT = 15 * 1000; // In milliseconds
+    private static final int WRITE_TIMEOUT = 15 * 1000; // In milliseconds
 
     private static Connection singleton = null;
 
     private ClientSocket sock;
     private ArrayList<ConnectionListener> listeners = new ArrayList<ConnectionListener>();
-    private ArrayList<Message> bufferredMessage = new ArrayList<Message>();
+    private ArrayList<Message> readMessages = new ArrayList<Message>();
 
     private boolean isConnecting = false;
-    private boolean isDisconnecting = false;
-    private boolean isWriting = false;
+    private boolean isListening = false;
+    private boolean shouldNotifyDisconnection = false; // Used to make sure the disconnection message is sent after the last request has completed
 
-    private ReadTask currentReadTask = null;
+    private RequestTask currentRequestTask = null;
+    private Timer timeoutTimer = null;
 
     public static synchronized Connection getSingleton()
     {
@@ -51,12 +59,6 @@ public class Connection
 
     public void connect()
     {
-        if (isDisconnecting)
-        {
-            SLog.write("Attempting to connect when socket is disconnecting");
-            return;
-        }
-
         if (isConnecting || (sock != null && sock.isConnected()))
         {
             SLog.write("Attempting to connect when socket is connecting, or already connected");
@@ -90,6 +92,8 @@ public class Connection
 
                 if (success)
                 {
+                    listen();
+
                     for (ConnectionListener listener : listeners)
                     {
                         listener.socketConnected();
@@ -109,21 +113,24 @@ public class Connection
 
     public void disconnect()
     {
+        doDisconnect(true);
+    }
+
+    private void doDisconnect(boolean notify)
+    {
         if (isConnecting)
         {
             SLog.write("Attempting to disconnect when socket is connecting");
             return;
         }
 
-        if (isDisconnecting || (sock != null && !sock.isConnected()))
+        if (sock != null && !sock.isConnected())
         {
             SLog.write("Attempting to disconnect when socket is disconnecting or already disconnected");
             return;
         }
 
-        isDisconnecting = true;
-
-        new BackgroundTask()
+        new DisconnectTask(sock, notify)
         {
             @Override
             protected Void doInBackground()
@@ -144,220 +151,231 @@ public class Connection
             @Override
             public void done()
             {
-                isDisconnecting = false;
-
-                if (success)
+                if (success && notify)
                 {
                     notifySocketDisconnected(false);
                 }
             }
         }.execute();
+
+        sock = null;
     }
 
-    public void readMessage(int timeout)
+    private void listen()
     {
-        if (isConnecting || isDisconnecting)
+        if (isConnecting)
         {
-            SLog.write("Attempting to read message when socket is connecting or disconnecting");
+            SLog.write("Attempting to listen for messages when socket is connecting");
             return;
         }
 
         if (sock != null && !sock.isConnected())
         {
-            SLog.write("Attempting to read message when socket is not connected");
+            SLog.write("Attempting to listen for messages when socket is not connected");
             return;
         }
 
-        if (currentReadTask != null)
+        if (isListening)
         {
-            SLog.write("Attempting to read message when socket is already reading");
+            SLog.write("Attempting to listen for messages when already listening");
             return;
         }
 
-        currentReadTask = new ReadTask(timeout)
+        isListening = true;
+
+        new ListenTask()
         {
             @Override
             protected Void doInBackground()
             {
-                try
+                while (true)
                 {
-                    if (sock.getTimeout() != timeout)
-                    {
-                        sock.setTimeout(timeout);
-                        didChangeTimeout = true;
-                        lastTimeout = sock.getTimeout();
-                    }
-
-                    sock.setTimeout(timeout);
-                    this.msg = sock.readMessage();
-                    this.success = true;
-
-                    if (didChangeTimeout)
-                    {
-                        sock.setTimeout(lastTimeout);
-                    }
-                }
-                catch (EOFException e)
-                {
-//                    SLog.write("EOF reached while reading: " + e);
-                    this.pipeClosed = true;
-                }
-                catch (Throwable e)
-                {
-//                    SLog.write("Failed to read message: " + e);
-                }
-
-                return null;
-            }
-
-            @Override
-            public void done()
-            {
-                currentReadTask = null;
-
-                if (!this.success)
-                {
-                    if (!sock.isConnected() || this.pipeClosed)
-                    {   // EOF reached or socket is not accessible - close socket properly and notify
-                        try
-                        {
-                            sock.disconnect();
-                        }
-                        catch (IOException ignore)
-                        {
-                        }
-
-                        notifySocketDisconnected(true);
-
-                        return;
-                    }
-
-                    if (0 == timeout)
-                    {
-                        SLog.write("Failed to read message, retrying...");
-                        readMessage(0); // Something bad happened, retry
-                    }
-
-                    return;
-                }
-
-                for (ConnectionListener listener : listeners)
-                {
-                    listener.messageRead(this.msg);
-                }
-            }
-        };
-
-        currentReadTask.execute();
-    }
-
-    public void writeMessage(Message msg, int timeout)
-    {
-        if (isConnecting || isDisconnecting)
-        {
-            SLog.write("Attempting to write message when socket is connecting or disconnecting");
-            return;
-        }
-
-        if (sock != null && !sock.isConnected())
-        {
-            SLog.write("Attempting to write message when socket is not connected");
-            return;
-        }
-
-        if (isWriting)
-        {
-            SLog.write("Attempting to write message while another is already being written");
-            return;
-        }
-
-        isWriting = true;
-
-        new WriteTask(msg, timeout)
-        {
-            @Override
-            protected Void doInBackground()
-            {
-                try
-                {
-                    if (sock.getTimeout() != timeout)
-                    {
-                        sock.setTimeout(timeout);
-                        didChangeTimeout = true;
-                        lastTimeout = sock.getTimeout();
-                    }
-
-                    sock.writeMessage(this.msg);
-                    this.success = true;
-
-                    if (didChangeTimeout)
-                    {
-                        sock.setTimeout(lastTimeout);
-                    }
-                }
-                catch (SocketException e)
-                {
-//                    SLog.write("Socket exception raised while writing: " + e);
-                    this.pipeClosed = true;
-                }
-                catch (IOException e)
-                {
-//                    SLog.write("Failed to write message: " + e);
-                }
-
-                return null;
-            }
-
-            @Override
-            public void done()
-            {
-                isWriting = false;
-
-                for (ConnectionListener listener : listeners)
-                {
-                    listener.messageWritten(this.success, this.msg);
-                }
-
-                if (!this.success && (!sock.isConnected() || this.pipeClosed))
-                {   // Broken pipe or the socket cannot be accessed - close the socket properly and notify
                     try
                     {
-                        sock.disconnect();
-                    }
-                    catch (IOException ignore)
-                    {
-                    }
+                        if (sock.getTimeout() != 0)
+                        {   // Do not timeout
+                            sock.setTimeout(0);
+                        }
 
+                        Message msg = sock.readMessage();
+                        publish(msg);
+                    }
+                    catch (SocketException e)
+                    {
+                        SLog.write("Socket exception while listening: " + e);
+                        break;
+                    }
+                    catch (EOFException e)
+                    {
+                        SLog.write("EOF reached while listening: " + e);
+                        break;
+                    }
+                    catch (IOException e)
+                    {
+                        SLog.write("IO exception while listening: " + e);
+                        break;
+                    }
+                    catch (Throwable e)
+                    {
+                        SLog.write("Exception thrown while listening for messages: " + e);
+                    }
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void process (List<Message> messages)
+            {
+                for (Message msg : messages)
+                {
+                    if ((msg.getFlags() & Message.FLAG_PUSH) != 0)
+                    {   // This message is pushed
+                        for (ConnectionListener listener : listeners)
+                        {
+                            listener.didReceiveMessage(msg);
+                        }
+                    }
+                    else
+                    {   // This message is a response from a request of ours
+                        synchronized (readMessages)
+                        {
+                            readMessages.add(msg);
+                        }
+                    }
+                }
+            }
+
+            @Override protected void done()
+            {
+                isListening = false;
+                doDisconnect(false);
+
+                if (null == currentRequestTask)
+                {
                     notifySocketDisconnected(true);
+                }
+                else
+                {
+                    shouldNotifyDisconnection = true;
                 }
             }
         }.execute();
     }
 
-    // Important!!!
-    // Only attempt to use before you are expecting a message to arrive
-    // It will cancel the current read and if the socket has completed reading but the task
-    // has not finished yet, the message will be lost.
-    // Even worse, if the socket is still reading when this task is cancelled, unread bytes of
-    // the message will remain in the buffer which not only means the message is lost, but also
-    // that communication through this socket will almost certainly become impossible,
-    // in which case you will have to disconnect and connect again to continue normal communication
-    public boolean cancelCurrentRead()
+    public void sendRequest(Message msg)
     {
-        if (null == currentReadTask)
+        if (isConnecting)
         {
-            SLog.write("Attempting to cancel read task when there is no current read task");
-            return true;
+            SLog.write("Attempting to send request when socket is connecting");
+            return;
         }
 
-        boolean cancelled = currentReadTask.cancel(true);
-
-        if (cancelled)
+        if (sock != null && !sock.isConnected())
         {
-            currentReadTask = null;
+            SLog.write("Attempting to send request when socket is not connected");
+            return;
         }
 
-        return cancelled;
+        if (currentRequestTask != null)
+        {
+            SLog.write("Attempting to send request while another is being processed");
+            return;
+        }
+
+        currentRequestTask = new RequestTask(msg)
+        {
+            @Override
+            protected Void doInBackground()
+            {
+                try
+                {
+                    if (sock.getTimeout() != WRITE_TIMEOUT)
+                    {
+                        sock.setTimeout(WRITE_TIMEOUT);
+                    }
+
+                    sock.writeMessage(this.request);
+
+                    while (null == this.response)
+                    {
+                        if (hasTimedOut())
+                        {
+                            break;
+                        }
+
+                        synchronized (readMessages)
+                        {
+                            if (!readMessages.isEmpty())
+                            {
+                                this.response = readMessages.get(0);
+                                readMessages.remove(0);
+                            }
+                        }
+
+                        if (null == this.response)
+                        {
+                            Thread.sleep(5); // Wait until the listen task reads the message
+                        }
+                    }
+                }
+                catch (SocketException e)
+                {
+                    SLog.write("Socket exception raised while writing: " + e);
+                }
+                catch (IOException e)
+                {
+                    SLog.write("Failed sending ruquest: " + e);
+                }
+                catch (InterruptedException e)
+                {
+                    SLog.write("Failed sending request: " + e);
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void done()
+            {
+                timeoutTimer.cancel();
+                timeoutTimer = null;
+                currentRequestTask = null;
+
+                if (this.response != null)
+                {
+                    for (ConnectionListener listener : listeners)
+                    {
+                        listener.requestDidComplete(true, this.request, this.response);
+                    }
+                }
+                else
+                {
+                    for (ConnectionListener listener : listeners)
+                    {
+                        listener.requestDidComplete(false, this.request, null);
+                    }
+                }
+
+                if (shouldNotifyDisconnection)
+                {
+                    shouldNotifyDisconnection = false;
+                    notifySocketDisconnected(true);
+                }
+            }
+        };
+
+        timeoutTimer = new Timer();
+        timeoutTimer.schedule(new RequestTimeoutTask(currentRequestTask)
+        {
+            @Override
+            public void run()
+            {
+                this.task.setTimedOut(true);
+            }
+        }, READ_TIMEOUT);
+
+        currentRequestTask.execute();
     }
 
     private void notifySocketDisconnected(boolean error)
@@ -373,28 +391,52 @@ public class Connection
         protected boolean success = false;
     }
 
-    private abstract class ReadTask extends BackgroundTask
+    private abstract class DisconnectTask extends BackgroundTask
     {
-        protected Message msg;
+        protected ClientSocket sock;
+        protected boolean notify;
 
-        protected int timeout;
-        protected int lastTimeout;
-        protected boolean didChangeTimeout = false;
-
-        protected boolean pipeClosed = false;
-
-        ReadTask(int timeout)
+        public DisconnectTask(ClientSocket sock, boolean notify)
         {
-            this.timeout = timeout;
+            this.sock = sock;
+            this.notify = notify;
         }
     }
 
-    private abstract class WriteTask extends ReadTask
+    private abstract class ListenTask extends SwingWorker<Void, Message>
     {
-        WriteTask(Message msg, int timeout)
+    }
+
+    private abstract class RequestTask extends SwingWorker<Void, Void>
+    {
+        protected Message request;
+        protected Message response;
+
+        private boolean timedOut = false;
+
+        public RequestTask(Message request)
         {
-            super(timeout);
-            this.msg = msg;
+            this.request = request;
+        }
+
+        public synchronized void setTimedOut(boolean flag)
+        {
+            timedOut = flag;
+        }
+
+        public synchronized boolean hasTimedOut()
+        {
+            return timedOut;
+        }
+    }
+
+    private abstract class RequestTimeoutTask extends TimerTask
+    {
+        protected RequestTask task;
+
+        public RequestTimeoutTask(RequestTask task)
+        {
+            this.task = task;
         }
     }
 }

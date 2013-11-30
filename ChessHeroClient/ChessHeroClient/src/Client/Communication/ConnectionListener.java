@@ -15,6 +15,6 @@ public interface ConnectionListener
     public void socketFailedToConnect();
     public void socketDisconnected(boolean error);
 
-    public void messageRead(Message msg);
-    public void messageWritten(boolean result, Message msg);
+    public void didReceiveMessage(Message msg);
+    public void requestDidComplete(boolean success, Message request, Message response); // response will be null if success == false
 }
