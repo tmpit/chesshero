@@ -1,6 +1,7 @@
 package Client.Communication;
 
 import com.kt.Message;
+import com.kt.ResultMessage;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,5 +17,5 @@ public interface ConnectionListener
     public void socketDisconnected(boolean error);
 
     public void didReceiveMessage(Message msg);
-    public void requestDidComplete(boolean success, Message request, Message response); // response will be null if success == false
+    public void requestDidComplete(boolean success, Message request, ResultMessage response); // response will be null if success == false
 }
