@@ -67,26 +67,11 @@ public class Credentials
         {
             int salt = csprng.nextInt(Integer.MAX_VALUE);
             String salted = salt + pass;
-            String hash = hashOfString(salted);
+            String hash = Utils.hashOfString(salted);
             authPair = new AuthPair(hash, salt);
         }
 
         return authPair;
-    }
-
-    private static String hashOfString(String str) throws NoSuchAlgorithmException
-    {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte converted[] = digest.digest(str.getBytes());
-
-        Formatter formatter = new Formatter();
-
-        for (byte b : converted)
-        {
-            formatter.format("%02x", b);
-        }
-
-        return formatter.toString();
     }
 
     @Override
