@@ -2,6 +2,7 @@ package Client.Communication;
 
 import com.kt.Config;
 import com.kt.Message;
+import com.kt.ResultMessage;
 import com.kt.SLog;
 import com.sun.swing.internal.plaf.synth.resources.synth_zh_CN;
 import sun.security.x509.IssuerAlternativeNameExtension;
@@ -360,7 +361,7 @@ public class Connection
                 {
                     for (ConnectionListener listener : listeners)
                     {
-                        listener.requestDidComplete(true, this.request, this.response);
+                        listener.requestDidComplete(true, this.request, (ResultMessage)this.response);
                     }
                 }
                 else
