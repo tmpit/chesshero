@@ -1,5 +1,6 @@
 package Client.Communication;
 
+import com.kt.Config;
 import com.kt.Message;
 import com.kt.SLog;
 import com.sun.swing.internal.plaf.synth.resources.synth_zh_CN;
@@ -35,6 +36,8 @@ public class Connection
     private ArrayList<ConnectionListener> listeners = new ArrayList<ConnectionListener>();
     private ArrayList<Message> readMessages = new ArrayList<Message>();
 
+    private boolean verbose = false;
+
     private boolean isConnecting = false;
     private boolean isListening = false;
     private boolean shouldNotifyDisconnection = false; // Used to make sure the disconnection message is sent after the last request has completed
@@ -50,6 +53,16 @@ public class Connection
         }
 
         return singleton;
+    }
+
+    public synchronized boolean isVerbose()
+    {
+        return verbose;
+    }
+
+    public synchronized void setVerbose(boolean flag)
+    {
+        verbose = flag;
     }
 
     public void addEventListener(ConnectionListener listener)
@@ -79,7 +92,7 @@ public class Connection
                 }
                 catch (IOException e)
                 {
-//                    SLog.write("Failed to connect: " + e);
+                    log("Failed to connect: " + e);
                 }
 
                 return null;
@@ -142,7 +155,7 @@ public class Connection
                 }
                 catch (IOException e)
                 {
-//                    SLog.write("Failed to disconnect: " + e);
+                    log("Failed to disconnect: " + e);
                 }
 
                 return null;
@@ -202,22 +215,22 @@ public class Connection
                     }
                     catch (SocketException e)
                     {
-                        SLog.write("Socket exception while listening: " + e);
+                        log("Socket exception while listening: " + e);
                         break;
                     }
                     catch (EOFException e)
                     {
-                        SLog.write("EOF reached while listening: " + e);
+                        log("EOF reached while listening: " + e);
                         break;
                     }
                     catch (IOException e)
                     {
-                        SLog.write("IO exception while listening: " + e);
+                        log("IO exception while listening: " + e);
                         break;
                     }
                     catch (Throwable e)
                     {
-                        SLog.write("Exception thrown while listening for messages: " + e);
+                        log("Exception thrown while listening for messages: " + e);
                     }
                 }
 
@@ -301,6 +314,7 @@ public class Connection
                     {
                         if (hasTimedOut())
                         {
+                            log("Read operation timed out");
                             break;
                         }
 
@@ -315,21 +329,21 @@ public class Connection
 
                         if (null == this.response)
                         {
-                            Thread.sleep(5); // Wait until the listen task reads the message
+                            Thread.sleep(4); // Wait until the listen task reads the message
                         }
                     }
                 }
                 catch (SocketException e)
                 {
-                    SLog.write("Socket exception raised while writing: " + e);
+                    log("Socket exception raised while writing: " + e);
                 }
                 catch (IOException e)
                 {
-                    SLog.write("Failed sending ruquest: " + e);
+                    log("Failed sending request: " + e);
                 }
                 catch (InterruptedException e)
                 {
-                    SLog.write("Failed sending request: " + e);
+                    log("Failed sending request: " + e);
                 }
 
                 return null;
@@ -373,9 +387,17 @@ public class Connection
             {
                 this.task.setTimedOut(true);
             }
-        }, READ_TIMEOUT);
+        }, READ_TIMEOUT + WRITE_TIMEOUT);
 
         currentRequestTask.execute();
+    }
+
+    private void log(String str)
+    {
+        if (Config.DEBUG && isVerbose())
+        {
+            SLog.write(str);
+        }
     }
 
     private void notifySocketDisconnected(boolean error)
