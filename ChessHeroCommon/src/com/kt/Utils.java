@@ -53,6 +53,11 @@ public class Utils
         }
     }
 
+    public static String salt(String text, int salt)
+    {
+        return salt + text;
+    }
+
     public static String hashOfString(String str) throws NoSuchAlgorithmException
     {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");

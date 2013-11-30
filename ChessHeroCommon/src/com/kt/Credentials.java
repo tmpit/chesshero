@@ -66,7 +66,7 @@ public class Credentials
         if (null == authPair)
         {
             int salt = csprng.nextInt(Integer.MAX_VALUE);
-            String salted = salt + pass;
+            String salted = Utils.salt(pass, salt);
             String hash = Utils.hashOfString(salted);
             authPair = new AuthPair(hash, salt);
         }
@@ -100,6 +100,13 @@ class AuthPair
     public int getSalt()
     {
         return salt;
+    }
+
+    public boolean matches(String password) throws NoSuchAlgorithmException
+    {
+        String salted = Utils.salt(password, salt);
+        String hashed = Utils.hashOfString(salted);
+        return hashed.equals(hash);
     }
 
     @Override
