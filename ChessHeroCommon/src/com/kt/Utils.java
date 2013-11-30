@@ -1,9 +1,5 @@
 package com.kt;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Formatter;
-
 /**
  * Created with IntelliJ IDEA.
  * User: Toshko
@@ -51,25 +47,5 @@ public class Utils
         {
             bytes[j] = data[i];
         }
-    }
-
-    public static String salt(String text, int salt)
-    {
-        return salt + text;
-    }
-
-    public static String hashOfString(String str) throws NoSuchAlgorithmException
-    {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte converted[] = digest.digest(str.getBytes());
-
-        Formatter formatter = new Formatter();
-
-        for (byte b : converted)
-        {
-            formatter.format("%02x", b);
-        }
-
-        return formatter.toString();
     }
 }

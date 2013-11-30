@@ -38,6 +38,23 @@ public class Credentials
         return (length >= MIN_PASS_LENGTH && length <= MAX_PASS_LENGTH);
     }
 
+    public static String saltAndHash(String text, int salt) throws NoSuchAlgorithmException
+    {
+        String salted = salt + text;
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte converted[] = digest.digest(salted.getBytes());
+
+        Formatter formatter = new Formatter();
+
+        for (byte b : converted)
+        {
+            formatter.format("%02x", b);
+        }
+
+        return formatter.toString();
+    }
+
     public Credentials(String name, String pass)
     {
         this.name = name;
@@ -66,8 +83,7 @@ public class Credentials
         if (null == authPair)
         {
             int salt = csprng.nextInt(Integer.MAX_VALUE);
-            String salted = Utils.salt(pass, salt);
-            String hash = Utils.hashOfString(salted);
+            String hash = Credentials.saltAndHash(pass, salt);
             authPair = new AuthPair(hash, salt);
         }
 
@@ -104,8 +120,7 @@ class AuthPair
 
     public boolean matches(String password) throws NoSuchAlgorithmException
     {
-        String salted = Utils.salt(password, salt);
-        String hashed = Utils.hashOfString(salted);
+        String hashed = Credentials.saltAndHash(password, salt);
         return hashed.equals(hash);
     }
 
