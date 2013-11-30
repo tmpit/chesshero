@@ -13,26 +13,35 @@ import java.nio.ByteBuffer;
 
 abstract public class Message
 {
-    public static final short TYPE_REGISTER = 1;
-    public static final short TYPE_LOGIN = 2;
-    public static final short TYPE_MOVE = 3;
-    public static final short TYPE_RESULT = 4;
+    public static final byte TYPE_REGISTER = 1;
+    public static final byte TYPE_LOGIN = 2;
+    public static final byte TYPE_MOVE = 3;
+    public static final byte TYPE_RESULT = 4;
 
-    protected short type;
+    public static final byte FLAG_PUSH = 1 << 0;
 
-    public static boolean isTypeValid(int type)
+    protected byte type;
+    protected byte flags = 0;
+
+    public static boolean isTypeValid(short type)
     {
         return (type == TYPE_REGISTER || type == TYPE_LOGIN || type == TYPE_MOVE);
     }
 
-    protected Message(short type)
+    protected Message(byte type, byte flags)
     {
         this.type = type;
+        this.flags = flags;
     }
 
-    public short getType()
+    public byte getType()
     {
         return type;
+    }
+
+    public byte getFlags()
+    {
+        return flags;
     }
 
     public static Message fromData(byte data[]) throws ChessHeroException
@@ -45,8 +54,9 @@ abstract public class Message
 
         try
         {
-            // Read type
-            short type = buf.getShort();
+            // Read type and flags
+            byte type = buf.get();
+            byte flags = buf.get();
             SLog.write("Message type: " + type);
 
             switch (type)
@@ -54,11 +64,11 @@ abstract public class Message
                 case TYPE_REGISTER:
                 case TYPE_LOGIN:
                     Credentials credentials = readCredentials(buf);
-                    return new AuthMessage(type, credentials);
+                    return new AuthMessage(type, flags, credentials);
 
                 case TYPE_RESULT:
                     int result = buf.getInt();
-                    return new ResultMessage(result);
+                    return new ResultMessage(result, flags);
 
                 case TYPE_MOVE:
                     return null;
@@ -104,7 +114,7 @@ abstract public class Message
     @Override
     public String toString()
     {
-        return "<Message: type: " + type + ">";
+        return "<Message :: type: " + type + ", flags: " + flags + ">";
     }
 
     abstract public byte[] toData();

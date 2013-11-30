@@ -13,9 +13,16 @@ public class AuthMessage extends Message
 {
     private Credentials credentials;
 
-    public AuthMessage(short type, Credentials credentials)
+    public AuthMessage(byte type, Credentials credentials)
     {
-        super(type);
+        super(type, (byte)0);
+
+        this.credentials = credentials;
+    }
+
+    public AuthMessage(byte type, byte flags, Credentials credentials)
+    {
+        super(type, flags);
 
         this.credentials = credentials;
     }
@@ -31,10 +38,11 @@ public class AuthMessage extends Message
         byte nameData[] = credentials.getName().getBytes();
         byte passData[] = credentials.getPass().getBytes();
 
-        int bodyLen = 2 + 2 + nameData.length + 2 + passData.length; // Type + name length + name + pass length + pass
+        int bodyLen = 1 + 1 + 2 + nameData.length + 2 + passData.length; // Type + flags + name length + name + pass length + pass
 
         ByteBuffer messageData = ByteBuffer.allocate(bodyLen);
-        messageData.putShort((short)type); // Put type
+        messageData.put(type); // Put type
+        messageData.put(flags); // Put flags
         messageData.putShort((short)nameData.length); // Put name length
         messageData.put(nameData); // Put name
         messageData.putShort((short)passData.length); // Put pass length
@@ -46,6 +54,6 @@ public class AuthMessage extends Message
     @Override
     public String toString()
     {
-        return "<AuthMessage: type: " + type + ", credentials: " + credentials + ">";
+        return "<AuthMessage :: type: " + type + ", flags: " + flags + ", credentials: " + credentials + ">";
     }
 }

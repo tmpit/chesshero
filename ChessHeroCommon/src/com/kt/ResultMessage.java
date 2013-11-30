@@ -13,7 +13,14 @@ public class ResultMessage extends Message
 
     public ResultMessage(int result)
     {
-        super(TYPE_RESULT);
+        super(TYPE_RESULT, (byte)0);
+
+        this.result = result;
+    }
+
+    public ResultMessage(int result, byte flags)
+    {
+        super(TYPE_RESULT, flags);
 
         this.result = result;
     }
@@ -26,8 +33,9 @@ public class ResultMessage extends Message
     @Override
     public byte[] toData()
     {
-        byte data[] = new byte[2 + 4]; // Type + result
-        Utils.bytesPutShort(data, type, 0);
+        byte data[] = new byte[1 + 1 + 4]; // Type + flags + result
+        data[0] = type;
+        data[1] = flags;
         Utils.bytesPutInt(data, result, 2);
 
         return data;
@@ -36,6 +44,6 @@ public class ResultMessage extends Message
     @Override
     public String toString()
     {
-        return "<ResultMessage: result: " + result + ">";
+        return "<ResultMessage :: flags: " + flags + ", result: " + result + ">";
     }
 }
