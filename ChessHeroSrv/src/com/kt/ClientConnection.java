@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -180,6 +182,10 @@ public class ClientConnection extends Thread
             case Message.TYPE_REGISTER:
                 handleRegister((AuthMessage)msg);
                 break;
+
+            case Message.TYPE_LOGIN:
+                handleLogin((AuthMessage)msg);
+                break;
         }
     }
 
@@ -221,12 +227,36 @@ public class ClientConnection extends Thread
         }
         catch (Exception e)
         {
-            SLog.write(e);
+            SLog.write("Registration failed: " + e);
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
         finally
         {
             db.setKeepAlive(false);
+        }
+    }
+
+    private void handleLogin(AuthMessage msg) throws ChessHeroException
+    {
+        try
+        {
+            Credentials credentials = msg.getCredentials();
+
+            AuthPair auth = db.getAuthPair(credentials.getName());
+
+            if (null == auth || !auth.matches(credentials.getPass()))
+            {
+                writeMessage(new ResultMessage(Result.INVALID_CREDENTIALS));
+                return;
+            }
+
+            hasAuthenticated = true;
+            writeMessage(new ResultMessage(Result.OK));
+        }
+        catch (Exception e)
+        {
+            SLog.write("Logging failed: " + e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
     }
 }
