@@ -23,11 +23,6 @@ abstract public class Message
     protected byte type;
     protected byte flags = 0;
 
-    public static boolean isTypeValid(short type)
-    {
-        return (type == TYPE_REGISTER || type == TYPE_LOGIN || type == TYPE_MOVE);
-    }
-
     protected Message(byte type, byte flags)
     {
         this.type = type;
