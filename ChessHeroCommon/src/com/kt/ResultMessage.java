@@ -31,7 +31,7 @@ public class ResultMessage extends Message
     }
 
     @Override
-    public byte[] toData()
+    protected byte[] serialized()
     {
         byte data[] = new byte[1 + 1 + 4]; // Type + flags + result
         data[0] = type;

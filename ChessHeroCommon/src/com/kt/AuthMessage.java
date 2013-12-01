@@ -33,7 +33,7 @@ public class AuthMessage extends Message
     }
 
     @Override
-    public byte[] toData()
+    protected byte[] serialized()
     {
         byte nameData[] = credentials.getName().getBytes();
         byte passData[] = credentials.getPass().getBytes();

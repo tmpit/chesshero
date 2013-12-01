@@ -2,6 +2,7 @@ package com.kt;
 
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,11 +18,14 @@ abstract public class Message
     public static final byte TYPE_LOGIN = 2;
     public static final byte TYPE_MOVE = 3;
     public static final byte TYPE_RESULT = 4;
+    public static final byte TYPE_CREATE_GAME = 5;
 
     public static final byte FLAG_PUSH = 1 << 0;
+    public static final byte FLAG_INNERMSG = 1 << 1;
 
     protected byte type;
     protected byte flags = 0;
+    public Message innerMessage = null;
 
     protected Message(byte type, byte flags)
     {
@@ -47,6 +51,11 @@ abstract public class Message
         buf.put(data);
         buf.rewind();
 
+        return parse(buf);
+    }
+
+    private static Message parse(ByteBuffer buf) throws ChessHeroException
+    {
         try
         {
             // Read type and flags
@@ -54,23 +63,32 @@ abstract public class Message
             byte flags = buf.get();
             SLog.write("Message type: " + type);
 
+            Message msg = null;
+
             switch (type)
             {
                 case TYPE_REGISTER:
                 case TYPE_LOGIN:
                     Credentials credentials = readCredentials(buf);
-                    return new AuthMessage(type, flags, credentials);
+                    msg = new AuthMessage(type, flags, credentials);
 
                 case TYPE_RESULT:
                     int result = buf.getInt();
-                    return new ResultMessage(result, flags);
+                    msg = new ResultMessage(result, flags);
 
                 case TYPE_MOVE:
-                    return null;
+                    break;
 
                 default:
                     throw new ChessHeroException(Result.INVALID_TYPE);
             }
+
+            if ((flags & FLAG_INNERMSG) != 0)
+            {
+                msg.innerMessage = parse(buf);
+            }
+
+            return msg;
         }
         catch (BufferUnderflowException e)
         {
@@ -106,11 +124,49 @@ abstract public class Message
         }
     }
 
+    public byte[] toData()
+    {
+        int len = 0;
+        ArrayList<byte[]> messages = new ArrayList<byte[]>();
+        Message msg = this;
+
+        do
+        {
+            byte data[] = msg.serialized();
+            len += data.length;
+            messages.add(data);
+
+            if (0 == (msg.flags & FLAG_INNERMSG) || null == msg.innerMessage)
+            {
+                break;
+            }
+
+            msg = msg.innerMessage;
+        }
+        while (true);
+
+        if (1 == messages.size())
+        {   // No need to create a copy here
+            return messages.get(0);
+        }
+
+        byte all[] = new byte[len];
+        int index = 0;
+
+        for (byte chunk[] : messages)
+        {
+            Utils.bytesPutBytes(all, chunk, index);
+            index += chunk.length;
+        }
+
+        return all;
+    }
+
+    protected abstract byte[] serialized();
+
     @Override
     public String toString()
     {
         return "<Message :: type: " + type + ", flags: " + flags + ">";
     }
-
-    abstract public byte[] toData();
 }
