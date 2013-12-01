@@ -147,7 +147,7 @@ public class LoginPage extends ChessHeroPage {
                 new String(this.passwordTextBox.getPassword())
         );
 
-        AuthMessage authMsg = new AuthMessage(Message.ACTION_LOGIN, credentials);
+        AuthMessage authMsg = new AuthMessage(Message.TYPE_LOGIN, credentials);
         //holder.getConnection().writeMessage(authMsg);
     }
 

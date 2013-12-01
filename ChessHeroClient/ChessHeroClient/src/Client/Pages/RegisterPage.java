@@ -150,7 +150,7 @@ public class RegisterPage extends ChessHeroPage {
                  new String(this.passwordTextBox.getPassword())
          );
 
-         AuthMessage authMsg = new AuthMessage(Message.ACTION_REGISTER, credentials);
+         AuthMessage authMsg = new AuthMessage(Message.TYPE_REGISTER, credentials);
          //holder.getConnection().writeMessage(authMsg);
      }
 
