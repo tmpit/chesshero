@@ -12,6 +12,7 @@ import Client.Communication.ConnectionListener;
 import Client.Pages.ChessHeroPage;
 import Client.Pages.LoginPage;
 import com.kt.Message;
+import com.kt.ResultMessage;
 import com.kt.SLog;
 
 import javax.swing.*;
@@ -81,22 +82,22 @@ public class ClientMain extends JFrame implements ConnectionListener {
     }
 
     @Override
-    public void socketDisconnected(boolean error) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public void socketFailedToConnect() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void messageRead(Message msg) {
+    public void socketDisconnected(boolean error) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void messageWritten(boolean result, Message msg) {
+    public void didReceiveMessage(Message msg) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void requestDidComplete(boolean success, Message request, ResultMessage response) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 }

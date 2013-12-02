@@ -234,7 +234,8 @@ public class CreateGamePage extends ChessHeroPage {
         System.out.println("Entered Create Game button HANDLER");
         createGameSettings = getCreateGameSettings();
         System.out.println(createGameSettings.toString());
-        holder.NavigateToPage(new LobbyPage());
+//        holder.NavigateToPage(new LobbyPage());
+        holder.NavigateToPage(new PlayGamePage());
     }
 
 
