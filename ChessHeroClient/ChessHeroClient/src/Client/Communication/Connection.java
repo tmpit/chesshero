@@ -25,6 +25,7 @@ import java.util.TimerTask;
  */
 public class Connection
 {
+//    private static final String SERVER_ADDRESS = "95.111.43.117";
     private static final String SERVER_ADDRESS = "127.0.0.1";
     private static final int SERVER_PORT = 4848;
     private static final int CONNECTION_TIMEOUT = 15 * 1000; // In milliseconds
