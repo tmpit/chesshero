@@ -23,8 +23,10 @@ public class ClientConnection extends Thread
 
     private boolean running = true;
     private Socket sock = null;
-    private boolean hasAuthenticated = false;
     private Database db = null;
+
+    private boolean hasAuthenticated = false;
+    private int userID;
 
     ClientConnection(Socket sock)
     {
@@ -194,20 +196,22 @@ public class ClientConnection extends Thread
         try
         {
             Credentials credentials = msg.getCredentials();
+            String name = credentials.getName();
+            String pass = credentials.getPass();
 
-            if (!Credentials.isNameValid(credentials.getName()))
+            if (!Credentials.isNameValid(name))
             {
                 writeMessage(new ResultMessage(Result.INVALID_NAME));
                 return;
             }
 
-            if (Credentials.isBadUser(credentials.getName()))
+            if (Credentials.isBadUser(name))
             {
                 writeMessage(new ResultMessage(Result.BAD_USER));
                 return;
             }
 
-            if (!Credentials.isPassValid(credentials.getPass()))
+            if (!Credentials.isPassValid(pass))
             {
                 writeMessage(new ResultMessage(Result.INVALID_PASS));
                 return;
@@ -215,7 +219,7 @@ public class ClientConnection extends Thread
 
             db.setKeepAlive(true);
 
-            if (db.userExists(credentials.getName()))
+            if (db.userExists(name))
             {
                 writeMessage(new ResultMessage(Result.USER_EXISTS));
                 return;
@@ -224,14 +228,26 @@ public class ClientConnection extends Thread
             boolean success = db.insertUser(credentials);
 
             if (!success)
-            {
+            {   // Could not insert user
+                throw new ChessHeroException(Result.INTERNAL_ERROR);
+            }
+
+            userID = db.getUserID(credentials.getName());
+
+            if (-1 == userID)
+            {   // Could not fetch the user id
                 throw new ChessHeroException(Result.INTERNAL_ERROR);
             }
 
             hasAuthenticated = true;
             writeMessage(new ResultMessage(Result.OK));
         }
-        catch (Exception e)
+        catch (SQLException e)
+        {
+            SLog.write("Registration failed: " + e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+        catch (NoSuchAlgorithmException e)
         {
             SLog.write("Registration failed: " + e);
             throw new ChessHeroException(Result.INTERNAL_ERROR);
@@ -246,6 +262,8 @@ public class ClientConnection extends Thread
     {
         try
         {
+            db.setKeepAlive(true);
+
             Credentials credentials = msg.getCredentials();
 
             AuthPair auth = db.getAuthPair(credentials.getName());
@@ -256,13 +274,29 @@ public class ClientConnection extends Thread
                 return;
             }
 
+            userID = db.getUserID(credentials.getName());
+
+            if (-1 == userID)
+            {
+                throw new ChessHeroException(Result.INTERNAL_ERROR);
+            }
+
             hasAuthenticated = true;
             writeMessage(new ResultMessage(Result.OK));
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             SLog.write("Logging failed: " + e);
             throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            SLog.write("Logging failed: " + e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+        finally
+        {
+            db.setKeepAlive(false);
         }
     }
 }

@@ -2,6 +2,8 @@ package com.kt;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -120,6 +122,38 @@ class Database
             }
 
             return exists;
+        }
+        finally
+        {
+            closeStatement(stmt);
+
+            if (!keepAlive)
+            {
+                disconnect();
+            }
+        }
+    }
+
+    // Returns -1 if the user with that name does not exist
+    public int getUserID(String username) throws SQLException
+    {
+        PreparedStatement stmt = null;
+
+        try
+        {
+            connect();
+
+            stmt = conn.prepareStatement("SELECT id FROM users WHERE name = ?");
+            stmt.setString(1, username);
+
+            ResultSet set = stmt.executeQuery();
+
+            while (set.next())
+            {
+                return set.getInt(1);
+            }
+
+            return -1;
         }
         finally
         {
