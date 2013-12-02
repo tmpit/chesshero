@@ -38,6 +38,13 @@ public class Credentials
         return (length >= MIN_PASS_LENGTH && length <= MAX_PASS_LENGTH);
     }
 
+    public static boolean isBadUser(String name)
+    {
+        String lowercase = name.toLowerCase();
+        return !(name.contains("andonov") || name.contains("filip") || name.contains("felipe") || name.contains("fil") ||
+                name.contains("андонов") || name.contains("филип") || name.contains("фелипе") || name.contains("фил"));
+    }
+
     public static String saltAndHash(String text, int salt) throws NoSuchAlgorithmException
     {
         String salted = salt + text;

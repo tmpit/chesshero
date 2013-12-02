@@ -201,6 +201,12 @@ public class ClientConnection extends Thread
                 return;
             }
 
+            if (!Credentials.isBadUser(credentials.getName()))
+            {
+                writeMessage(new ResultMessage(Result.BAD_USER));
+                return;
+            }
+
             if (!Credentials.isPassValid(credentials.getPass()))
             {
                 writeMessage(new ResultMessage(Result.INVALID_PASS));

@@ -17,6 +17,7 @@ public class Result
     public static final int INVALID_PASS = 103;
     public static final int INVALID_CREDENTIALS = 104;
     public static final int USER_EXISTS = 105;
+    public static final int BAD_USER = 106;
 
     public static final int INVALID_MESSAGE = 400;
 
