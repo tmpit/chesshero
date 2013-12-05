@@ -34,6 +34,11 @@ public class ClientConnection extends Thread
         db = new Database();
     }
 
+    public int getUserID()
+    {
+        return userID;
+    }
+
     private void closeSocket()
     {
         SLog.write("Closing socket...");
@@ -188,6 +193,10 @@ public class ClientConnection extends Thread
             case Message.TYPE_LOGIN:
                 handleLogin((AuthMessage)msg);
                 break;
+
+            case Message.TYPE_CREATE_GAME:
+                handleCreateGame((CreateGameMessage)msg);
+                break;
         }
     }
 
@@ -225,12 +234,7 @@ public class ClientConnection extends Thread
                 return;
             }
 
-            boolean success = db.insertUser(credentials);
-
-            if (!success)
-            {   // Could not insert user
-                throw new ChessHeroException(Result.INTERNAL_ERROR);
-            }
+            db.insertUser(credentials);
 
             userID = db.getUserID(credentials.getName());
 
@@ -292,6 +296,33 @@ public class ClientConnection extends Thread
         catch (NoSuchAlgorithmException e)
         {
             SLog.write("Logging failed: " + e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+        finally
+        {
+            db.setKeepAlive(false);
+        }
+    }
+
+    private void handleCreateGame(CreateGameMessage msg) throws ChessHeroException
+    {
+        try
+        {
+            String gameName = msg.getName();
+            int gameID = db.insertGame(gameName, userID, Game.STATE_PENDING);
+
+            if (-1 == gameID)
+            {
+                throw new ChessHeroException(Result.INTERNAL_ERROR);
+            }
+
+            Game game = new Game(gameID, gameName, this);
+            Game.addGame(game);
+            // TODO: figure out what this should return, too tired to do it now
+            writeMessage(new ResultMessage(Result.OK));
+        }
+        catch (SQLException e)
+        {
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
         finally
