@@ -326,9 +326,5 @@ public class ClientConnection extends Thread
         {
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
-        finally
-        {
-            db.setKeepAlive(false);
-        }
     }
 }
