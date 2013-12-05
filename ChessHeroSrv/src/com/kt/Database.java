@@ -203,7 +203,7 @@ class Database
         }
     }
 
-    public void insertUser(Credentials credentials) throws SQLException, NoSuchAlgorithmException
+    public void insertUser(String name, String passHash, int salt) throws SQLException
     {
         PreparedStatement stmt = null;
 
@@ -212,9 +212,9 @@ class Database
             connect();
 
             stmt = conn.prepareStatement("INSERT INTO users (name, pass, salt) VALUES (?, ?, ?)");
-            stmt.setString(1, credentials.getName());
-            stmt.setString(2, credentials.getAuthPair().getHash());
-            stmt.setInt(3, credentials.getAuthPair().getSalt());
+            stmt.setString(1, name);
+            stmt.setString(2, passHash);
+            stmt.setInt(3, salt);
 
             stmt.executeUpdate();
         }

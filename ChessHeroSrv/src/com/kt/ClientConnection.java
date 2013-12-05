@@ -206,7 +206,6 @@ public class ClientConnection extends Thread
         {
             Credentials credentials = msg.getCredentials();
             String name = credentials.getName();
-            String pass = credentials.getPass();
 
             if (!Credentials.isNameValid(name))
             {
@@ -220,7 +219,7 @@ public class ClientConnection extends Thread
                 return;
             }
 
-            if (!Credentials.isPassValid(pass))
+            if (!Credentials.isPassValid(credentials.getPass()))
             {
                 writeMessage(new ResultMessage(Result.INVALID_PASS));
                 return;
@@ -234,9 +233,11 @@ public class ClientConnection extends Thread
                 return;
             }
 
-            db.insertUser(credentials);
+            AuthPair auth = credentials.getAuthPair();
 
-            userID = db.getUserID(credentials.getName());
+            db.insertUser(name, auth.getHash(), auth.getSalt());
+
+            userID = db.getUserID(name);
 
             if (-1 == userID)
             {   // Could not fetch the user id
