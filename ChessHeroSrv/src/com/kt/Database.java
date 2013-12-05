@@ -22,10 +22,11 @@ class Database
     private Connection conn = null;
 
     private boolean keepAlive = false;
+    private boolean isOpen = false;
 
     private void connect() throws SQLException
     {
-        if (conn != null && !conn.isClosed())
+        if (isOpen)
         {
             return;
         }
@@ -36,6 +37,7 @@ class Database
         {
             Class.forName(connector).newInstance();
             conn = DriverManager.getConnection(DB_URL + DB_NAME, DB_USER, DB_PASS);
+            isOpen = true;
         }
         catch (IllegalAccessException e)
         {
@@ -61,6 +63,7 @@ class Database
         try
         {
             conn.close();
+            isOpen = false;
         }
         catch (SQLException ignore)
         {
@@ -200,7 +203,7 @@ class Database
         }
     }
 
-    public boolean insertUser(Credentials credentials) throws SQLException, NoSuchAlgorithmException
+    public void insertUser(Credentials credentials) throws SQLException, NoSuchAlgorithmException
     {
         PreparedStatement stmt = null;
 
@@ -213,7 +216,48 @@ class Database
             stmt.setString(2, credentials.getAuthPair().getHash());
             stmt.setInt(3, credentials.getAuthPair().getSalt());
 
-            return (stmt.executeUpdate() == 1);
+            stmt.executeUpdate();
+        }
+        finally
+        {
+            closeStatement(stmt);
+
+            if (!keepAlive)
+            {
+                disconnect();
+            }
+        }
+    }
+
+    // Returns the new game id
+    // On error returns -1
+    public int insertGame(String name, int userID, short state) throws SQLException
+    {
+        PreparedStatement stmt = null;
+
+        try
+        {
+            connect();
+
+            stmt = conn.prepareStatement("INSERT INTO games (name, guid1, state) VALUES (?, ?, ?)");
+            stmt.setString(1, name);
+            stmt.setInt(2, userID);
+            stmt.setShort(3, state);
+
+            stmt.executeUpdate();
+
+            closeStatement(stmt);
+
+            stmt = conn.prepareStatement("SELECT LAST_INSERT_ID()");
+
+            ResultSet set = stmt.executeQuery();
+
+            while (set.next())
+            {
+                return set.getInt(1);
+            }
+
+            return -1;
         }
         finally
         {
