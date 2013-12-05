@@ -15,13 +15,13 @@ import java.util.concurrent.ExecutorService;
  * To change this template use File | Settings | File Templates.
  */
 
-public class Listener
+public class Server
 {
     public final static int SERVER_SOCK_PORT = 4848;
 
     private ServerSocket _sock;
 
-    Listener()
+    Server()
     {
         try
         {
