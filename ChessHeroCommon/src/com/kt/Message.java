@@ -76,6 +76,12 @@ abstract public class Message
                     int result = buf.getInt();
                     msg = new ResultMessage(result, flags);
 
+                case TYPE_CREATE_GAME:
+                    short nameLen = buf.getShort();
+                    byte nameData[] = new byte[nameLen];
+                    buf.get(nameData, 0, nameLen);
+                    msg = new CreateGameMessage(new String(nameData), flags);
+
                 case TYPE_MOVE:
                     break;
 
