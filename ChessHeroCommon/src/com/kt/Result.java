@@ -11,15 +11,17 @@ public class Result
 {
     public static final int OK = 0;
 
-    public static final int AUTH_REQUIRED = 100;
-    public static final int INVALID_TYPE = 101;
-    public static final int INVALID_NAME = 102;
-    public static final int INVALID_PASS = 103;
-    public static final int INVALID_CREDENTIALS = 104;
-    public static final int USER_EXISTS = 105;
-    public static final int BAD_USER = 106;
+    public static final int AUTH_REQUIRED = 100;        // Any request / The attempted action requires you to be logged in
+    public static final int INVALID_TYPE = 101;         // Any request / Invalid message type
+    public static final int INVALID_NAME = 102;         // Registration / The username is invalid (e.g. too short/long etc.)
+    public static final int INVALID_PASS = 103;         // Registration / The password is invalid (e.g. too short/long etc.)
+    public static final int INVALID_CREDENTIALS = 104;  // Login / The username/password combination is incorrect or the user does not exist
+    public static final int USER_EXISTS = 105;          // Registration / A user with that name already exists
+    public static final int BAD_USER = 106;             // Registration / The server doesn't like you
+    public static final int ALREADY_LOGGEDIN = 107;     // Registration, Login / You have already logged in
+    public static final int ALREADY_PLAYING = 108;      // Create game, Join game / You are already playing or waiting for player to join
 
-    public static final int INVALID_MESSAGE = 400;
+    public static final int INVALID_MESSAGE = 400;      // Any request / Invalid message format has been sent
 
-    public static final int INTERNAL_ERROR = 500;
+    public static final int INTERNAL_ERROR = 500;       // Any request / ...
 }
