@@ -9,7 +9,7 @@ public class CreateGameMessage extends Message
 
     public CreateGameMessage(String name)
     {
-        this(name, (byte) 0);
+        this(name, (byte)0);
 
         this.name = name;
     }

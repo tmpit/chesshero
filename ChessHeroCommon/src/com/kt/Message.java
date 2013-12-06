@@ -3,6 +3,7 @@ package com.kt;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,8 +18,9 @@ abstract public class Message
     public static final byte TYPE_REGISTER = 1;
     public static final byte TYPE_LOGIN = 2;
     public static final byte TYPE_RESULT = 3;
-    public static final byte TYPE_CREATE_GAME = 4;
-    public static final byte TYPE_CANCEL_GAME = 5;
+    public static final byte TYPE_MAP = 4;
+    public static final byte TYPE_CREATE_GAME = 5;
+    public static final byte TYPE_CANCEL_GAME = 6;
 
     public static final byte FLAG_PUSH = 1 << 0;
     public static final byte FLAG_INNERMSG = 1 << 1;
@@ -80,6 +82,12 @@ abstract public class Message
 
                     break;
 
+                case TYPE_MAP:
+                    HashMap map = readMap(buf);
+                    msg = new MapMessage(map, flags);
+
+                    break;
+
                 case TYPE_CREATE_GAME:
                     short nameLen = buf.getShort();
                     byte nameData[] = new byte[nameLen];
@@ -125,6 +133,63 @@ abstract public class Message
             buf.get(passData, 0, passLen);
 
             return new Credentials(new String(nameData), new String(passData));
+        }
+        catch (BufferUnderflowException e)
+        {
+            SLog.write(e);
+            throw new ChessHeroException(Result.INVALID_MESSAGE);
+        }
+    }
+
+    private static HashMap<String, Object> readMap(ByteBuffer buf) throws ChessHeroException
+    {
+        SLog.write("Parsing map");
+
+        try
+        {
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            byte type;
+
+            while (true)
+            {
+                // Read key type
+                type = buf.get();
+
+                if (MapMessage.MAP_END == type)
+                {
+                    break;
+                }
+
+                if (type != MapMessage.VAL_TYPE_STR)
+                {   // Key type must be string
+                    throw new ChessHeroException(Result.INVALID_MESSAGE);
+                }
+
+                short keyLen = (short)buf.get();
+                byte keyData[] = new byte[keyLen];
+                buf.get(keyData, 0, keyLen);
+
+                String key = new String(keyData);
+
+                // Read value type
+                type = buf.get();
+
+                if (MapMessage.VAL_TYPE_INT == type)
+                {
+                    int val = buf.getInt();
+                    map.put(key, val);
+                }
+                else if (MapMessage.VAL_TYPE_STR == type)
+                {
+                    short valLen = (short)buf.get();
+                    byte valData[] = new byte[valLen];
+                    buf.get(valData, 0, valLen);
+
+                    map.put(key, new String(valData));
+                }
+            }
+
+            return map;
         }
         catch (BufferUnderflowException e)
         {
