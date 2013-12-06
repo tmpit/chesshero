@@ -35,7 +35,6 @@ public class Game
     public static synchronized void addGame(Game game)
     {
         games.add(game);
-        game.state = STATE_PENDING;
     }
 
     public Game(int gameID, String name, ClientConnection initiator)
@@ -49,5 +48,10 @@ public class Game
     public short getState()
     {
         return state;
+    }
+
+    public void setState(short state)
+    {
+        this.state = state;
     }
 }
