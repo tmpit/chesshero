@@ -16,6 +16,21 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `chat_auth`
+--
+
+DROP TABLE IF EXISTS `chat_auth`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `chat_auth` (
+  `gid` int(10) unsigned NOT NULL,
+  `uid` int(10) unsigned NOT NULL,
+  `token` char(40) NOT NULL,
+  PRIMARY KEY (`gid`,`uid`,`token`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `games`
 --
 
@@ -57,4 +72,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-12-06  1:10:33
+-- Dump completed on 2013-12-07  1:03:45
