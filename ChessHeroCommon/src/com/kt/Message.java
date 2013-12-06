@@ -16,9 +16,9 @@ abstract public class Message
 {
     public static final byte TYPE_REGISTER = 1;
     public static final byte TYPE_LOGIN = 2;
-    public static final byte TYPE_MOVE = 3;
-    public static final byte TYPE_RESULT = 4;
-    public static final byte TYPE_CREATE_GAME = 5;
+    public static final byte TYPE_RESULT = 3;
+    public static final byte TYPE_CREATE_GAME = 4;
+    public static final byte TYPE_CANCEL_GAME = 5;
 
     public static final byte FLAG_PUSH = 1 << 0;
     public static final byte FLAG_INNERMSG = 1 << 1;
@@ -72,9 +72,13 @@ abstract public class Message
                     Credentials credentials = readCredentials(buf);
                     msg = new AuthMessage(type, flags, credentials);
 
+                    break;
+
                 case TYPE_RESULT:
                     int result = buf.getInt();
                     msg = new ResultMessage(result, flags);
+
+                    break;
 
                 case TYPE_CREATE_GAME:
                     short nameLen = buf.getShort();
@@ -82,7 +86,6 @@ abstract public class Message
                     buf.get(nameData, 0, nameLen);
                     msg = new CreateGameMessage(new String(nameData), flags);
 
-                case TYPE_MOVE:
                     break;
 
                 default:
