@@ -19,14 +19,20 @@ import java.sql.SQLException;
  */
 public class ClientConnection extends Thread
 {
-    public final static int READ_TIMEOUT = 15 * 1000; // In milliseconds
+    private final static int READ_TIMEOUT = 15 * 1000; // In milliseconds
+
+    private final static int NONE = -1;
 
     private boolean running = true;
     private Socket sock = null;
     private Database db = null;
 
     private boolean hasAuthenticated = false;
-    private int userID;
+    private int userID = NONE;
+
+    private int gameID = NONE;
+    private boolean isWaitingPlayer = false;
+    private boolean isInGame = false;
 
     ClientConnection(Socket sock)
     {
@@ -134,7 +140,8 @@ public class ClientConnection extends Thread
     private byte[] readBytesWithLength(int len) throws IOException, EOFException
     {
         InputStream stream = sock.getInputStream();
-        int bytesRead = 0;
+        int bytesRead;
+
         byte data[] = new byte[len];
 
         do
@@ -202,6 +209,12 @@ public class ClientConnection extends Thread
 
     private void handleRegister(AuthMessage msg) throws ChessHeroException
     {
+        if (hasAuthenticated)
+        {
+            writeMessage(new ResultMessage(Result.ALREADY_LOGGEDIN));
+            return;
+        }
+
         try
         {
             Credentials credentials = msg.getCredentials();
@@ -265,6 +278,12 @@ public class ClientConnection extends Thread
 
     private void handleLogin(AuthMessage msg) throws ChessHeroException
     {
+        if (hasAuthenticated)
+        {
+            writeMessage(new ResultMessage(Result.ALREADY_LOGGEDIN));
+            return;
+        }
+
         try
         {
             db.setKeepAlive(true);
@@ -307,6 +326,12 @@ public class ClientConnection extends Thread
 
     private void handleCreateGame(CreateGameMessage msg) throws ChessHeroException
     {
+        if (gameID != NONE)
+        {
+            writeMessage(new ResultMessage(Result.ALREADY_PLAYING));
+            return;
+        }
+
         try
         {
             String gameName = msg.getName();
@@ -318,8 +343,12 @@ public class ClientConnection extends Thread
             }
 
             Game game = new Game(gameID, gameName, this);
+            game.setState(Game.STATE_PENDING);
             Game.addGame(game);
-            // TODO: figure out what this should return, too tired to do it now
+
+            this.gameID = gameID;
+            isWaitingPlayer = true;
+
             writeMessage(new ResultMessage(Result.OK));
         }
         catch (SQLException e)
