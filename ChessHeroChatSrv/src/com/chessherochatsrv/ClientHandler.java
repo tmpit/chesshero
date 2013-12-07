@@ -1,7 +1,15 @@
-// ToDo:
-//
-// The newly connected user sends an unique token
-// 1. Check the token in the DB and get the gid and make a pair
+/*** ToDo:
+*
+* The newly connected user sends an unique token
+* 1. Get the the uid and the gid from the DB by the given token
+* 2. Assign the uid and the gid to the current player
+* 3. Check if the uid already exists, if it exists, reject the player and close the connection 
+* 4. Check the in game status of the player with that gid - get isPaired();
+* 	If they are already paried, reject the current player and close the connection
+* 	If the gid already exists one time, pair the two players
+*	If it doesn't exist, wait for another player with the same gid
+*
+* ***/
 
 package com.chessherochatsrv;
 
@@ -21,12 +29,17 @@ public class ClientHandler extends Thread {
     
 	protected Socket socket;
 	protected Vector threadPool;
-	protected SimpleDateFormat simpleDataFormat;
 
     private Connection conn = null;
 
     private boolean keepAlive = false;
     private boolean isOpen = false;
+    
+	public ClientHandler(Socket socket, Vector threadPool, String token) {
+		this.socket = socket;
+		this.threadPool = threadPool;
+		threadPool.add(this);
+	}
 
     private void connectToDB() throws SQLException
     {
@@ -78,12 +91,6 @@ public class ClientHandler extends Thread {
         }
     }
     
-	public ClientHandler(Socket socket, Vector threadPool) {
-		this.socket = socket;
-		this.threadPool = threadPool;
-		threadPool.add(this);
-	}
-
 	public void run() {
 		
 		try {
