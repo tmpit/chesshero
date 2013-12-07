@@ -205,6 +205,10 @@ public class ClientConnection extends Thread
             case Message.TYPE_CREATE_GAME:
                 handleCreateGame((CreateGameMessage)msg);
                 break;
+
+            case Message.TYPE_CANCEL_GAME:
+                handleCancelGame((CancelGameMessage)msg);
+                break;
         }
     }
 
@@ -369,6 +373,39 @@ public class ClientConnection extends Thread
         catch (SQLException e)
         {
             SLog.write("Exception while creating game: " + e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+    }
+
+    private void handleCancelGame(CancelGameMessage msg) throws ChessHeroException
+    {
+        if (NONE == gameID)
+        {
+            writeMessage(new ResultMessage(Result.NOT_PLAYING));
+            return;
+        }
+
+        if (isInGame)
+        {
+            writeMessage(new ResultMessage(Result.CANCEL_NA));
+            return;
+        }
+
+        if (gameID != msg.getGameID())
+        {
+            writeMessage(new ResultMessage(Result.INVALID_GAME_ID));
+            return;
+        }
+
+        try
+        {
+            db.deleteGame(msg.getGameID());
+
+            writeMessage(new ResultMessage(Result.OK));
+        }
+        catch (SQLException e)
+        {
+            SLog.write("Exception while deleting game: " + e);
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
     }
