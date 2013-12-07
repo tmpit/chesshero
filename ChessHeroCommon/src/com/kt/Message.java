@@ -27,7 +27,7 @@ abstract public class Message
 
     protected byte type;
     protected byte flags = 0;
-    public Message innerMessage = null;
+    protected Message innerMessage = null;
 
     protected Message(byte type, byte flags)
     {
@@ -43,6 +43,25 @@ abstract public class Message
     public byte getFlags()
     {
         return flags;
+    }
+
+    public void setInnerMessage(Message inner)
+    {
+        innerMessage = inner;
+
+        if (inner != null)
+        {
+            flags |= FLAG_INNERMSG;
+        }
+        else
+        {
+            flags &= ~FLAG_INNERMSG;
+        }
+    }
+
+    public Message getInnerMessage()
+    {
+        return innerMessage;
     }
 
     public static Message fromData(byte data[]) throws ChessHeroException
@@ -165,7 +184,12 @@ abstract public class Message
                     throw new ChessHeroException(Result.INVALID_MESSAGE);
                 }
 
-                short keyLen = (short)buf.get();
+                // If the byte has a value > 127 it will be a negative number and inner representation of the byte will actually become an integer
+                // looking something like this 11111111|11111111|11111111|[out bits]. Directly casting to short doesn't work as casting will just
+                // cut off the highest 16 bits so we will be left with the same negative number. Masking, however, will make sure we get only our bits from the byte
+                // so we can properly read a value up to 255
+                short keyLen = (short)(buf.get() & 0xFF);
+                SLog.write("keylen: " + keyLen);
                 byte keyData[] = new byte[keyLen];
                 buf.get(keyData, 0, keyLen);
 
@@ -181,7 +205,7 @@ abstract public class Message
                 }
                 else if (MapMessage.VAL_TYPE_STR == type)
                 {
-                    short valLen = (short)buf.get();
+                    short valLen = (short)(buf.get() & 0xFF); // See comment when fetching keyLen
                     byte valData[] = new byte[valLen];
                     buf.get(valData, 0, valLen);
 
