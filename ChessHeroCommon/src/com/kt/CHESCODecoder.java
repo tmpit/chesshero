@@ -23,7 +23,7 @@ public class CHESCODecoder
         reader.setData(data);
     }
 
-    private Object parse()
+    private Object parse() throws InputMismatchException, BufferUnderflowException
     {
         byte type = reader.get();
 

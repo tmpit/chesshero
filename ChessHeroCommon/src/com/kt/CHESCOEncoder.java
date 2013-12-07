@@ -2,6 +2,7 @@ package com.kt;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.BufferOverflowException;
 import java.util.Collection;
 import java.util.InputMismatchException;
 import java.util.Map;
@@ -125,21 +126,35 @@ public class CHESCOEncoder
         }
     }
 
-    public byte[] serialize(Map<String, Object> map)
+    public byte[] serialize(Map<String, Object> map) throws BufferOverflowException, InputMismatchException
     {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(256);
 
         write(map, stream);
 
-        return stream.toByteArray();
+        byte data[] = stream.toByteArray();
+
+        if (data.length > Short.MAX_VALUE)
+        {
+            throw new BufferOverflowException();
+        }
+
+        return data;
     }
 
-    public byte[] serialize(Collection collection)
+    public byte[] serialize(Collection collection) throws BufferOverflowException, InputMismatchException
     {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(256);
 
         write(collection, stream);
 
-        return stream.toByteArray();
+        byte data[] = stream.toByteArray();
+
+        if (data.length > Short.MAX_VALUE)
+        {
+            throw new BufferOverflowException();
+        }
+
+        return data;
     }
 }
