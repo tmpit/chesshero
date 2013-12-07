@@ -41,7 +41,7 @@ public class Credentials
     public static boolean isBadUser(String name)
     {
         String lowercase = name.toLowerCase();
-        return !(name.contains("andonov") || name.contains("filip") || name.contains("felipe") || name.contains("fil") ||
+        return (name.contains("andonov") || name.contains("filip") || name.contains("felipe") || name.contains("fil") ||
                 name.contains("андонов") || name.contains("филип") || name.contains("фелипе") || name.contains("фил"));
     }
 
