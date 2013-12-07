@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -258,7 +259,12 @@ public class ClientConnection extends Thread
             }
 
             hasAuthenticated = true;
-            writeMessage(new ResultMessage(Result.OK));
+
+            ResultMessage res = new ResultMessage(Result.OK);
+            MapMessage map = new MapMessage();
+            map.set("userid", userID);
+            res.setInnerMessage(map);
+            writeMessage(res);
         }
         catch (SQLException e)
         {
@@ -306,7 +312,12 @@ public class ClientConnection extends Thread
             }
 
             hasAuthenticated = true;
-            writeMessage(new ResultMessage(Result.OK));
+
+            ResultMessage res = new ResultMessage(Result.OK);
+            MapMessage map = new MapMessage();
+            map.set("userid", userID);
+            res.setInnerMessage(map);
+            writeMessage(res);
         }
         catch (SQLException e)
         {
