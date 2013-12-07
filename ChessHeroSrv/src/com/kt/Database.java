@@ -270,4 +270,28 @@ class Database
             }
         }
     }
+
+    public void deleteGame(int gameID) throws SQLException
+    {
+        PreparedStatement stmt = null;
+
+        try
+        {
+            connect();
+
+            stmt = conn.prepareStatement("DELETE FROM games WHERE gid = ?");
+            stmt.setInt(1, gameID);
+
+            stmt.executeUpdate();
+        }
+        finally
+        {
+            closeStatement(stmt);
+
+            if (!keepAlive)
+            {
+                disconnect();
+            }
+        }
+    }
 }
