@@ -185,11 +185,11 @@ abstract public class Message
                 }
 
                 // If the byte has a value > 127 it will be a negative number and inner representation of the byte will actually become an integer
-                // looking something like this 11111111|11111111|11111111|[out bits]. Directly casting to short doesn't work as casting will just
+                // looking something like this 11111111|11111111|11111111|[our bits]. Directly casting to short doesn't work as casting will just
                 // cut off the highest 16 bits so we will be left with the same negative number. Masking, however, will make sure we get only our bits from the byte
                 // so we can properly read a value up to 255
                 short keyLen = (short)(buf.get() & 0xFF);
-                SLog.write("keylen: " + keyLen);
+
                 byte keyData[] = new byte[keyLen];
                 buf.get(keyData, 0, keyLen);
 
