@@ -19,8 +19,9 @@ abstract public class Message
     public static final byte TYPE_LOGIN = 2;
     public static final byte TYPE_RESULT = 3;
     public static final byte TYPE_MAP = 4;
-    public static final byte TYPE_CREATE_GAME = 5;
-    public static final byte TYPE_CANCEL_GAME = 6;
+    public static final byte TYPE_ARRAY = 5;
+    public static final byte TYPE_CREATE_GAME = 6;
+    public static final byte TYPE_CANCEL_GAME = 7;
 
     public static final byte FLAG_PUSH = 1 << 0;
     public static final byte FLAG_INNERMSG = 1 << 1;
@@ -112,6 +113,12 @@ abstract public class Message
                     byte nameData[] = new byte[nameLen];
                     buf.get(nameData, 0, nameLen);
                     msg = new CreateGameMessage(new String(nameData), flags);
+
+                    break;
+
+                case TYPE_CANCEL_GAME:
+                    int gameID = buf.getInt();
+                    msg = new CancelGameMessage(gameID, flags);
 
                     break;
 

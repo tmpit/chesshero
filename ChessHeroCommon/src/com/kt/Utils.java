@@ -14,6 +14,16 @@ public class Utils
         return (short)((bytes[index] << 8) | (bytes[index + 1] & 0xFF));
     }
 
+    public static int intFromBytes(byte bytes[], int index)
+    {
+        int num = bytes[index + 3] & 0xFF;
+        num |= (bytes[index + 2] << 8) & 0xFF00;
+        num |= (bytes[index + 1] << 16) & 0xFF0000;
+        num |= (bytes[index] << 24) & 0xFF000000;
+
+        return num;
+    }
+
     public static byte[] bytesFromInt(int i)
     {
         byte data[] = new byte[4];
