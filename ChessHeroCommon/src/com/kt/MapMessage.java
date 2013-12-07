@@ -51,11 +51,6 @@ public class MapMessage extends Message
     @Override
     protected byte[] serialized()
     {
-        if (map.isEmpty())
-        {
-            return new byte[0];
-        }
-
         ByteArrayOutputStream stream = new ByteArrayOutputStream(128);
         stream.write(type);
         stream.write(flags);
@@ -66,7 +61,7 @@ public class MapMessage extends Message
         {
             byte keyData[] = key.getBytes();
             int keyLen = keyData.length;
-            SLog.write("KEYLEN: " + keyLen);
+
             if (keyLen > 255)
             {   // Value cannot be put into a byte - skip
                 continue;
