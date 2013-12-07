@@ -38,6 +38,11 @@ public class MapMessage extends Message
         map.put(key, val);
     }
 
+    public void set(String key, Integer val)
+    {
+        map.put(key, val);
+    }
+
     public Object get(String key)
     {
         return map.get(key);
@@ -61,7 +66,7 @@ public class MapMessage extends Message
         {
             byte keyData[] = key.getBytes();
             int keyLen = keyData.length;
-
+            SLog.write("KEYLEN: " + keyLen);
             if (keyLen > 255)
             {   // Value cannot be put into a byte - skip
                 continue;
@@ -104,5 +109,11 @@ public class MapMessage extends Message
         stream.write(MAP_END);
 
         return stream.toByteArray();
+    }
+
+    @Override
+    public String toString()
+    {
+        return "<MapMessage :: flags: " + flags + ", map: " + map.entrySet() + ">";
     }
 }
