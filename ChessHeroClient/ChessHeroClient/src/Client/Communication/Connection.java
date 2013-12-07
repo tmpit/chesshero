@@ -72,6 +72,11 @@ public class Connection
         listeners.add(listener);
     }
 
+    public void removeEventListener(ConnectionListener listener)
+    {
+        listeners.remove(listener);
+    }
+
     public void connect()
     {
         if (isConnecting || (sock != null && sock.isConnected()))
