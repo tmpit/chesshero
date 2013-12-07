@@ -19,6 +19,11 @@ public class CancelGameMessage extends Message
         this.gameID = gameID;
     }
 
+    public int getGameID()
+    {
+        return gameID;
+    }
+
     @Override
     protected byte[] serialized()
     {

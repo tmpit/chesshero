@@ -20,6 +20,9 @@ public class Result
     public static final int BAD_USER = 106;             // Registration / The server doesn't like you
     public static final int ALREADY_LOGGEDIN = 107;     // Registration, Login / You have already logged in
     public static final int ALREADY_PLAYING = 108;      // Create game, Join game / You are already playing or waiting for player to join
+    public static final int NOT_PLAYING = 109;          // Cancel game / You cannot cancel a game because you are not in a game
+    public static final int CANCEL_NA = 110;            // Cancel game / Cancel is not applicable (e.g. you are already paired with a player)
+    public static final int INVALID_GAME_ID = 111;      // Cancel game / Invalid game id provided
 
     public static final int INVALID_MESSAGE = 400;      // Any request / Invalid message format has been sent
 
