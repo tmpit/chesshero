@@ -83,7 +83,7 @@ abstract public class Message
                     break;
 
                 case TYPE_MAP:
-                    HashMap map = readMap(buf);
+                    HashMap<String, Object> map = readMap(buf);
                     msg = new MapMessage(map, flags);
 
                     break;
