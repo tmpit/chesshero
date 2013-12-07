@@ -346,7 +346,7 @@ public class ClientConnection extends Thread
         try
         {
             String gameName = msg.getName();
-            int gameID = db.insertGame(gameName, userID, Game.STATE_PENDING);
+            int gameID = db.insertGame(gameName, userID, 0, Game.STATE_PENDING);
 
             if (-1 == gameID)
             {
@@ -360,10 +360,15 @@ public class ClientConnection extends Thread
             this.gameID = gameID;
             isWaitingPlayer = true;
 
-            writeMessage(new ResultMessage(Result.OK));
+            ResultMessage res = new ResultMessage(Result.OK);
+            MapMessage map = new MapMessage();
+            map.set("gameid", gameID);
+            res.setInnerMessage(map);
+            writeMessage(res);
         }
         catch (SQLException e)
         {
+            SLog.write("Exception while creating game: " + e);
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
     }

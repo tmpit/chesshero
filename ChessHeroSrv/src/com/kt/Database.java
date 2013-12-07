@@ -231,7 +231,7 @@ class Database
 
     // Returns the new game id
     // On error returns -1
-    public int insertGame(String name, int userID, short state) throws SQLException
+    public int insertGame(String name, int user1ID, int user2ID, short state) throws SQLException
     {
         PreparedStatement stmt = null;
 
@@ -239,10 +239,11 @@ class Database
         {
             connect();
 
-            stmt = conn.prepareStatement("INSERT INTO games (name, guid1, state) VALUES (?, ?, ?)");
+            stmt = conn.prepareStatement("INSERT INTO games (gname, guid1, guid2, state) VALUES (?, ?, ?, ?)");
             stmt.setString(1, name);
-            stmt.setInt(2, userID);
-            stmt.setShort(3, state);
+            stmt.setInt(2, user1ID);
+            stmt.setInt(3, user2ID);
+            stmt.setShort(4, state);
 
             stmt.executeUpdate();
 
