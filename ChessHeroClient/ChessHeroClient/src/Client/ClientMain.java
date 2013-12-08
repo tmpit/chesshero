@@ -13,35 +13,18 @@ import Client.Pages.ChessHeroPage;
 import Client.Pages.LoginPage;
 import com.kt.Message;
 import com.kt.ResultMessage;
-import com.kt.SLog;
+import com.kt.utils.SLog;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 
-public class ClientMain extends JFrame implements ConnectionListener {
+public class ClientMain extends JFrame {
 
-    private Connection con = null;
+    public static final int HORIZONTAL_SIZE = 1024;
+    public static final int VERTICAL_SIZE = 720;
 
-    public static final int HORIZONTAL_SIZE = 800;
-    public static final int VERTICAL_SIZE = 600;
-    //private JFrame
-
-    public static ChessHeroPage currentPanel = null;
-
-    public Connection getConnection(){
-        if (con == null)    {
-//            try {
-//                this.con = Connection.getSingleton();
-//            } catch (IOException e) {
-//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//            }
-            this.con.addEventListener(this);
-        }
-        return con;
-
-    }
-
+    public static ChessHeroPage currentPage = null;
 
     public ClientMain() {
 
@@ -51,53 +34,23 @@ public class ClientMain extends JFrame implements ConnectionListener {
         this.setResizable(false);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-
         this.NavigateToPage(new LoginPage());
-
-
     }
 
     public void NavigateToPage(ChessHeroPage page){
-        currentPanel = page;
-        this.LoadCurrentPage();
-    }
+        if (currentPage != null){
+            currentPage.getConnection().removeEventListener(currentPage);
+        }
+        //this.con.addEventListener(page);
+        currentPage = page;
+        this.setContentPane(currentPage.getPagePanel());
+        this.setTitle(ChessHeroPage.MAIN_TITLE + currentPage.getPageTitle());
+        currentPage.setHolder(this);
 
-    public void LoadCurrentPage (){
-        this.setContentPane(currentPanel.getPagePanel());
-        this.setTitle(ChessHeroPage.MAIN_TITLE + currentPanel.getPageTitle());
-        currentPanel.holder = this;
         this.setVisible(true);
     }
 
-
     public static void main(String args[]) {
         new ClientMain();
-
-    }
-
-
-    @Override
-    public void socketConnected() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void socketFailedToConnect() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void socketDisconnected(boolean error) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void didReceiveMessage(Message msg) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void requestDidComplete(boolean success, Message request, ResultMessage response) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

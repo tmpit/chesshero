@@ -1,13 +1,14 @@
 package Client.Pages;
 
-import com.kt.AuthMessage;
-import com.kt.Credentials;
-import com.kt.Message;
+import Client.Communication.Request;
+import com.kt.*;
+import com.kt.utils.SLog;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,6 +24,7 @@ public class RegisterPage extends ChessHeroPage {
     public JPasswordField confirmPasswordTextBox;
 
     public  RegisterPage(){
+        super();
         this.setPageTitle("Register Page");
         //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
         //Initialize Components
@@ -126,7 +128,7 @@ public class RegisterPage extends ChessHeroPage {
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the REGISTER button");
+                //System.out.println("You clicked the REGISTER button");
                 handleRegister();
             }
         });
@@ -135,7 +137,7 @@ public class RegisterPage extends ChessHeroPage {
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the Back button");
+                //System.out.println("You clicked the Back button");
                 handleBackButton();
             }
         });
@@ -145,16 +147,35 @@ public class RegisterPage extends ChessHeroPage {
 
      public void handleRegister(){
          //System.out.println(new String(this.passwordTextBox.getPassword()));
-         Credentials credentials = new Credentials(
-                 this.usernameTextBox.getText(),
-                 new String(this.passwordTextBox.getPassword())
-         );
+         String username = this.usernameTextBox.getText();
+         String password = new String(this.passwordTextBox.getPassword());
+         String confirmPassword = new String(this.confirmPasswordTextBox.getPassword());
+         Credentials credentials = null;
+         if(username != null && password != null && confirmPassword != null && confirmPassword == password)
+         {
+             if(Credentials.isNameValid(username) && Credentials.isPassValid(password))
+             {
+                 credentials = new Credentials(username, password);
+             }
+         }
 
-         AuthMessage authMsg = new AuthMessage(Message.TYPE_REGISTER, credentials);
+         if (credentials != null){
+             AuthMessage authMsg = new AuthMessage(Message.TYPE_REGISTER, credentials);
+             if (isConnected){
+                 //this.getConnection().sendRequest(authMsg);
+             }
+         }
          //holder.getConnection().writeMessage(authMsg);
      }
 
+    @Override
+    public void requestDidComplete(boolean success, Request request, HashMap<String, Object> response){
+        //Logic to handle if the message is successful
+        SLog.write("in request did complete in" + this.getPageTitle());
+        this.getHolder().NavigateToPage(new LobbyPage());
+    }
+
     public void handleBackButton(){
-         this.holder.NavigateToPage(new LoginPage());
+         this.getHolder().NavigateToPage(new LoginPage());
     }
 }

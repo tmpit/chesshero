@@ -61,6 +61,7 @@ public class HallOfFamePage extends ChessHeroPage{
     }
 
     public  HallOfFamePage(){
+        super();
         this.setPageTitle("Hall Of Fame Page");
         //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
         //Initialize Components
