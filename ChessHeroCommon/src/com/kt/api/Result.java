@@ -1,4 +1,4 @@
-package com.kt;
+package com.kt.api;
 
 /**
  * Created with IntelliJ IDEA.

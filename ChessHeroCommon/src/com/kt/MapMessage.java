@@ -1,8 +1,8 @@
 package com.kt;
 
+import com.kt.utils.Utils;
+
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -93,7 +93,7 @@ public class MapMessage extends Message
             }
             else if (val instanceof Integer)
             {
-                valData = Utils.bytesFromInt(((Integer)val).intValue());
+                valData = Utils.bytesFromInt(((Integer) val).intValue());
 
                 // Write val info
                 stream.write(VAL_TYPE_INT);

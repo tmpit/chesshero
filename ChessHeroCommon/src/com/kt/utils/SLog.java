@@ -1,4 +1,6 @@
-package com.kt;
+package com.kt.utils;
+
+import com.kt.Config;
 
 import java.util.logging.*;
 
