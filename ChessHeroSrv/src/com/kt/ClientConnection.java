@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.Map;
@@ -199,6 +200,10 @@ public class ClientConnection extends Thread
 
                 case Action.CANCEL_GAME:
                     handleCancelGame(request);
+                    break;
+
+                case Action.FETCH_GAMES:
+                    handleFetchGames(request);
                     break;
 
                 default:
@@ -436,6 +441,31 @@ public class ClientConnection extends Thread
         catch (SQLException e)
         {
             SLog.write("Exception while deleting game: " + e);
+            throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+    }
+
+    private void handleFetchGames(HashMap<String, Object> request) throws ChessHeroException
+    {
+        try
+        {
+            Integer offset = (Integer)request.get("offset");
+            Integer limit = (Integer)request.get("limit");
+
+            if (null == offset || null == limit)
+            {
+                writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+                return;
+            }
+
+            ArrayList games = db.fetchGames(Game.STATE_PENDING, offset, limit);
+
+            HashMap response = responseWithResult(Result.OK);
+            response.put("games", games);
+            writeMessage(response);
+        }
+        catch (SQLException e)
+        {
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
     }

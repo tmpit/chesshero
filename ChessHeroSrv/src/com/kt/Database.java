@@ -1,5 +1,7 @@
 package com.kt;
 
+import com.kt.api.Result;
+
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.ArrayList;
@@ -282,6 +284,44 @@ class Database
             stmt.setInt(1, gameID);
 
             stmt.executeUpdate();
+        }
+        finally
+        {
+            closeStatement(stmt);
+
+            if (!keepAlive)
+            {
+                disconnect();
+            }
+        }
+    }
+
+    public ArrayList fetchGames(short state, int offset, int limit) throws SQLException
+    {
+        PreparedStatement stmt = null;
+
+        try
+        {
+            connect();
+
+            stmt = conn.prepareStatement("SELECT gid, gname FROM games WHERE state = ? LIMIT ?, ?");
+            stmt.setShort(1, state);
+            stmt.setInt(2, offset);
+            stmt.setInt(3, limit);
+
+            ArrayList games = new ArrayList();
+            ResultSet set = stmt.executeQuery();
+
+            while (set.next())
+            {
+                HashMap game = new HashMap();
+                game.put("gameid", set.getInt(1));
+                game.put("gamename", set.getString(2));
+
+                games.add(game);
+            }
+
+            return games;
         }
         finally
         {
