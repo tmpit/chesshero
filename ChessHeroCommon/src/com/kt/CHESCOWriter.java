@@ -1,6 +1,8 @@
 package com.kt;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.BufferOverflowException;
 import java.util.Collection;
@@ -11,8 +13,15 @@ import java.util.Set;
 /**
  * Created by Toshko on 12/7/13.
  */
-public class CHESCOEncoder
+public class CHESCOWriter
 {
+    private OutputStream ostream;
+
+    public CHESCOWriter(OutputStream stream)
+    {
+        this.ostream = stream;
+    }
+
     private void write(String str, ByteArrayOutputStream stream)
     {
         try
@@ -126,35 +135,37 @@ public class CHESCOEncoder
         }
     }
 
-    public byte[] serialize(Map<String, Object> map) throws BufferOverflowException, InputMismatchException
-    {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream(256);
-
-        write(map, stream);
-
-        byte data[] = stream.toByteArray();
-
-        if (data.length > Short.MAX_VALUE)
-        {
-            throw new BufferOverflowException();
-        }
-
-        return data;
-    }
-
-    public byte[] serialize(Collection collection) throws BufferOverflowException, InputMismatchException
+    public void write(Collection collection) throws BufferOverflowException, InputMismatchException, IOException
     {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(256);
 
         write(collection, stream);
 
-        byte data[] = stream.toByteArray();
+        int length = stream.size();
 
-        if (data.length > Short.MAX_VALUE)
+        if (length > Short.MAX_VALUE)
         {
             throw new BufferOverflowException();
         }
 
-        return data;
+        ostream.write(Utils.bytesFromShort((short)length)); // Write header
+        stream.writeTo(ostream); // Write body
+    }
+
+    public void write(Map<String, Object> map) throws BufferOverflowException, InputMismatchException, IOException
+    {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream(256);
+
+        write(map, stream);
+
+        int length = stream.size();
+
+        if (length > Short.MAX_VALUE)
+        {
+            throw new BufferOverflowException();
+        }
+
+        ostream.write(Utils.bytesFromShort((short)length)); // Write header
+        stream.writeTo(ostream); // Write body
     }
 }
