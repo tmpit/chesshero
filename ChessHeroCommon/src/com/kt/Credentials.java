@@ -22,10 +22,6 @@ public class Credentials
 
     private static SecureRandom csprng = new SecureRandom();
 
-    private String name = null;
-    private String pass = null;
-    private AuthPair authPair = null;
-
     public static boolean isNameValid(String name)
     {
         int length = name.length();
@@ -62,45 +58,9 @@ public class Credentials
         return formatter.toString();
     }
 
-    public Credentials(String name, String pass)
+    public static int generateSalt() throws NoSuchAlgorithmException
     {
-        this.name = name;
-        this.pass = pass;
-    }
-
-    public Credentials(String name, String pass, AuthPair authPair)
-    {
-        this.name = name;
-        this.pass = pass;
-        this.authPair = authPair;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public String getPass()
-    {
-        return pass;
-    }
-
-    public AuthPair getAuthPair() throws NoSuchAlgorithmException
-    {
-        if (null == authPair)
-        {
-            int salt = csprng.nextInt(Integer.MAX_VALUE);
-            String hash = Credentials.saltAndHash(pass, salt);
-            authPair = new AuthPair(hash, salt);
-        }
-
-        return authPair;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "<Credentials: name: " + name + ", pass: " + pass + ", authPair: " + authPair + ">";
+        return csprng.nextInt(Integer.MAX_VALUE);
     }
 }
 
@@ -113,16 +73,6 @@ class AuthPair
     {
         this.hash = hash;
         this.salt = salt;
-    }
-
-    public String getHash()
-    {
-        return hash;
-    }
-
-    public int getSalt()
-    {
-        return salt;
     }
 
     public boolean matches(String password) throws NoSuchAlgorithmException
