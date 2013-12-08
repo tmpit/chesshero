@@ -1,15 +1,14 @@
 package Client.Communication;
 
-import com.kt.ChessHeroException;
-import com.kt.Message;
-import com.kt.Utils;
+import com.kt.chesco.CHESCOReader;
+import com.kt.chesco.CHESCOWriter;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,6 +20,8 @@ import java.net.Socket;
 public class ClientSocket
 {
     private Socket sock = null;
+    private CHESCOWriter writer;
+    private CHESCOReader reader;
 
     ClientSocket(String address, int port, int connectionTimeout) throws IOException
     {
@@ -29,6 +30,9 @@ public class ClientSocket
         sock.connect(new InetSocketAddress(addr, port), connectionTimeout);
         sock.setKeepAlive(true);
         sock.setSoTimeout(0);
+
+        writer = new CHESCOWriter(sock.getOutputStream());
+        reader = new CHESCOReader(sock.getInputStream());
     }
 
     public boolean isConnected()
@@ -58,42 +62,14 @@ public class ClientSocket
         return sock.getSoTimeout();
     }
 
-    public Message readMessage() throws IOException, EOFException, ChessHeroException
+    public void write(Request request) throws IOException
     {
-        // The first two bytes will be the body length
-        byte headerData[] = readBytesWithLength(2); // Read the header
-        short bodyLen = Utils.shortFromBytes(headerData, 0);
-        byte bodyData[] = readBytesWithLength(bodyLen);
-
-        return Message.fromData(bodyData);
+        HashMap map = request.getParametersMap();
+        writer.write(map);
     }
 
-    private byte[] readBytesWithLength(int len) throws IOException, EOFException
+    public Object read() throws IOException, EOFException
     {
-        InputStream stream = sock.getInputStream();
-        int bytesRead = 0;
-        byte data[] = new byte[len];
-
-        do
-        {   // The docs are ambiguous as to whether this will definitely try to read len or can return less than len
-            // so just in case iterating until len is read or shit happens
-            bytesRead = stream.read(data, 0, len);
-            if (-1 == bytesRead)
-            {
-                throw new EOFException();
-            }
-        }
-        while (bytesRead != len);
-
-        return data;
-    }
-
-    public void writeMessage(Message message) throws IOException
-    {
-        byte body[] = message.toData();
-        byte header[] = Utils.bytesFromShort((short)body.length);
-
-        sock.getOutputStream().write(header);
-        sock.getOutputStream().write(body);
+        return reader.read();
     }
 }

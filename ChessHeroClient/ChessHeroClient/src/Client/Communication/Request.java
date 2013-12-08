@@ -1,4 +1,4 @@
-package com.kt;
+package Client.Communication;
 
 import java.util.HashMap;
 
@@ -13,6 +13,17 @@ public class Request
     public Request(int action)
     {
         this.action = action;
+        parameters.put("action", action);
+    }
+
+    public int getAction()
+    {
+        return action;
+    }
+
+    protected HashMap<String, Object> getParametersMap()
+    {
+        return parameters;
     }
 
     public void addParameter(String name, String value)

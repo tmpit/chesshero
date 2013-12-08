@@ -1,20 +1,14 @@
 package Client.Communication;
 
 import com.kt.Config;
-import com.kt.Message;
-import com.kt.ResultMessage;
-import com.kt.SLog;
-import com.sun.swing.internal.plaf.synth.resources.synth_zh_CN;
-import sun.security.x509.IssuerAlternativeNameExtension;
+import com.kt.utils.SLog;
 
 import javax.swing.*;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created with IntelliJ IDEA.
@@ -36,13 +30,13 @@ public class Connection
 
     private ClientSocket sock;
     private ArrayList<ConnectionListener> listeners = new ArrayList<ConnectionListener>();
-    private ArrayList<Message> readMessages = new ArrayList<Message>();
+    private ArrayList<Object> readResponses = new ArrayList<Object>();
 
     private boolean verbose = false;
 
     private boolean isConnecting = false;
     private boolean isListening = false;
-    private boolean shouldNotifyDisconnection = false; // Used to make sure the disconnection message is sent after the last request has completed
+    private boolean shouldNotifyDisconnection = false; // Used to make sure listeners are notified about the disconnection after the last request has completed
 
     private RequestTask currentRequestTask = null;
     private Timer timeoutTimer = null;
@@ -217,7 +211,7 @@ public class Connection
                             sock.setTimeout(0);
                         }
 
-                        Message msg = sock.readMessage();
+                        HashMap<String, Object> msg = (HashMap<String, Object>)sock.read();
                         publish(msg);
                     }
                     catch (SocketException e)
@@ -245,11 +239,11 @@ public class Connection
             }
 
             @Override
-            protected void process (List<Message> messages)
+            protected void process (List<HashMap<String, Object>> messages)
             {
-                for (Message msg : messages)
+                for (HashMap<String, Object> msg : messages)
                 {
-                    if ((msg.getFlags() & Message.FLAG_PUSH) != 0)
+                    if (msg.containsKey("push"))
                     {   // This message is pushed
                         for (ConnectionListener listener : listeners)
                         {
@@ -258,9 +252,9 @@ public class Connection
                     }
                     else
                     {   // This message is a response from a request of ours
-                        synchronized (readMessages)
+                        synchronized (readResponses)
                         {
-                            readMessages.add(msg);
+                            readResponses.add(msg);
                         }
                     }
                 }
@@ -283,7 +277,7 @@ public class Connection
         }.execute();
     }
 
-    public void sendRequest(Message msg)
+    public void sendRequest(Request request)
     {
         if (isConnecting)
         {
@@ -303,7 +297,7 @@ public class Connection
             return;
         }
 
-        currentRequestTask = new RequestTask(msg)
+        currentRequestTask = new RequestTask(request)
         {
             @Override
             protected Void doInBackground()
@@ -315,7 +309,7 @@ public class Connection
                         sock.setTimeout(WRITE_TIMEOUT);
                     }
 
-                    sock.writeMessage(this.request);
+                    sock.write(this.request);
 
                     while (null == this.response)
                     {
@@ -325,12 +319,12 @@ public class Connection
                             break;
                         }
 
-                        synchronized (readMessages)
+                        synchronized (readResponses)
                         {
-                            if (!readMessages.isEmpty())
+                            if (!readResponses.isEmpty())
                             {
-                                this.response = readMessages.get(0);
-                                readMessages.remove(0);
+                                this.response = (HashMap<String, Object>) readResponses.get(0);
+                                readResponses.remove(0);
                             }
                         }
 
@@ -367,7 +361,7 @@ public class Connection
                 {
                     for (ConnectionListener listener : listeners)
                     {
-                        listener.requestDidComplete(true, this.request, (ResultMessage)this.response);
+                        listener.requestDidComplete(true, this.request, this.response);
                     }
                 }
                 else
@@ -432,18 +426,18 @@ public class Connection
         }
     }
 
-    private abstract class ListenTask extends SwingWorker<Void, Message>
+    private abstract class ListenTask extends SwingWorker<Void, HashMap<String, Object>>
     {
     }
 
     private abstract class RequestTask extends SwingWorker<Void, Void>
     {
-        protected Message request;
-        protected Message response;
+        protected Request request;
+        protected HashMap<String, Object> response;
 
         private boolean timedOut = false;
 
-        public RequestTask(Message request)
+        public RequestTask(Request request)
         {
             this.request = request;
         }
