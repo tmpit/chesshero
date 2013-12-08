@@ -39,4 +39,9 @@ public class Action
     // Returns: [games:ARR]
     // - Each element in games has: [gameid:INT], [gamename:STR]
     public static final int FETCH_GAMES = 5;
+
+    // Join a game
+    // Parameters: [gameid:INT]
+    // Returns: [chattoken:STR]
+    public static final int JOIN_GAME = 6;
 }
