@@ -1,13 +1,17 @@
 import com.kt.*;
-import com.kt.utils.ChessHeroException;
+import com.kt.api.Action;
+import com.kt.chesco.CHESCOReader;
+import com.kt.chesco.CHESCOWriter;
 import com.kt.utils.SLog;
-import com.kt.utils.Utils;
 
-import java.io.EOFException;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 
 /**
  * Created by Toshko on 12/7/13.
@@ -16,13 +20,28 @@ public class Main
 {
     static Socket sock;
 
+    private static CHESCOReader reader;
+    private static CHESCOWriter writer;
+
+    private static final boolean interactive = true;
+
     public static void main(String []args)
     {
         try
         {
             sock = new Socket(InetAddress.getLocalHost(), 4848);
-            writeMessage(new AuthMessage(Message.TYPE_LOGIN, new Credentials("tttt", "pppp")));
-            readMessage();
+
+            reader = new CHESCOReader(sock.getInputStream());
+            writer = new CHESCOWriter(sock.getOutputStream());
+
+            if (interactive)
+            {
+                startInteractive();
+            }
+            else
+            {
+                startStatic();
+            }
         }
         catch (Throwable e)
         {
@@ -30,71 +49,95 @@ public class Main
         }
     }
 
-    public static byte[] readBytesWithLength(int len) throws IOException, EOFException
+    public static void startInteractive() throws IOException
     {
-        InputStream stream = sock.getInputStream();
-        int bytesRead;
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        byte data[] = new byte[len];
+        while (true)
+        {
+            SLog.write("enter command: ");
+            String input = br.readLine();
 
-        do
-        {   // The docs are ambiguous as to whether this will definitely try to read len or can return less than len
-            // so just in case iterating until len is read or shit happens
-            bytesRead = stream.read(data, 0, len);
-            if (-1 == bytesRead)
+            if (null == input)
             {
-                throw new EOFException();
+                SLog.write("End of file stream");
+                break;
+            }
+
+            input = input.toLowerCase();
+            String args[] = input.split(" ");
+
+            if (args[0].equals("exit"))
+            {
+                break;
+            }
+            else if (args[0].equals("login"))
+            {
+                login(args[1], args[2]);
+            }
+            else if (args[0].equals("register"))
+            {
+                reg(args[1], args[2]);
+            }
+            else if (args[0].equals("creategame"))
+            {
+                createGame(args[1]);
+            }
+            else if (args[0].equals("cancelgame"))
+            {
+                cancelGame(Integer.parseInt(args[1]));
+            }
+            else
+            {
+                SLog.write("Unrecognized command");
             }
         }
-        while (bytesRead != len);
-
-        return data;
     }
 
-    public static void writeMessage(Message msg)
+    public static void startStatic() throws IOException
     {
-        try
-        {
-            byte body[] = msg.toData();
-            byte header[] = Utils.bytesFromShort((short) body.length);
 
-            sock.getOutputStream().write(header);
-            sock.getOutputStream().write(body);
-
-            SLog.write("Message written");
-        }
-        catch (IOException e)
-        {
-            SLog.write("Exception raised while writing to socket: " + e);
-        }
     }
 
-    public static Message readMessage()
+    public static void login(String name, String pass) throws IOException
     {
-        try
-        {
-            byte header[] = readBytesWithLength(2);
-            short bodyLen = Utils.shortFromBytes(header, 0);
-            byte body[] = readBytesWithLength(bodyLen);
+        HashMap req = new HashMap();
+        req.put("action", Action.LOGIN);
+        req.put("username", name);
+        req.put("password", pass);
+        writer.write(req);
 
-            Message msg = Message.fromData(body);
-            SLog.write("Message read: " + msg);
+        SLog.write(reader.read());
+    }
 
-            if ((msg.getFlags() & Message.FLAG_INNERMSG) != 0)
-            {
-                SLog.write("Inner message: " + msg.getInnerMessage());
-            }
-            return msg;
-        }
-        catch (IOException e)
-        {
-            SLog.write("Exception while reading: " + e);
-        }
-        catch (ChessHeroException e)
-        {
-            SLog.write("Exception while reading: " + e);
-        }
+    public static void reg(String name, String pass) throws IOException
+    {
+        HashMap req = new HashMap();
+        req.put("action", Action.REGISTER);
+        req.put("username", name);
+        req.put("password", pass);
+        writer.write(req);
 
-        return null;
+        SLog.write(reader.read());
+    }
+
+    public static void createGame(String name) throws IOException
+    {
+        HashMap req = new HashMap();
+        req.put("action", Action.CREATE_GAME);
+        req.put("gamename", name);
+        writer.write(req);
+
+        SLog.write(reader.read());
+    }
+
+    public static void cancelGame(int gameid) throws IOException
+    {
+        HashMap req = new HashMap();
+        req.put("action", Action.CANCEL_GAME);
+        req.put("gameid", gameid);
+        writer.write(req);
+
+        SLog.write(reader.read());
     }
 }
