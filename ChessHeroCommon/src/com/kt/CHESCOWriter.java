@@ -1,10 +1,8 @@
 package com.kt;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.BufferOverflowException;
 import java.util.Collection;
 import java.util.InputMismatchException;
 import java.util.Map;
@@ -22,7 +20,7 @@ public class CHESCOWriter
         this.ostream = stream;
     }
 
-    private void write(String str, ByteArrayOutputStream stream)
+    private void write(String str) throws IOException
     {
         try
         {
@@ -34,9 +32,9 @@ public class CHESCOWriter
                 dataLen = Short.MAX_VALUE;
             }
 
-            stream.write(CHESCO.TYPE_STR);
-            stream.write(Utils.bytesFromShort((short)dataLen), 0, 2);
-            stream.write(strData, 0, dataLen);
+            ostream.write(CHESCO.TYPE_STR);
+            ostream.write(Utils.bytesFromShort((short)dataLen), 0, 2);
+            ostream.write(strData, 0, dataLen);
         }
         catch (UnsupportedEncodingException e)
         {
@@ -44,128 +42,120 @@ public class CHESCOWriter
         }
     }
 
-    private void write(Integer i, ByteArrayOutputStream stream)
+    private void write(Integer i) throws IOException
     {
-        stream.write(CHESCO.TYPE_INT);
-        stream.write(Utils.bytesFromInt(i.intValue()), 0, 4);
+        ostream.write(CHESCO.TYPE_INT);
+        ostream.write(Utils.bytesFromInt(i.intValue()), 0, 4);
     }
 
-    private void write(Boolean b, ByteArrayOutputStream stream)
+    private void write(Boolean b) throws IOException
     {
-        stream.write(CHESCO.TYPE_BOOL);
-        stream.write((b.booleanValue() ? 1 : 0));
+        ostream.write(CHESCO.TYPE_BOOL);
+        ostream.write((b.booleanValue() ? 1 : 0));
     }
 
-    private void write(Collection collection, ByteArrayOutputStream stream) throws InputMismatchException
+    public void write(Collection collection) throws InputMismatchException, IOException
     {
-        byte count[] = Utils.bytesFromShort((short)collection.size());
+        int entriesCount = collection.size();
+        byte count[] = Utils.bytesFromShort((short)entriesCount);
 
-        stream.write(CHESCO.TYPE_ARR);
-        stream.write(count, 0, 2);
+        ostream.write(CHESCO.TYPE_ARR);
+        ostream.write(count, 0, 2);
+
+        int entriesWritten = 0;
 
         for (Object val : collection)
         {
+            if (entriesWritten >= entriesCount)
+            {   // Making sure no more than entriesCount entries are written to the stream
+                break;
+            }
+
             if (val instanceof String)
             {
-                write((String) val, stream);
+                write((String) val);
             }
             else if (val instanceof Integer)
             {
-                write((Integer) val, stream);
+                write((Integer) val);
             }
             else if (val instanceof Boolean)
             {
-                write((Boolean) val, stream);
+                write((Boolean) val);
             }
             else if (val instanceof Map)
             {
-                write((Map)val, stream);
+                write((Map)val);
             }
             else if (val instanceof Collection)
             {
-                write((Collection)val, stream);
+                write((Collection)val);
             }
             else
             {
                 throw new InputMismatchException("Attempting to serialize object not supported by CHESCO");
             }
+
+            entriesWritten++;
         }
     }
 
-    private void write(Map map, ByteArrayOutputStream stream) throws InputMismatchException
+    public void write(Map<String, Object> map) throws InputMismatchException, IOException
     {
         Set<Map.Entry<String, Object>> entrySet = map.entrySet();
-        byte count[] = Utils.bytesFromShort((short)entrySet.size());
+        int entriesCount = entrySet.size();
 
-        stream.write(CHESCO.TYPE_MAP);
-        stream.write(count, 0, 2);
+        if (entriesCount > Short.MAX_VALUE)
+        {
+            entriesCount = Short.MAX_VALUE;
+        }
+
+        byte count[] = Utils.bytesFromShort((short)entriesCount);
+
+        ostream.write(CHESCO.TYPE_MAP);
+        ostream.write(count, 0, 2);
+
+        int entriesWritten = 0;
 
         for (Map.Entry<String, Object> entry : entrySet)
         {
+            if (entriesWritten >= entriesCount)
+            {   // Making sure no more than entriesCount entries are written to the stream
+                break;
+            }
+
             String key = entry.getKey();
 
-            write(key, stream);
+            write(key);
 
             Object val = entry.getValue();
 
             if (val instanceof String)
             {
-                write((String)val, stream);
+                write((String)val);
             }
             else if (val instanceof Integer)
             {
-                write((Integer)val, stream);
+                write((Integer)val);
             }
             else if (val instanceof Boolean)
             {
-                write((Boolean)val, stream);
+                write((Boolean)val);
             }
             else if (val instanceof Map)
             {
-                write((Map)val, stream);
+                write((Map)val);
             }
             else if (val instanceof Collection)
             {
-                write((Collection)val, stream);
+                write((Collection)val);
             }
             else
             {
-                throw new InputMismatchException("Attempting to serialize object not supported by CHESCO");
+                throw new InputMismatchException("Attempting to serialize object that is not supported by CHESCO");
             }
+
+            entriesWritten++;
         }
-    }
-
-    public void write(Collection collection) throws BufferOverflowException, InputMismatchException, IOException
-    {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream(256);
-
-        write(collection, stream);
-
-        int length = stream.size();
-
-        if (length > Short.MAX_VALUE)
-        {
-            throw new BufferOverflowException();
-        }
-
-        ostream.write(Utils.bytesFromShort((short)length)); // Write header
-        stream.writeTo(ostream); // Write body
-    }
-
-    public void write(Map<String, Object> map) throws BufferOverflowException, InputMismatchException, IOException
-    {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream(256);
-
-        write(map, stream);
-
-        int length = stream.size();
-
-        if (length > Short.MAX_VALUE)
-        {
-            throw new BufferOverflowException();
-        }
-
-        ostream.write(Utils.bytesFromShort((short)length)); // Write header
-        stream.writeTo(ostream); // Write body
     }
 }

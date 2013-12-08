@@ -1,5 +1,8 @@
 package com.kt;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
@@ -8,24 +11,24 @@ import java.util.InputMismatchException;
 
 /**
  * Created by Toshko on 12/7/13.
+ *
+ * IMPORTANT!!!
+ * This class only implements parameter deserialization as per CHESCO,
+ * meaning users of this class will have to take care of parsing the header
+ * and of reading the body, then passing it to an instance of this class for deserialization.
  */
-public class CHESCODecoder
+public class CHESCOReader
 {
-    private CHESCOReader reader;
+    private CHESCOStreamReader reader;
 
-    public CHESCODecoder(byte data[])
+    public CHESCOReader(InputStream stream)
     {
-        reader = new CHESCOReader(data);
+        reader = new CHESCOStreamReader(stream);
     }
 
-    public void setData(byte data[])
+    public Object read() throws InputMismatchException, IOException
     {
-        reader.setData(data);
-    }
-
-    private Object parse() throws InputMismatchException, BufferUnderflowException
-    {
-        byte type = reader.get();
+        int type = reader.get();
 
         switch (type)
         {
@@ -54,7 +57,7 @@ public class CHESCODecoder
 
                 for (int i = 0; i < count; i++)
                 {
-                    list.add(parse());
+                    list.add(read());
                 }
 
                 return list;
@@ -65,8 +68,8 @@ public class CHESCODecoder
 
                 for (int i = 0; i < pairsCount; i++)
                 {
-                    String key = (String)parse();
-                    Object val = parse();
+                    String key = (String)read();
+                    Object val = read();
                     map.put(key, val);
                 }
 
@@ -77,49 +80,42 @@ public class CHESCODecoder
     }
 }
 
-class CHESCOReader
+class CHESCOStreamReader
 {
-    private byte data[];
-    private int length;
-    private int index;
+    private InputStream istream;
 
-    public CHESCOReader(byte data[])
+    public CHESCOStreamReader(InputStream stream)
     {
-        setData(data);
+        istream = stream;
     }
 
-    public void setData(byte data[])
+    public int get() throws IOException
     {
-        this.data = data;
-        length = data.length;
-        index = 0;
-    }
+        int aByte = istream.read();
 
-    public byte get() throws BufferUnderflowException
-    {
-        if (index >= length)
+        if (-1 == aByte)
         {
-            throw new BufferUnderflowException();
+            throw new EOFException();
         }
 
-        return data[index++];
+        return aByte;
     }
 
-    public boolean isEmpty()
+    public byte[] get(int count) throws IOException
     {
-        return index >= length;
-    }
-
-    public byte[] get(int count) throws BufferUnderflowException
-    {
-        if (index >= length)
-        {
-            throw new BufferUnderflowException();
-        }
-
         byte bytes[] = new byte[count];
-        System.arraycopy(data, index, bytes, 0, count);
-        index += count;
+        int read = 0;
+
+        do
+        {
+            read = istream.read(bytes, read, count - read);
+
+            if (-1 == read)
+            {
+                throw new EOFException();
+            }
+        }
+        while (read < count);
 
         return bytes;
     }

@@ -10,7 +10,7 @@ package com.kt;
  * All numbers are signed.
  * All strings are UTF-8 encoded.
  *
- * Each message consists of a 2 byte header and header byte body.
+ * Each message consists of a body of undetermined length.
  * The body consists of parameters. Each parameter starts with 1 byte for the type of the parameter.
  * After the parameter type each parameter should be read as follows (about notation refer to the bottom of this comment):
  *
@@ -31,6 +31,8 @@ package com.kt;
  * ARR
  * [count:2] // The number of parameters contained in the array
  * [param:x] // X parameters
+ *
+ * The body starts with either an ARR parameter type or MAP parameter type.
  *
  * About notation:
  * Brackets represent a group of bytes representing a part of the parameter.
