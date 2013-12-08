@@ -87,6 +87,10 @@ public class Main
             {
                 cancelGame(Integer.parseInt(args[1]));
             }
+            else if (args[0].equals("fetchgames"))
+            {
+                fetchGames(Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+            }
             else
             {
                 SLog.write("Unrecognized command");
@@ -136,6 +140,17 @@ public class Main
         HashMap req = new HashMap();
         req.put("action", Action.CANCEL_GAME);
         req.put("gameid", gameid);
+        writer.write(req);
+
+        SLog.write(reader.read());
+    }
+
+    public static void fetchGames(int offset, int limit) throws IOException
+    {
+        HashMap req = new HashMap();
+        req.put("action", Action.FETCH_GAMES);
+        req.put("offset", offset);
+        req.put("limit", limit);
         writer.write(req);
 
         SLog.write(reader.read());
