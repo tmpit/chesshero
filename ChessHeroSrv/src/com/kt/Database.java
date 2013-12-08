@@ -181,16 +181,15 @@ class Database
             stmt.setString(1, username);
 
             ResultSet set = stmt.executeQuery();
-            AuthPair auth = null;
 
             while (set.next())
             {
                 String passHash = set.getString(1);
                 int salt = set.getInt(2);
-                auth = new AuthPair(passHash, salt);
+                return new AuthPair(passHash, salt);
             }
 
-            return auth;
+            return null;
         }
         finally
         {

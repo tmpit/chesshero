@@ -44,8 +44,15 @@ public class Server
             Socket clientSock = _sock.accept();
             SLog.write("Client socket accepted");
 
-            ClientConnection connection = new ClientConnection(clientSock);
-            connection.start();
+            try
+            {
+                ClientConnection connection = new ClientConnection(clientSock);
+                connection.start();
+            }
+            catch (IOException e)
+            {
+                SLog.write("Exception raised while initializing client connection");
+            }
         }
     }
 }

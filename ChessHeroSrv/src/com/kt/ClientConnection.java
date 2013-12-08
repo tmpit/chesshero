@@ -1,17 +1,21 @@
 package com.kt;
 
+import com.kt.api.Action;
+import com.kt.chesco.CHESCOReader;
+import com.kt.chesco.CHESCOWriter;
 import com.kt.utils.ChessHeroException;
 import com.kt.api.Result;
 import com.kt.utils.SLog;
-import com.kt.utils.Utils;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.InputMismatchException;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,6 +32,8 @@ public class ClientConnection extends Thread
 
     private boolean running = true;
     private Socket sock = null;
+    private CHESCOReader reader = null;
+    private CHESCOWriter writer = null;
     private Database db = null;
 
     private boolean hasAuthenticated = false;
@@ -37,10 +43,13 @@ public class ClientConnection extends Thread
     private boolean isWaitingPlayer = false;
     private boolean isInGame = false;
 
-    ClientConnection(Socket sock)
+    ClientConnection(Socket sock) throws IOException
     {
         this.sock = sock;
         db = new Database();
+
+        reader = new CHESCOReader(sock.getInputStream());
+        writer = new CHESCOWriter(sock.getOutputStream());
     }
 
     public int getUserID()
@@ -89,32 +98,23 @@ public class ClientConnection extends Thread
 
             while (running)
             {
-                // Read header
-                byte header[] = readBytesWithLength(2);
-                short bodyLen = Utils.shortFromBytes(header, 0);
+                // Read request
+                Object request = reader.read();
 
-                SLog.write("Header read, body length is: " + bodyLen);
-
-                if (0 == bodyLen)
-                {   // An error has occurred during header reading or header is invalid, end the task
-                    throw new ChessHeroException(Result.INVALID_MESSAGE);
+                if (!(request instanceof Map))
+                {   // Map is the only type of object the server allows for sending requests
+                    continue;
                 }
 
-                // Set timeout for the body
-                sock.setSoTimeout(READ_TIMEOUT);
+                handleRequest((HashMap<String, Object>)request);
 
-                SLog.write("Reading body");
-
-                // Read body
-                byte body[] = readBytesWithLength(bodyLen);
-
-                SLog.write("Body read");
-
-                handleMessage(Message.fromData(body));
-
-                // Remove timeout when listening for header
+                // Remove timeout after first message
                 sock.setSoTimeout(0);
             }
+        }
+        catch (InputMismatchException e)
+        {
+            SLog.write("Message read not conforming to CHESCO");
         }
         catch (SocketTimeoutException e)
         {
@@ -132,7 +132,7 @@ public class ClientConnection extends Thread
         {
             int code = e.getCode();
             SLog.write("Chess hero exception: " + code);
-            writeMessage(new ResultMessage(code));
+            writeMessage(responseWithResult(code));
         }
         catch (Exception e)
         {
@@ -140,108 +140,103 @@ public class ClientConnection extends Thread
         }
     }
 
-    private byte[] readBytesWithLength(int len) throws IOException, EOFException
+    private HashMap<String, Object> responseWithResult(int result)
     {
-        InputStream stream = sock.getInputStream();
-        int bytesRead;
-
-        byte data[] = new byte[len];
-
-        do
-        {   // The docs are ambiguous as to whether this will definitely try to read len or can return less than len
-            // so just in case iterating until len is read or shit happens
-            bytesRead = stream.read(data, 0, len);
-            if (-1 == bytesRead)
-            {
-                throw new EOFException();
-            }
-        }
-        while (bytesRead != len);
-
-        return data;
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("result", result);
+        return map;
     }
 
-    private void writeMessage(Message msg)
+    private void writeMessage(HashMap<String, Object> message)
     {
         try
         {
-            byte body[] = msg.toData();
-            byte header[] = Utils.bytesFromShort((short)body.length);
-
-            SLog.write("Writing message: " + msg + "...");
-
-            sock.getOutputStream().write(header);
-            sock.getOutputStream().write(body);
-
+            SLog.write("Writing message: " + message + " ...");
+            writer.write(message);
             SLog.write("Message written");
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            SLog.write("Exception raised while writing to socket: " + e);
+            SLog.write("Exception raised while writing: " + e);
             running = false;
         }
     }
 
-    private void handleMessage(Message msg) throws ChessHeroException
+    private void handleRequest(HashMap<String, Object> request) throws ChessHeroException
     {
-        SLog.write("Received message: " + msg);
+        SLog.write("Request received: " + request);
 
-        short type = msg.getType();
+        Integer action = (Integer)request.get("action");
 
-        if (!hasAuthenticated && type != Message.TYPE_LOGIN && type != Message.TYPE_REGISTER)
+        if (null == action)
+        {
+            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            return;
+        }
+
+        if (!hasAuthenticated && action != Action.LOGIN && action != Action.REGISTER)
         {
             SLog.write("Client attempting unauthorized action");
             throw new ChessHeroException(Result.AUTH_REQUIRED);
         }
 
-        switch(type)
+        switch (action.intValue())
         {
-            case Message.TYPE_REGISTER:
-                handleRegister((AuthMessage)msg);
+            case Action.LOGIN:
+                handleLogin(request);
                 break;
 
-            case Message.TYPE_LOGIN:
-                handleLogin((AuthMessage)msg);
+            case Action.REGISTER:
+                handleRegister(request);
                 break;
 
-            case Message.TYPE_CREATE_GAME:
-                handleCreateGame((CreateGameMessage)msg);
+            case Action.CREATE_GAME:
+                handleCreateGame(request);
                 break;
 
-            case Message.TYPE_CANCEL_GAME:
-                handleCancelGame((CancelGameMessage)msg);
+            case Action.CANCEL_GAME:
+                handleCancelGame(request);
                 break;
+
+            default:
+                throw new ChessHeroException(Result.UNRECOGNIZED_ACTION);
         }
     }
 
-    private void handleRegister(AuthMessage msg) throws ChessHeroException
+    private void handleRegister(HashMap<String, Object> request) throws ChessHeroException
     {
         if (hasAuthenticated)
         {
-            writeMessage(new ResultMessage(Result.ALREADY_LOGGEDIN));
+            writeMessage(responseWithResult(Result.ALREADY_LOGGEDIN));
             return;
         }
 
         try
         {
-            Credentials credentials = msg.getCredentials();
-            String name = credentials.getName();
+            String name = (String)request.get("username");
+            String pass = (String)request.get("password");
+
+            if (null == name || null == pass)
+            {
+                writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+                return;
+            }
 
             if (!Credentials.isNameValid(name))
             {
-                writeMessage(new ResultMessage(Result.INVALID_NAME));
+                writeMessage(responseWithResult(Result.INVALID_NAME));
                 return;
             }
 
             if (Credentials.isBadUser(name))
             {
-                writeMessage(new ResultMessage(Result.BAD_USER));
+                writeMessage(responseWithResult(Result.BAD_USER));
                 return;
             }
 
-            if (!Credentials.isPassValid(credentials.getPass()))
+            if (!Credentials.isPassValid(pass))
             {
-                writeMessage(new ResultMessage(Result.INVALID_PASS));
+                writeMessage(responseWithResult(Result.INVALID_PASS));
                 return;
             }
 
@@ -249,13 +244,14 @@ public class ClientConnection extends Thread
 
             if (db.userExists(name))
             {
-                writeMessage(new ResultMessage(Result.USER_EXISTS));
+                writeMessage(responseWithResult(Result.USER_EXISTS));
                 return;
             }
 
-            AuthPair auth = credentials.getAuthPair();
+            int salt = Credentials.generateSalt();
+            String passHash = Credentials.saltAndHash(pass, salt);
 
-            db.insertUser(name, auth.getHash(), auth.getSalt());
+            db.insertUser(name, passHash, salt);
 
             userID = db.getUserID(name);
 
@@ -266,11 +262,10 @@ public class ClientConnection extends Thread
 
             hasAuthenticated = true;
 
-            ResultMessage res = new ResultMessage(Result.OK);
-            MapMessage map = new MapMessage();
-            map.set("userid", userID);
-            res.setInnerMessage(map);
-            writeMessage(res);
+            HashMap response = responseWithResult(Result.OK);
+            response.put("username", name);
+            response.put("userid", userID);
+            writeMessage(response);
         }
         catch (SQLException e)
         {
@@ -288,11 +283,11 @@ public class ClientConnection extends Thread
         }
     }
 
-    private void handleLogin(AuthMessage msg) throws ChessHeroException
+    private void handleLogin(HashMap<String, Object> request) throws ChessHeroException
     {
         if (hasAuthenticated)
         {
-            writeMessage(new ResultMessage(Result.ALREADY_LOGGEDIN));
+            writeMessage(responseWithResult(Result.ALREADY_LOGGEDIN));
             return;
         }
 
@@ -300,17 +295,24 @@ public class ClientConnection extends Thread
         {
             db.setKeepAlive(true);
 
-            Credentials credentials = msg.getCredentials();
+            String name = (String)request.get("username");
+            String pass = (String)request.get("password");
 
-            AuthPair auth = db.getAuthPair(credentials.getName());
-
-            if (null == auth || !auth.matches(credentials.getPass()))
+            if (null == name || null == pass)
             {
-                writeMessage(new ResultMessage(Result.INVALID_CREDENTIALS));
+                writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
                 return;
             }
 
-            userID = db.getUserID(credentials.getName());
+            AuthPair auth = db.getAuthPair(name);
+
+            if (null == auth || !auth.matches(pass))
+            {
+                writeMessage(responseWithResult(Result.INVALID_CREDENTIALS));
+                return;
+            }
+
+            userID = db.getUserID(name);
 
             if (-1 == userID)
             {
@@ -319,11 +321,11 @@ public class ClientConnection extends Thread
 
             hasAuthenticated = true;
 
-            ResultMessage res = new ResultMessage(Result.OK);
-            MapMessage map = new MapMessage();
-            map.set("userid", userID);
-            res.setInnerMessage(map);
-            writeMessage(res);
+            HashMap response = responseWithResult(Result.OK);
+            response.put("username", name);
+            response.put("userid", userID);
+
+            writeMessage(response);
         }
         catch (SQLException e)
         {
@@ -341,17 +343,24 @@ public class ClientConnection extends Thread
         }
     }
 
-    private void handleCreateGame(CreateGameMessage msg) throws ChessHeroException
+    private void handleCreateGame(HashMap<String, Object> request) throws ChessHeroException
     {
         if (gameID != NONE)
         {
-            writeMessage(new ResultMessage(Result.ALREADY_PLAYING));
+            writeMessage(responseWithResult(Result.ALREADY_PLAYING));
             return;
         }
 
         try
         {
-            String gameName = msg.getName();
+            String gameName = (String)request.get("gamename");
+
+            if (null == gameName)
+            {
+                writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+                return;
+            }
+
             int gameID = db.insertGame(gameName, userID, 0, Game.STATE_PENDING);
 
             if (-1 == gameID)
@@ -366,11 +375,9 @@ public class ClientConnection extends Thread
             this.gameID = gameID;
             isWaitingPlayer = true;
 
-            ResultMessage res = new ResultMessage(Result.OK);
-            MapMessage map = new MapMessage();
-            map.set("gameid", gameID);
-            res.setInnerMessage(map);
-            writeMessage(res);
+            HashMap response = responseWithResult(Result.OK);
+            response.put("gameid", gameID);
+            writeMessage(response);
         }
         catch (SQLException e)
         {
@@ -379,31 +386,41 @@ public class ClientConnection extends Thread
         }
     }
 
-    private void handleCancelGame(CancelGameMessage msg) throws ChessHeroException
+    private void handleCancelGame(HashMap<String, Object> request) throws ChessHeroException
     {
         if (NONE == gameID)
         {
-            writeMessage(new ResultMessage(Result.NOT_PLAYING));
+            writeMessage(responseWithResult(Result.NOT_PLAYING));
             return;
         }
 
         if (isInGame)
         {
-            writeMessage(new ResultMessage(Result.CANCEL_NA));
+            writeMessage(responseWithResult(Result.CANCEL_NA));
             return;
         }
 
-        if (gameID != msg.getGameID())
+        Integer gameIDToDelete = (Integer)request.get("gameid");
+
+        if (null == gameIDToDelete)
         {
-            writeMessage(new ResultMessage(Result.INVALID_GAME_ID));
+            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            return;
+        }
+
+        int gid = gameIDToDelete.intValue();
+
+        if (gameID != gid)
+        {
+            writeMessage(responseWithResult(Result.INVALID_GAME_ID));
             return;
         }
 
         try
         {
-            db.deleteGame(msg.getGameID());
+            db.deleteGame(gid);
 
-            writeMessage(new ResultMessage(Result.OK));
+            writeMessage(responseWithResult(Result.OK));
         }
         catch (SQLException e)
         {
