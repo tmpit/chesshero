@@ -1,21 +1,18 @@
-package com.kt;
+package com.kt.chesco;
+
+import com.kt.utils.SLog;
+import com.kt.utils.Utils;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 
 /**
  * Created by Toshko on 12/7/13.
- *
- * IMPORTANT!!!
- * This class only implements parameter deserialization as per CHESCO,
- * meaning users of this class will have to take care of parsing the header
- * and of reading the body, then passing it to an instance of this class for deserialization.
  */
 public class CHESCOReader
 {
@@ -53,7 +50,7 @@ public class CHESCOReader
 
             case CHESCO.TYPE_ARR:
                 short count = Utils.shortFromBytes(reader.get(2), 0);
-                ArrayList list = new ArrayList(count);
+                ArrayList<Object> list = new ArrayList<Object>(count);
 
                 for (int i = 0; i < count; i++)
                 {

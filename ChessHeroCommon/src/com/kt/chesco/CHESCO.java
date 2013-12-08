@@ -1,4 +1,4 @@
-package com.kt;
+package com.kt.chesco;
 
 /**
  * Created by Toshko on 12/7/13.

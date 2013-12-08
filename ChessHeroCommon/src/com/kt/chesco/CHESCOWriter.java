@@ -1,4 +1,7 @@
-package com.kt;
+package com.kt.chesco;
+
+import com.kt.utils.SLog;
+import com.kt.utils.Utils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,6 +25,8 @@ public class CHESCOWriter
 
     private void write(String str) throws IOException
     {
+
+
         try
         {
             byte strData[] = str.getBytes("UTF-8");
@@ -33,7 +38,7 @@ public class CHESCOWriter
             }
 
             ostream.write(CHESCO.TYPE_STR);
-            ostream.write(Utils.bytesFromShort((short)dataLen), 0, 2);
+            ostream.write(Utils.bytesFromShort((short) dataLen), 0, 2);
             ostream.write(strData, 0, dataLen);
         }
         catch (UnsupportedEncodingException e)
@@ -100,7 +105,7 @@ public class CHESCOWriter
         }
     }
 
-    public void write(Map<String, Object> map) throws InputMismatchException, IOException
+    public void write(Map map) throws InputMismatchException, IOException
     {
         Set<Map.Entry<String, Object>> entrySet = map.entrySet();
         int entriesCount = entrySet.size();
