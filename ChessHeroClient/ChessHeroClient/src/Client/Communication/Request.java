@@ -10,6 +10,8 @@ public class Request
     private int action;
     private HashMap<String, Object> parameters = new HashMap<String, Object>();
 
+    public int tag;
+
     public Request(int action)
     {
         this.action = action;
@@ -44,6 +46,6 @@ public class Request
     @Override
     public String toString()
     {
-        return parameters.toString();
+        return "<Request :: tag = " + tag + ", parameters = " + parameters.toString() + ">";
     }
 }
