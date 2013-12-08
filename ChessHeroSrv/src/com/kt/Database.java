@@ -25,6 +25,7 @@ class Database
 
     private boolean keepAlive = false;
     private boolean isOpen = false;
+    private boolean inTransaction = false;
 
     private void connect() throws SQLException
     {
@@ -65,7 +66,6 @@ class Database
         try
         {
             conn.close();
-            isOpen = false;
         }
         catch (SQLException ignore)
         {
@@ -73,6 +73,9 @@ class Database
         finally
         {
             conn = null;
+            isOpen = false;
+            keepAlive = false;
+            inTransaction = false;
         }
     }
 
@@ -105,6 +108,28 @@ class Database
         {
             disconnect();
         }
+    }
+
+    public void startTransaction() throws SQLException
+    {
+        if (!isOpen)
+        {
+            return;
+        }
+
+        conn.setAutoCommit(false);
+        inTransaction = true;
+    }
+
+    public void commit() throws SQLException
+    {
+        if (!isOpen)
+        {
+            return;
+        }
+
+        conn.setAutoCommit(true);
+        inTransaction = false;
     }
 
     public boolean userExists(String username) throws SQLException
@@ -322,6 +347,61 @@ class Database
             }
 
             return games;
+        }
+        finally
+        {
+            closeStatement(stmt);
+
+            if (!keepAlive)
+            {
+                disconnect();
+            }
+        }
+    }
+
+    public void gameSetSecondPlayer(int gameID, int user2ID, short state) throws SQLException
+    {
+        PreparedStatement stmt = null;
+
+        try
+        {
+            connect();
+
+            stmt = conn.prepareStatement("UPDATE games SET guid2 = ?, state = ? WHERE gid = ?");
+            stmt.setInt(1, user2ID);
+            stmt.setShort(2, state);
+            stmt.setInt(3, gameID);
+
+            stmt.executeUpdate();
+        }
+        finally
+        {
+            closeStatement(stmt);
+
+            if (!keepAlive)
+            {
+                disconnect();
+            }
+        }
+    }
+
+    public void insertChatTokens(int gameID, int user1ID, String user1Token, int user2ID, String user2Token) throws SQLException
+    {
+        PreparedStatement stmt = null;
+
+        try
+        {
+            connect();
+
+            stmt = conn.prepareStatement("INSERT INTO chat_auth (gid, uid, token) VALUES (?, ?, ?), (?, ?, ?)");
+            stmt.setInt(1, gameID);
+            stmt.setInt(2, user1ID);
+            stmt.setString(3, user1Token);
+            stmt.setInt(4, gameID);
+            stmt.setInt(5, user2ID);
+            stmt.setString(6, user2Token);
+
+            stmt.executeUpdate();
         }
         finally
         {
