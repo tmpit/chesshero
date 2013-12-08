@@ -77,6 +77,7 @@ public class CreateGamePage extends ChessHeroPage {
         }
 
         public  CreateGamePage(){
+            super();
             this.setPageTitle("Create Game Page");
             //Initialize Components
             JPanel mainPanel = new JPanel();
@@ -227,7 +228,7 @@ public class CreateGamePage extends ChessHeroPage {
 
     private void handleLobbyPageButton() {
         System.out.println("Entered Lobby button HANDLER");
-        holder.NavigateToPage(new LobbyPage());
+        getHolder().NavigateToPage(new LobbyPage());
     }
 
     private void handleCreateGameButton() {
@@ -235,7 +236,7 @@ public class CreateGamePage extends ChessHeroPage {
         createGameSettings = getCreateGameSettings();
         System.out.println(createGameSettings.toString());
 //        holder.NavigateToPage(new LobbyPage());
-        holder.NavigateToPage(new PlayGamePage());
+        getHolder().NavigateToPage(new PlayGamePage());
     }
 
 

@@ -3,6 +3,7 @@ package Client.Pages;
 import com.kt.AuthMessage;
 import com.kt.Credentials;
 import com.kt.Message;
+import com.sun.org.apache.regexp.internal.StreamCharacterIterator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,6 +23,7 @@ public class LoginPage extends ChessHeroPage {
     public JPasswordField passwordTextBox;
 
     public  LoginPage(){
+        super();
         this.setPageTitle("Login Page");
         //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
         //Initialize Components
@@ -30,7 +32,6 @@ public class LoginPage extends ChessHeroPage {
         //mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
         //mainPanel.setLayout(new BoxLayout(mainPanel, FlowLayout.CENTER));
         mainPanel.setLayout(new GridBagLayout());
-
 
         menuPanel.setLayout(new GridLayout(6,1));
 
@@ -140,14 +141,24 @@ public class LoginPage extends ChessHeroPage {
     public void handleLogin(){
         //System.out.println(new String(this.passwordTextBox.getPassword()));
 
-        holder.NavigateToPage(new LobbyPage());
+        this.holder.NavigateToPage(new LobbyPage());
 
-        Credentials credentials = new Credentials(
-                this.usernameTextBox.getText(),
-                new String(this.passwordTextBox.getPassword())
-        );
-
-        AuthMessage authMsg = new AuthMessage(Message.TYPE_LOGIN, credentials);
+        String username = this.usernameTextBox.getText();
+        String password = new String(this.passwordTextBox.getPassword());
+        Credentials credentials = null;
+        if(username != null && password != null)
+        {
+            if(Credentials.isNameValid(username) && Credentials.isPassValid(password))
+            {
+                credentials = new Credentials(username, password);
+            }
+        }
+        if (credentials != null){
+            AuthMessage authMsg = new AuthMessage(Message.TYPE_LOGIN, credentials);
+            if (isConnected){
+                this.getConnection().sendRequest(authMsg);
+            }
+        }
         //holder.getConnection().writeMessage(authMsg);
     }
 

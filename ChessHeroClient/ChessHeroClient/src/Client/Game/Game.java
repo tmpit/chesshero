@@ -218,8 +218,8 @@ public class Game {
             else if (owner.getPlayerColor() == ChessColor.Black){
                 pawnRow = 6;
                 otherRow = 7;
-                queenCol = 4;
-                kingCol = 3;
+                queenCol = 3;
+                kingCol = 4;
             }
             else{
                 //should throw exc

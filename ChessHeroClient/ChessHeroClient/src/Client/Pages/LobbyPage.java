@@ -66,6 +66,7 @@ public class LobbyPage extends ChessHeroPage{
     }
 
     public  LobbyPage(){
+        super();
         this.setPageTitle("Lobby Page");
         //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
         //Initialize Components
