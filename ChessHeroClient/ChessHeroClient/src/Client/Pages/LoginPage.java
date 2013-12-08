@@ -156,7 +156,7 @@ public class LoginPage extends ChessHeroPage {
         if (credentials != null){
             AuthMessage authMsg = new AuthMessage(Message.TYPE_LOGIN, credentials);
             if (isConnected){
-                this.getConnection().sendRequest(authMsg);
+                //this.getConnection().sendRequest(authMsg);
             }
         }
         //holder.getConnection().writeMessage(authMsg);

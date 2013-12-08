@@ -13,7 +13,7 @@ import Client.Pages.ChessHeroPage;
 import Client.Pages.LoginPage;
 import com.kt.Message;
 import com.kt.ResultMessage;
-import com.kt.SLog;
+import com.kt.utils.SLog;
 
 import javax.swing.*;
 import java.awt.*;

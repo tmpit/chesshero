@@ -3,11 +3,13 @@ package Client.Pages;
 import Client.ClientMain;
 import Client.Communication.Connection;
 import Client.Communication.ConnectionListener;
+import Client.Communication.Request;
 import com.kt.Message;
 import com.kt.ResultMessage;
-import com.kt.SLog;
+import com.kt.utils.SLog;
 
 import javax.swing.*;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -88,14 +90,13 @@ public abstract class ChessHeroPage extends JPanel implements ConnectionListener
     }
 
     @Override
-    public void didReceiveMessage(Message msg) {
+    public void didReceiveMessage(HashMap<String, Object> message) {
         SLog.write("in recieved message connected event");
 
     }
 
     @Override
-    public void requestDidComplete(boolean success, Message request, ResultMessage response) {
+    public void requestDidComplete(boolean success, Request request, HashMap<String, Object> response){
         SLog.write("in request did complete event");
-
     }
 }

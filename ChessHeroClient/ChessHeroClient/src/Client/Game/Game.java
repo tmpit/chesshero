@@ -1,7 +1,7 @@
 package Client.Game;
 
 import Client.Game.ChessPieces.*;
-import com.kt.ChessHeroException;
+import com.kt.utils.ChessHeroException;
 
 import java.util.ArrayList;
 import java.util.Arrays;

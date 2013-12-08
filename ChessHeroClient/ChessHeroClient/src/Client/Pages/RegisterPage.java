@@ -1,11 +1,14 @@
 package Client.Pages;
 
+import Client.Communication.Request;
 import com.kt.*;
+import com.kt.utils.SLog;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -159,14 +162,14 @@ public class RegisterPage extends ChessHeroPage {
          if (credentials != null){
              AuthMessage authMsg = new AuthMessage(Message.TYPE_REGISTER, credentials);
              if (isConnected){
-                 this.getConnection().sendRequest(authMsg);
+                 //this.getConnection().sendRequest(authMsg);
              }
          }
          //holder.getConnection().writeMessage(authMsg);
      }
 
     @Override
-    public void requestDidComplete(boolean success, Message request, ResultMessage response) {
+    public void requestDidComplete(boolean success, Request request, HashMap<String, Object> response){
         //Logic to handle if the message is successful
         SLog.write("in request did complete in" + this.getPageTitle());
         this.getHolder().NavigateToPage(new LobbyPage());
