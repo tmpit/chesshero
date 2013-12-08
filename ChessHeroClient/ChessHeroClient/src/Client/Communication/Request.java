@@ -40,4 +40,10 @@ public class Request
     {
         parameters.put(name, value);
     }
+
+    @Override
+    public String toString()
+    {
+        return parameters.toString();
+    }
 }
