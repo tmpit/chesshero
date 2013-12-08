@@ -1,7 +1,5 @@
 package Client.Communication;
 
-import com.kt.Message;
-
 import java.util.HashMap;
 
 /**
