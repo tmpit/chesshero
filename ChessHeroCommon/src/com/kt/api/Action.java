@@ -27,6 +27,7 @@ public class Action
 
     // Create a game
     // Parameters: 'gamename' => [STR]
+    // Returns: 'gameid' => [INT]
     public static final int CREATE_GAME = 3;
 
     // Cancel a pending game
