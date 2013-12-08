@@ -206,6 +206,10 @@ public class ClientConnection extends Thread
                     handleFetchGames(request);
                     break;
 
+                case Action.JOIN_GAME:
+                    handleJoinGame(request);
+                    break;
+
                 default:
                     throw new ChessHeroException(Result.UNRECOGNIZED_ACTION);
             }
@@ -433,6 +437,7 @@ public class ClientConnection extends Thread
         try
         {
             db.deleteGame(gid);
+            Game.removeGame(gameID);
             isWaitingPlayer = false;
             gameID = NONE;
 
@@ -468,5 +473,82 @@ public class ClientConnection extends Thread
         {
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
+    }
+
+    private void handleJoinGame(HashMap<String, Object> request) throws ChessHeroException
+    {
+        if (gameID != NONE)
+        {
+            writeMessage(responseWithResult(Result.ALREADY_PLAYING));
+            return;
+        }
+
+        Integer joinGameID = (Integer)request.get("gameid");
+
+        if (null == joinGameID)
+        {
+            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            return;
+        }
+
+        int gameID = joinGameID.intValue();
+
+        Game game = Game.getGame(gameID);
+
+        if (null == game)
+        {
+            writeMessage(responseWithResult(Result.INVALID_GAME_ID));
+            return;
+        }
+
+        // Using flags to write any errors outside of the synchronized block so that the
+        // lock on the object is released as soon as possible
+        boolean gameOccupied = false;
+
+        synchronized (game)
+        {
+            if (game.getState() != Game.STATE_PENDING)
+            {
+                gameOccupied = true;
+            }
+            else
+            {
+                game.setState(Game.STATE_STARTING);
+            }
+        }
+
+        if (gameOccupied)
+        {
+            writeMessage(responseWithResult(Result.GAME_OCCUPIED));
+            return;
+        }
+
+        try
+        {   // TODO: this should be in a transaction
+            // TODO: change table layout: the games table should only contain game id, game name and state
+            db.setKeepAlive(true);
+
+            db.gameSetSecondPlayer(gameID, userID, Game.STATE_STARTING);
+
+            String gameName = game.getName();
+            int otherUserID = game.getOtherUserID(userID);
+
+            String myChatToken = Game.generateChatToken(gameID, userID, gameName);
+            String otherChatToken = Game.generateChatToken(gameID, otherUserID, gameName);
+
+            db.insertChatTokens(gameID, userID, myChatToken, otherUserID, otherChatToken);
+        }
+        catch (Exception e)
+        {
+            SLog.write("Exception raised while joining game: " + e);
+            writeMessage(responseWithResult(Result.INTERNAL_ERROR));
+            return;
+        }
+        finally
+        {
+            db.setKeepAlive(false);
+        }
+
+        game.join(this);
     }
 }
