@@ -101,8 +101,11 @@ public class ClientConnection extends Thread
                 // Read request
                 Object request = reader.read();
 
+                SLog.write("Request received: " + request);
+
                 if (!(request instanceof Map))
                 {   // Map is the only type of object the server allows for sending requests
+                    SLog.write("Request is not in MAP format, ignoring!");
                     continue;
                 }
 
@@ -114,7 +117,7 @@ public class ClientConnection extends Thread
         }
         catch (InputMismatchException e)
         {
-            SLog.write("Message read not conforming to CHESCO");
+            SLog.write("Message not conforming to CHESCO");
         }
         catch (SocketTimeoutException e)
         {
@@ -164,42 +167,48 @@ public class ClientConnection extends Thread
 
     private void handleRequest(HashMap<String, Object> request) throws ChessHeroException
     {
-        SLog.write("Request received: " + request);
-
-        Integer action = (Integer)request.get("action");
-
-        if (null == action)
+        try
         {
-            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
-            return;
+            Integer action = (Integer)request.get("action");
+
+            if (null == action)
+            {
+                writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+                return;
+            }
+
+            if (!hasAuthenticated && action != Action.LOGIN && action != Action.REGISTER)
+            {
+                SLog.write("Client attempting unauthorized action");
+                throw new ChessHeroException(Result.AUTH_REQUIRED);
+            }
+
+            switch (action.intValue())
+            {
+                case Action.LOGIN:
+                    handleLogin(request);
+                    break;
+
+                case Action.REGISTER:
+                    handleRegister(request);
+                    break;
+
+                case Action.CREATE_GAME:
+                    handleCreateGame(request);
+                    break;
+
+                case Action.CANCEL_GAME:
+                    handleCancelGame(request);
+                    break;
+
+                default:
+                    throw new ChessHeroException(Result.UNRECOGNIZED_ACTION);
+            }
         }
-
-        if (!hasAuthenticated && action != Action.LOGIN && action != Action.REGISTER)
+        catch (ClassCastException e)
         {
-            SLog.write("Client attempting unauthorized action");
-            throw new ChessHeroException(Result.AUTH_REQUIRED);
-        }
-
-        switch (action.intValue())
-        {
-            case Action.LOGIN:
-                handleLogin(request);
-                break;
-
-            case Action.REGISTER:
-                handleRegister(request);
-                break;
-
-            case Action.CREATE_GAME:
-                handleCreateGame(request);
-                break;
-
-            case Action.CANCEL_GAME:
-                handleCancelGame(request);
-                break;
-
-            default:
-                throw new ChessHeroException(Result.UNRECOGNIZED_ACTION);
+            SLog.write("A request parameter is not of the appropriate type");
+            writeMessage(responseWithResult(Result.INVALID_PARAM));
         }
     }
 
@@ -419,6 +428,8 @@ public class ClientConnection extends Thread
         try
         {
             db.deleteGame(gid);
+            isWaitingPlayer = false;
+            gameID = NONE;
 
             writeMessage(responseWithResult(Result.OK));
         }
