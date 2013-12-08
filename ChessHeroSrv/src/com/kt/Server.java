@@ -1,11 +1,10 @@
 package com.kt;
 
+import com.kt.utils.SLog;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.InetAddress;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
 
 /**
  * Created with IntelliJ IDEA.
