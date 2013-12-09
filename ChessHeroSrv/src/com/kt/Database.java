@@ -23,11 +23,10 @@ class Database
 
     private Connection conn = null;
 
-    private boolean keepAlive = false;
     private boolean isOpen = false;
     private boolean inTransaction = false;
 
-    private void connect() throws SQLException
+    public void connect() throws SQLException
     {
         if (isOpen)
         {
@@ -56,7 +55,7 @@ class Database
         }
     }
 
-    private void disconnect()
+    public void disconnect()
     {
         if (null == conn)
         {
@@ -74,12 +73,11 @@ class Database
         {
             conn = null;
             isOpen = false;
-            keepAlive = false;
             inTransaction = false;
         }
     }
 
-    private void closeStatement(PreparedStatement stmt)
+    private void closeResources(PreparedStatement stmt, ResultSet set)
     {
         if (null == stmt)
         {
@@ -89,30 +87,20 @@ class Database
         try
         {
             stmt.close();
+
+            if (set != null)
+            {
+                set.close();
+            }
         }
         catch (SQLException ignore)
         {
         }
     }
 
-    public boolean getKeepAlive()
-    {
-        return keepAlive;
-    }
-
-    public void setKeepAlive(boolean flag)
-    {
-        keepAlive = flag;
-
-        if (!flag)
-        {
-            disconnect();
-        }
-    }
-
     public void startTransaction() throws SQLException
     {
-        if (!isOpen)
+        if (inTransaction)
         {
             return;
         }
@@ -123,7 +111,7 @@ class Database
 
     public void commit() throws SQLException
     {
-        if (!isOpen)
+        if (!inTransaction)
         {
             return;
         }
@@ -132,9 +120,21 @@ class Database
         inTransaction = false;
     }
 
+    public void rollback() throws SQLException
+    {
+        if (!inTransaction)
+        {
+            return;
+        }
+
+        conn.rollback();
+        inTransaction = false;
+    }
+
     public boolean userExists(String username) throws SQLException
     {
         PreparedStatement stmt = null;
+        ResultSet set = null;
 
         try
         {
@@ -144,7 +144,7 @@ class Database
             stmt.setString(1, username);
 
             boolean exists = false;
-            ResultSet set = stmt.executeQuery();
+            set = stmt.executeQuery();
 
             while (set.next())
             {
@@ -155,12 +155,7 @@ class Database
         }
         finally
         {
-            closeStatement(stmt);
-
-            if (!keepAlive)
-            {
-                disconnect();
-            }
+            closeResources(stmt, set);
         }
     }
 
@@ -168,6 +163,7 @@ class Database
     public int getUserID(String username) throws SQLException
     {
         PreparedStatement stmt = null;
+        ResultSet set = null;
 
         try
         {
@@ -176,7 +172,7 @@ class Database
             stmt = conn.prepareStatement("SELECT id FROM users WHERE name = ?");
             stmt.setString(1, username);
 
-            ResultSet set = stmt.executeQuery();
+            set = stmt.executeQuery();
 
             while (set.next())
             {
@@ -187,18 +183,14 @@ class Database
         }
         finally
         {
-            closeStatement(stmt);
-
-            if (!keepAlive)
-            {
-                disconnect();
-            }
+            closeResources(stmt, set);
         }
     }
 
     public AuthPair getAuthPair(String username) throws SQLException
     {
         PreparedStatement stmt = null;
+        ResultSet set = null;
 
         try
         {
@@ -207,7 +199,7 @@ class Database
             stmt = conn.prepareStatement("SELECT pass, salt FROM users WHERE name = ?");
             stmt.setString(1, username);
 
-            ResultSet set = stmt.executeQuery();
+            set = stmt.executeQuery();
 
             while (set.next())
             {
@@ -220,12 +212,7 @@ class Database
         }
         finally
         {
-            closeStatement(stmt);
-
-            if (!keepAlive)
-            {
-                disconnect();
-            }
+            closeResources(stmt, set);
         }
     }
 
@@ -246,38 +233,32 @@ class Database
         }
         finally
         {
-            closeStatement(stmt);
-
-            if (!keepAlive)
-            {
-                disconnect();
-            }
+            closeResources(stmt, null);
         }
     }
 
     // Returns the new game id
     // On error returns -1
-    public int insertGame(String name, int user1ID, int user2ID, short state) throws SQLException
+    public int insertGame(String name, short state) throws SQLException
     {
         PreparedStatement stmt = null;
+        ResultSet set = null;
 
         try
         {
             connect();
 
-            stmt = conn.prepareStatement("INSERT INTO games (gname, guid1, guid2, state) VALUES (?, ?, ?, ?)");
+            stmt = conn.prepareStatement("INSERT INTO games (gname, state) VALUES (?, ?)");
             stmt.setString(1, name);
-            stmt.setInt(2, user1ID);
-            stmt.setInt(3, user2ID);
-            stmt.setShort(4, state);
+            stmt.setShort(2, state);
 
             stmt.executeUpdate();
 
-            closeStatement(stmt);
+            closeResources(stmt, null);
 
             stmt = conn.prepareStatement("SELECT LAST_INSERT_ID()");
 
-            ResultSet set = stmt.executeQuery();
+            set = stmt.executeQuery();
 
             while (set.next())
             {
@@ -288,12 +269,7 @@ class Database
         }
         finally
         {
-            closeStatement(stmt);
-
-            if (!keepAlive)
-            {
-                disconnect();
-            }
+            closeResources(stmt, set);
         }
     }
 
@@ -312,18 +288,14 @@ class Database
         }
         finally
         {
-            closeStatement(stmt);
-
-            if (!keepAlive)
-            {
-                disconnect();
-            }
+            closeResources(stmt, null);
         }
     }
 
     public ArrayList fetchGames(short state, int offset, int limit) throws SQLException
     {
         PreparedStatement stmt = null;
+        ResultSet set = null;
 
         try
         {
@@ -335,7 +307,7 @@ class Database
             stmt.setInt(3, limit);
 
             ArrayList games = new ArrayList();
-            ResultSet set = stmt.executeQuery();
+            set = stmt.executeQuery();
 
             while (set.next())
             {
@@ -350,16 +322,11 @@ class Database
         }
         finally
         {
-            closeStatement(stmt);
-
-            if (!keepAlive)
-            {
-                disconnect();
-            }
+            closeResources(stmt, set);
         }
     }
 
-    public void gameSetSecondPlayer(int gameID, int user2ID, short state) throws SQLException
+    public void updateGameState(int gameID, short state) throws SQLException
     {
         PreparedStatement stmt = null;
 
@@ -367,50 +334,37 @@ class Database
         {
             connect();
 
-            stmt = conn.prepareStatement("UPDATE games SET guid2 = ?, state = ? WHERE gid = ?");
-            stmt.setInt(1, user2ID);
-            stmt.setShort(2, state);
-            stmt.setInt(3, gameID);
+            stmt = conn.prepareStatement("UPDATE games SET state = ? WHERE gid = ?");
+            stmt.setShort(1, state);
+            stmt.setInt(2, gameID);
 
             stmt.executeUpdate();
         }
         finally
         {
-            closeStatement(stmt);
-
-            if (!keepAlive)
-            {
-                disconnect();
-            }
+            closeResources(stmt, null);
         }
     }
 
-    public void insertChatTokens(int gameID, int user1ID, String user1Token, int user2ID, String user2Token) throws SQLException
+    public void insertPlayerPair(int gameID, int uid1, String token1, int uid2, String token2) throws SQLException
     {
         PreparedStatement stmt = null;
 
         try
         {
-            connect();
-
-            stmt = conn.prepareStatement("INSERT INTO chat_auth (gid, uid, token) VALUES (?, ?, ?), (?, ?, ?)");
+            stmt = conn.prepareStatement("INSERT INTO players (gid, uid, token) VALUES (?, ?, ?), (?, ?, ?)");
             stmt.setInt(1, gameID);
-            stmt.setInt(2, user1ID);
-            stmt.setString(3, user1Token);
+            stmt.setInt(2, uid1);
+            stmt.setString(3, token1);
             stmt.setInt(4, gameID);
-            stmt.setInt(5, user2ID);
-            stmt.setString(6, user2Token);
+            stmt.setInt(5, uid2);
+            stmt.setString(6, token2);
 
             stmt.executeUpdate();
         }
         finally
         {
-            closeStatement(stmt);
-
-            if (!keepAlive)
-            {
-                disconnect();
-            }
+            closeResources(stmt, null);
         }
     }
 }
