@@ -83,11 +83,7 @@ public class ClientConnection extends Thread
         listen();
 
         closeSocket();
-
-        if (db.getKeepAlive())
-        {
-            db.setKeepAlive(false);
-        }
+        db.disconnect();
     }
 
     private void listen()
@@ -229,36 +225,36 @@ public class ClientConnection extends Thread
             return;
         }
 
+        String name = (String)request.get("username");
+        String pass = (String)request.get("password");
+
+        if (null == name || null == pass)
+        {
+            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            return;
+        }
+
+        if (!Credentials.isNameValid(name))
+        {
+            writeMessage(responseWithResult(Result.INVALID_NAME));
+            return;
+        }
+
+        if (Credentials.isBadUser(name))
+        {
+            writeMessage(responseWithResult(Result.BAD_USER));
+            return;
+        }
+
+        if (!Credentials.isPassValid(pass))
+        {
+            writeMessage(responseWithResult(Result.INVALID_PASS));
+            return;
+        }
+
         try
         {
-            String name = (String)request.get("username");
-            String pass = (String)request.get("password");
-
-            if (null == name || null == pass)
-            {
-                writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
-                return;
-            }
-
-            if (!Credentials.isNameValid(name))
-            {
-                writeMessage(responseWithResult(Result.INVALID_NAME));
-                return;
-            }
-
-            if (Credentials.isBadUser(name))
-            {
-                writeMessage(responseWithResult(Result.BAD_USER));
-                return;
-            }
-
-            if (!Credentials.isPassValid(pass))
-            {
-                writeMessage(responseWithResult(Result.INVALID_PASS));
-                return;
-            }
-
-            db.setKeepAlive(true);
+            db.connect();
 
             if (db.userExists(name))
             {
@@ -297,7 +293,7 @@ public class ClientConnection extends Thread
         }
         finally
         {
-            db.setKeepAlive(false);
+            db.disconnect();
         }
     }
 
@@ -309,18 +305,18 @@ public class ClientConnection extends Thread
             return;
         }
 
+        String name = (String)request.get("username");
+        String pass = (String)request.get("password");
+
+        if (null == name || null == pass)
+        {
+            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            return;
+        }
+
         try
         {
-            db.setKeepAlive(true);
-
-            String name = (String)request.get("username");
-            String pass = (String)request.get("password");
-
-            if (null == name || null == pass)
-            {
-                writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
-                return;
-            }
+            db.connect();
 
             AuthPair auth = db.getAuthPair(name);
 
@@ -357,7 +353,7 @@ public class ClientConnection extends Thread
         }
         finally
         {
-            db.setKeepAlive(false);
+            db.disconnect();
         }
     }
 
@@ -369,17 +365,19 @@ public class ClientConnection extends Thread
             return;
         }
 
+        String gameName = (String)request.get("gamename");
+
+        if (null == gameName)
+        {
+            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            return;
+        }
+
         try
         {
-            String gameName = (String)request.get("gamename");
+            db.connect();
 
-            if (null == gameName)
-            {
-                writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
-                return;
-            }
-
-            int gameID = db.insertGame(gameName, userID, 0, Game.STATE_PENDING);
+            int gameID = db.insertGame(gameName, Game.STATE_PENDING);
 
             if (-1 == gameID)
             {
@@ -401,6 +399,10 @@ public class ClientConnection extends Thread
         {
             SLog.write("Exception while creating game: " + e);
             throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+        finally
+        {
+            db.disconnect();
         }
     }
 
@@ -436,7 +438,10 @@ public class ClientConnection extends Thread
 
         try
         {
+            db.connect();
+
             db.deleteGame(gid);
+
             Game.removeGame(gameID);
             isWaitingPlayer = false;
             gameID = NONE;
@@ -448,20 +453,26 @@ public class ClientConnection extends Thread
             SLog.write("Exception while deleting game: " + e);
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
+        finally
+        {
+            db.disconnect();
+        }
     }
 
     private void handleFetchGames(HashMap<String, Object> request) throws ChessHeroException
     {
+        Integer offset = (Integer)request.get("offset");
+        Integer limit = (Integer)request.get("limit");
+
+        if (null == offset || null == limit)
+        {
+            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            return;
+        }
+
         try
         {
-            Integer offset = (Integer)request.get("offset");
-            Integer limit = (Integer)request.get("limit");
-
-            if (null == offset || null == limit)
-            {
-                writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
-                return;
-            }
+            db.connect();
 
             ArrayList games = db.fetchGames(Game.STATE_PENDING, offset, limit);
 
@@ -472,6 +483,10 @@ public class ClientConnection extends Thread
         catch (SQLException e)
         {
             throw new ChessHeroException(Result.INTERNAL_ERROR);
+        }
+        finally
+        {
+            db.disconnect();
         }
     }
 
@@ -513,7 +528,43 @@ public class ClientConnection extends Thread
             }
             else
             {
-                game.setState(Game.STATE_STARTING);
+                try
+                {
+                    String gameName = game.getName();
+                    int otherUserID = game.getOtherUserID(userID);
+
+                    String myChatToken = Game.generateChatToken(gameID, userID, gameName);
+                    String otherChatToken = Game.generateChatToken(gameID, otherUserID, gameName);
+
+                    db.connect();
+                    db.startTransaction();
+
+                    db.updateGameState(gameID, Game.STATE_STARTED);
+                    db.insertPlayerPair(gameID, userID, myChatToken, otherUserID, otherChatToken);
+
+                    db.commit();
+
+                    game.setState(Game.STATE_STARTED);
+                }
+                catch (Exception e)
+                {
+                    SLog.write("Exception raised while joining game: " + e);
+
+                    try
+                    {
+                        db.rollback();
+                    }
+                    catch (SQLException ignore)
+                    {
+                    }
+
+                    writeMessage(responseWithResult(Result.INTERNAL_ERROR));
+                    return;
+                }
+                finally
+                {
+                    db.disconnect();
+                }
             }
         }
 
@@ -521,32 +572,6 @@ public class ClientConnection extends Thread
         {
             writeMessage(responseWithResult(Result.GAME_OCCUPIED));
             return;
-        }
-
-        try
-        {   // TODO: this should be in a transaction
-            // TODO: change table layout: the games table should only contain game id, game name and state
-            db.setKeepAlive(true);
-
-            db.gameSetSecondPlayer(gameID, userID, Game.STATE_STARTING);
-
-            String gameName = game.getName();
-            int otherUserID = game.getOtherUserID(userID);
-
-            String myChatToken = Game.generateChatToken(gameID, userID, gameName);
-            String otherChatToken = Game.generateChatToken(gameID, otherUserID, gameName);
-
-            db.insertChatTokens(gameID, userID, myChatToken, otherUserID, otherChatToken);
-        }
-        catch (Exception e)
-        {
-            SLog.write("Exception raised while joining game: " + e);
-            writeMessage(responseWithResult(Result.INTERNAL_ERROR));
-            return;
-        }
-        finally
-        {
-            db.setKeepAlive(false);
         }
 
         game.join(this);
