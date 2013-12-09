@@ -18,9 +18,8 @@ public class Game
 {
     public static short STATE_INIT      = 0; // Just initialized, not yet in the list
     public static short STATE_PENDING   = 1; // Inside the list with created games
-    public static short STATE_STARTING  = 2; // The game is about to be started
-    public static short STATE_STARTED   = 3; // The game is being played
-    public static short STATE_FINISHED  = 4; // The game has finished
+    public static short STATE_STARTED   = 2; // The game is being played
+    public static short STATE_FINISHED  = 3; // The game has finished
 
     private static HashMap<Integer, Game> games = new HashMap<Integer, Game>();
     private static Database database = new Database();
