@@ -1,8 +1,6 @@
 package Client.Pages;
 
-import com.kt.AuthMessage;
 import com.kt.Credentials;
-import com.kt.Message;
 import com.sun.org.apache.regexp.internal.StreamCharacterIterator;
 
 import javax.swing.*;
@@ -150,11 +148,11 @@ public class LoginPage extends ChessHeroPage {
         {
             if(Credentials.isNameValid(username) && Credentials.isPassValid(password))
             {
-                credentials = new Credentials(username, password);
+                //credentials = new Credentials(username, password);
             }
         }
         if (credentials != null){
-            AuthMessage authMsg = new AuthMessage(Message.TYPE_LOGIN, credentials);
+            //AuthMessage authMsg = new AuthMessage(Message.TYPE_LOGIN, credentials);
             if (isConnected){
                 //this.getConnection().sendRequest(authMsg);
             }

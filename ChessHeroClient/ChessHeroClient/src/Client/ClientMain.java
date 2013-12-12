@@ -11,8 +11,6 @@ import Client.Communication.Connection;
 import Client.Communication.ConnectionListener;
 import Client.Pages.ChessHeroPage;
 import Client.Pages.LoginPage;
-import com.kt.Message;
-import com.kt.ResultMessage;
 import com.kt.utils.SLog;
 
 import javax.swing.*;

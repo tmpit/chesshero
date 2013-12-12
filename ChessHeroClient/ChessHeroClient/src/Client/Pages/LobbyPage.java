@@ -1,8 +1,6 @@
 package Client.Pages;
 
-import com.kt.AuthMessage;
 import com.kt.Credentials;
-import com.kt.Message;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

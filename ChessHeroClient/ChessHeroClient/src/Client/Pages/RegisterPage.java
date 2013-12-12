@@ -155,12 +155,12 @@ public class RegisterPage extends ChessHeroPage {
          {
              if(Credentials.isNameValid(username) && Credentials.isPassValid(password))
              {
-                 credentials = new Credentials(username, password);
+                 //credentials = new Credentials(username, password);
              }
          }
 
          if (credentials != null){
-             AuthMessage authMsg = new AuthMessage(Message.TYPE_REGISTER, credentials);
+             //AuthMessage authMsg = new AuthMessage(Message.TYPE_REGISTER, credentials);
              if (isConnected){
                  //this.getConnection().sendRequest(authMsg);
              }
