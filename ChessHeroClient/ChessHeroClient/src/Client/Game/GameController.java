@@ -11,7 +11,7 @@ import java.util.zip.CheckedInputStream;
  */
 public class GameController {
 
-    public NetworkPlayer me = null;
+    public NetworkPlayer player = null;
     public NetworkPlayer opponent = null;
     public Game game = null;
 
@@ -21,13 +21,60 @@ public class GameController {
 //
 //    }
 
-    public GameController(Game game, NetworkPlayer me, NetworkPlayer opponent){
+    public GameController(Game game, NetworkPlayer player, NetworkPlayer opponent){
 
         this.game = game;
-        this.me = me;
+        this.player = player;
         this.opponent = opponent;
     }
 
+    public GameController(Game game,
+                          NetworkPlayer player,
+                          ChessColor playerColor,
+                          NetworkPlayer opponent,
+                          ChessColor opponentColor){
+        this(game,player,opponent);
+
+        connectPlayers(player,playerColor,opponent,opponentColor);
+    }
+//    public GamePlayer createGamePlayer(ChessColor playerColor){
+//        new GamePlayer(playerColor);
+//    }
+
+    public void connectPlayers(NetworkPlayer player,
+                               ChessColor playerColor,
+                               NetworkPlayer opponent,
+                               ChessColor opponentColor){
+        connectPlayer(player,playerColor);
+        connectPlayer(opponent,opponentColor);
+    }
+
+    public void connectPlayer(NetworkPlayer networkPlayer, ChessColor asGamePlayer){
+        if(this.game != null && networkPlayer != null){
+            if (asGamePlayer == ChessColor.White){
+                if(this.game.getWhitePlayer() != null){
+                    this.game.getWhitePlayer().setConnectedPlayer(networkPlayer);
+                }
+                else{
+                    this.game.setWhitePlayer(new GamePlayer(asGamePlayer,networkPlayer));
+                }
+                networkPlayer.setGamePlayer(this.game.getWhitePlayer());
+            }
+            else if (asGamePlayer == ChessColor.Black){
+                if(this.game.getBlackPlayer() != null){
+                    this.game.getBlackPlayer().setConnectedPlayer(networkPlayer);
+                }
+                else{
+                    this.game.setBlackPlayer(new GamePlayer(asGamePlayer,networkPlayer));
+                }
+                networkPlayer.setGamePlayer(this.game.getBlackPlayer());
+            }
+            else{
+                //Should throw exception
+                return;
+            }
+        }
+    }
 }
 //    private static GameController singleton = null;
 //    private GameController(){};

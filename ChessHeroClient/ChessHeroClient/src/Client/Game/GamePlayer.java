@@ -29,11 +29,11 @@ public class GamePlayer {
         return connectedPlayer == null;
     }
 
-    public NetworkPlayer getPlayerID() {
+    public NetworkPlayer getConnectedPlayer() {
         return connectedPlayer;
     }
 
-    public void setPlayerID(NetworkPlayer connectedPlayer) {
+    public void setConnectedPlayer(NetworkPlayer connectedPlayer) {
         this.connectedPlayer = connectedPlayer;
     }
 
@@ -117,7 +117,7 @@ public class GamePlayer {
         this.playerColor = playerColor;
         activePieces = new ArrayList<ChessPiece>();
         takenPieces = new ArrayList<ChessPiece>();
-        this.connectedPlayer = connectedPlayer;
+        this.setConnectedPlayer(connectedPlayer);
     }
 
 //    public GamePlayer(
