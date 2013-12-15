@@ -73,9 +73,9 @@ public class ClientConnection extends Thread
     {
         listen();
 
-        Game game = player.getGame();
+        Game game = null;
 
-        if (game != null)
+        if (player != null && (game = player.getGame()) != null)
         {
             synchronized (game)
             {

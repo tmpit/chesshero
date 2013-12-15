@@ -25,7 +25,6 @@ public class Server
         try
         {
             _sock = new ServerSocket(SERVER_SOCK_PORT);
-            SLog.write("Server socket bound");
 
             listen();
         }
