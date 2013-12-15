@@ -619,7 +619,7 @@ public class ClientConnection extends Thread
 
                         game.setState(Game.STATE_STARTED);
                         player.join(game);
-                        GameController controller = new GameController(game);
+                        new GameController(game);
                     }
                     catch (Exception e)
                     {
@@ -655,12 +655,17 @@ public class ClientConnection extends Thread
             return;
         }
 
-        writeMessage(aResponseWithResult(Result.OK));
+        Player opponent = player.getOpponent();
+
+        HashMap myMsg = aResponseWithResult(Result.OK);
+        myMsg.put("opponentname", opponent.getName());
+        myMsg.put("opponentid", opponent.getUserID());
+        writeMessage(myMsg);
 
         HashMap msg = aPushMessage();
-        msg.put("gameid", gameID);
+        msg.put("opponentname", player.getName());
+        msg.put("opponentid", player.getUserID());
 
-        ClientConnection other = player.getOpponent().getConnection();
-        other.writeMessage(msg);
+        opponent.getConnection().writeMessage(msg);
     }
 }
