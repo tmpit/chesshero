@@ -23,29 +23,27 @@ public class Main
     private static CHESCOReader reader;
     private static CHESCOWriter writer;
 
-    private static final boolean interactive = true;
+    private static boolean interactive = true;
 
     public static void main(String []args)
     {
-        try
+        while (true)
         {
-            sock = new Socket(InetAddress.getLocalHost(), 4848);
-
-            reader = new CHESCOReader(sock.getInputStream());
-            writer = new CHESCOWriter(sock.getOutputStream());
-
-            if (interactive)
+            try
             {
-                startInteractive();
+                if (interactive)
+                {
+                    startInteractive();
+                }
+                else
+                {
+                    startStatic();
+                }
             }
-            else
+            catch (Throwable e)
             {
-                startStatic();
+                System.out.println("Exception: " + e);
             }
-        }
-        catch (Throwable e)
-        {
-            System.out.println("Exception: " + e);
         }
     }
 
@@ -61,7 +59,7 @@ public class Main
             if (null == input)
             {
                 SLog.write("End of file stream");
-                break;
+                System.exit(1);
             }
 
             input = input.toLowerCase();
@@ -69,6 +67,19 @@ public class Main
 
             if (args[0].equals("exit"))
             {
+                System.exit(0);
+            }
+            else if (args[0].equals("connect"))
+            {
+                connect();
+            }
+            else if (args[0].equals("disconnect"))
+            {
+                disconnect();
+            }
+            else if (args[0].equals("switchmode"))
+            {
+                interactive = !interactive;
                 break;
             }
             else if (args[0].equals("login"))
@@ -101,6 +112,25 @@ public class Main
     public static void startStatic() throws IOException
     {
 
+    }
+
+    public static void connect() throws IOException
+    {
+        sock = new Socket(InetAddress.getLocalHost(), 4848);
+
+        reader = new CHESCOReader(sock.getInputStream());
+        writer = new CHESCOWriter(sock.getOutputStream());
+    }
+
+    public static void disconnect() throws IOException
+    {
+        if (sock != null && !sock.isClosed())
+        {
+            sock.close();
+        }
+
+        reader = null;
+        writer = null;
     }
 
     public static void login(String name, String pass) throws IOException
