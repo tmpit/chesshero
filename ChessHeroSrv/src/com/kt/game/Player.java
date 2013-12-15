@@ -12,6 +12,9 @@ public class Player
     private ClientConnection connection;
     private Game game;
 
+    public enum Color { NONE, WHITE, BLACK }
+    private Color color = Color.NONE;
+
     public Player(int userID, String name, ClientConnection connection)
     {
         this.userID = userID;
@@ -39,12 +42,18 @@ public class Player
         return game;
     }
 
-    public boolean join(Game game)
+    public Color getColor()
+    {
+        return color;
+    }
+
+    public boolean join(Game game, Color color)
     {
         if (null == game.player1)
         {
             game.player1 = this;
             this.game = game;
+            this.color = color;
             return true;
         }
 
@@ -52,6 +61,7 @@ public class Player
         {
             game.player2 = this;
             this.game = game;
+            this.color = color;
             return true;
         }
 
@@ -76,6 +86,7 @@ public class Player
         }
 
         game = null;
+        color = Color.NONE;
     }
 
     public Player getOpponent()
