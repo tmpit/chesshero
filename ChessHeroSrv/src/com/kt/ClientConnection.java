@@ -30,7 +30,10 @@ import java.util.Map;
  */
 public class ClientConnection extends Thread
 {
-    private final static int READ_TIMEOUT = 15 * 1000; // In milliseconds
+    private static final int READ_TIMEOUT = 15 * 1000; // In milliseconds
+
+    private static final int DEFAULT_FETCH_GAMES_OFFSET = 0;
+    private static final int DEFAULT_FETCH_GAMES_LIMIT = 100;
 
     private boolean running = true;
     private Socket sock = null;
@@ -231,6 +234,10 @@ public class ClientConnection extends Thread
 
                 case Action.JOIN_GAME:
                     handleJoinGame(request);
+                    break;
+
+                case Action.EXIT_GAME:
+                    handleExitGame(request);
                     break;
 
                 default:
@@ -515,10 +522,13 @@ public class ClientConnection extends Thread
         Integer offset = (Integer)request.get("offset");
         Integer limit = (Integer)request.get("limit");
 
-        if (null == offset || null == limit)
+        if (null == offset)
         {
-            writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
-            return;
+            offset = DEFAULT_FETCH_GAMES_OFFSET;
+        }
+        if (null == limit)
+        {
+            limit = DEFAULT_FETCH_GAMES_LIMIT;
         }
 
         try
@@ -650,5 +660,10 @@ public class ClientConnection extends Thread
         msg.put("chattoken", opponentChatToken);
 
         opponent.getConnection().writeMessage(msg);
+    }
+
+    private void handleExitGame(HashMap<String, Object> request) throws ChessHeroException
+    {
+
     }
 }

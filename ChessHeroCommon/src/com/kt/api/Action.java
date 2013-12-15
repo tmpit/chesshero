@@ -16,35 +16,46 @@ public class Action
     // and all additional parameters returned if the request has succeeded:
 
     // Login
+    // Description: Authenticate an existing user
     // Parameters: [username:STR], [password:STR]
     // Returns: [username:STR], [userid:INT]
     public static final int LOGIN = 1;
 
     // Register
+    // Description: Register a new user
     // Parameters: [username:STR], [password:STR]
     // Returns: [username:STR], [userid:INT]
     public static final int REGISTER = 2;
 
-    // Create a game
+    // Create game
+    // Description: Create a new game that would be available to all players
     // Parameters: [gamename:STR]
     // Returns: [gameid:INT]
-    // Additional: If the user successfully creates a game, the client should expect a push message
+    // Additional: If the user successfully creates a game, they should expect a push message
     // to be sent when another player joins the game. The message will contain the following parameters:
     // [opponentname:STR], [opponentid:INT], [chattoken:STR]
     public static final int CREATE_GAME = 3;
 
-    // Cancel a pending game
+    // Cancel game
+    // Description: Cancel your created game. Only works for a game the current user has created and only if the game hasn't started yet
     // Parameters: [gameid:INT]
     public static final int CANCEL_GAME = 4;
 
-    // Fetch games waiting for a player
-    // Parameters: [offset:INT], [limit:INT]
+    // Fetch games
+    // Description: Fetch all games waiting for a second player to join
+    // Parameters: [offset:INT] - optional, [limit:INT] - optional. Default offset is 0, default limit is 100
     // Returns: [games:ARR]
     // - Each element in games has: [gameid:INT], [gamename:STR]
     public static final int FETCH_GAMES = 5;
 
-    // Join a game
+    // Join game
+    // Description: Join a game waiting for a second player to join and start playing
     // Parameters: [gameid:INT]
     // Returns: [opponentname:STR], [opponentid:INT], [chattoken:STR]
     public static final int JOIN_GAME = 6;
+
+    // Exit game
+    // Parameters: [gameid:INT]
+    // Description: Exit the current game. Whoever exits the game before its natural end is considered defeated
+    public static final int EXIT_GAME = 7;
 }
