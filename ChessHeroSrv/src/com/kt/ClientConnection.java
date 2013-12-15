@@ -35,6 +35,8 @@ public class ClientConnection extends Thread
     private static final int DEFAULT_FETCH_GAMES_OFFSET = 0;
     private static final int DEFAULT_FETCH_GAMES_LIMIT = 100;
 
+    private static final String DEFAULT_PLAYER_COLOR = "white";
+
     private boolean running = true;
     private Socket sock = null;
     private CHESCOReader reader = null;
@@ -72,6 +74,7 @@ public class ClientConnection extends Thread
         }
     }
 
+    @Override
     public void run()
     {
         listen();
@@ -138,6 +141,7 @@ public class ClientConnection extends Thread
         catch (InputMismatchException e)
         {
             SLog.write("Message not conforming to CHESCO");
+            writeMessage(aResponseWithResult(Result.INVALID_REQUEST));
         }
         catch (SocketTimeoutException e)
         {
@@ -413,6 +417,13 @@ public class ClientConnection extends Thread
             return;
         }
 
+        String color = (String)request.get("color");
+
+        if (null == color || (!color.equals("white") && !color.equals("black")))
+        {
+            color = DEFAULT_PLAYER_COLOR;
+        }
+
         try
         {
             db.connect();
@@ -426,7 +437,7 @@ public class ClientConnection extends Thread
 
             Game game = new Game(gameID, gameName);
             game.setState(Game.STATE_PENDING);
-            player.join(game);
+            player.join(game, (color.equals("white") ? Player.Color.WHITE : Player.Color.BLACK));
 
             Game.addGame(game);
 
@@ -455,42 +466,44 @@ public class ClientConnection extends Thread
             return;
         }
 
+        Integer gameIDToDelete = (Integer)request.get("gameid");
+
+        if (null == gameIDToDelete)
+        {
+            writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
+            return;
+        }
+
         // Using flags to write any errors outside of the synchronized block so that the
         // lock on the object is not prolonged so much by IO operations
         boolean isInGame = false;
-        boolean missingParameters = false;
         boolean invalidGameID = false;
 
         synchronized (game)
         {
             if (!(isInGame = game.getState() != Game.STATE_PENDING))
             {
-                Integer gameIDToDelete = (Integer)request.get("gameid");
+                int gID = gameIDToDelete.intValue();
+                int playerGID = game.getID();
 
-                if (!(missingParameters = null == gameIDToDelete))
+                if (!(invalidGameID = playerGID != gID))
                 {
-                    int gID = gameIDToDelete.intValue();
-                    int playerGID = game.getID();
-
-                    if (!(invalidGameID = playerGID != gID))
+                    try
                     {
-                        try
-                        {
-                            db.connect();
-                            db.deleteGame(gID);
+                        db.connect();
+                        db.deleteGame(gID);
 
-                            Game.removeGame(gID);
-                            player.leave();
-                        }
-                        catch (SQLException e)
-                        {
-                            SLog.write("Exception while deleting game: " + e);
-                            throw new ChessHeroException(Result.INTERNAL_ERROR);
-                        }
-                        finally
-                        {
-                            db.disconnect();
-                        }
+                        Game.removeGame(gID);
+                        player.leave();
+                    }
+                    catch (SQLException e)
+                    {
+                        SLog.write("Exception while deleting game: " + e);
+                        throw new ChessHeroException(Result.INTERNAL_ERROR);
+                    }
+                    finally
+                    {
+                        db.disconnect();
                     }
                 }
             }
@@ -499,12 +512,6 @@ public class ClientConnection extends Thread
         if (isInGame)
         {
             writeMessage(aResponseWithResult(Result.CANCEL_NA));
-            return;
-        }
-
-        if (missingParameters)
-        {
-            writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
             return;
         }
 
@@ -610,8 +617,11 @@ public class ClientConnection extends Thread
 
                         db.commit();
 
+                        Player.Color opponentColor = opponent.getColor();
+                        Player.Color myColor = (opponentColor == Player.Color.WHITE ? Player.Color.BLACK : Player.Color.WHITE);
+                        player.join(game, myColor);
+
                         game.setState(Game.STATE_STARTED);
-                        player.join(game);
                         new GameController(game);
                     }
                     catch (Exception e)
@@ -664,6 +674,45 @@ public class ClientConnection extends Thread
 
     private void handleExitGame(HashMap<String, Object> request) throws ChessHeroException
     {
+        Game game = player.getGame();
 
+        if (null == game)
+        {
+            writeMessage(aResponseWithResult(Result.NOT_PLAYING));
+            return;
+        }
+
+        Integer gameID = (Integer)request.get("gameid");
+
+        if (null == gameID)
+        {
+            writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
+            return;
+        }
+
+        boolean invalidGameID = false;
+        boolean gameHasNotStarted = false;
+
+        synchronized (game)
+        {
+            if (!(invalidGameID = game.getID() != gameID) && !(gameHasNotStarted = game.getState() != Game.STATE_STARTED))
+            {
+
+            }
+        }
+
+        if (invalidGameID)
+        {
+            writeMessage(aResponseWithResult(Result.INVALID_GAME_ID));
+            return;
+        }
+
+        if (gameHasNotStarted)
+        {
+            writeMessage(aResponseWithResult(Result.EXIT_NA));
+            return;
+        }
+
+        writeMessage(aResponseWithResult(Result.OK));
     }
 }

@@ -29,7 +29,7 @@ public class Action
 
     // Create game
     // Description: Create a new game that would be available to all players
-    // Parameters: [gamename:STR]
+    // Parameters: [gamename:STR], [color:STR] - either 'black' or 'white', optional, default value is 'white' if not specified
     // Returns: [gameid:INT]
     // Additional: If the user successfully creates a game, they should expect a push message
     // to be sent when another player joins the game. The message will contain the following parameters:
