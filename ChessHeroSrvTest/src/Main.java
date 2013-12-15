@@ -99,7 +99,16 @@ public class Main
             }
             else if (args[0].equals("fetchgames"))
             {
-                fetchGames(Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+                int offset = -1, limit = -1;
+                if (args.length > 1)
+                {
+                    offset = Integer.parseInt(args[1]);
+                }
+                if (args.length > 2)
+                {
+                    limit = Integer.parseInt(args[2]);
+                }
+                fetchGames(offset, limit);
             }
             else if (args[0].equals("joingame"))
             {
@@ -201,8 +210,14 @@ public class Main
     {
         HashMap req = new HashMap();
         req.put("action", Action.FETCH_GAMES);
-        req.put("offset", offset);
-        req.put("limit", limit);
+        if (offset != -1)
+        {
+            req.put("offset", offset);
+        }
+        if (limit != -1)
+        {
+            req.put("limit", limit);
+        }
         writer.write(req);
 
         listen(1);
