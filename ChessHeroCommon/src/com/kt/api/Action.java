@@ -6,7 +6,7 @@ package com.kt.api;
 public class Action
 {
     // About the notation used:
-    // On the left side of the colon is the name of the parameter.
+    // On the left side of the colon is the key for the parameter.
     // On the right side of the colon is the type of the parameter.
 
     // Each request to the server should always have at least one parameter [action:INT].
@@ -28,6 +28,9 @@ public class Action
     // Create a game
     // Parameters: [gamename:STR]
     // Returns: [gameid:INT]
+    // Additional: If the user successfully creates a game, the client should expect a push message
+    // to be sent when another player joins the game. The message will contain the following parameters:
+    // [opponentname:STR], [opponentid:INT], [chattoken:STR]
     public static final int CREATE_GAME = 3;
 
     // Cancel a pending game
@@ -42,6 +45,6 @@ public class Action
 
     // Join a game
     // Parameters: [gameid:INT]
-    // Returns: [chattoken:STR]
+    // Returns: [opponentname:STR], [opponentid:INT], [chattoken:STR]
     public static final int JOIN_GAME = 6;
 }

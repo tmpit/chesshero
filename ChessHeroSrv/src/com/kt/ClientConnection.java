@@ -456,28 +456,16 @@ public class ClientConnection extends Thread
 
         synchronized (game)
         {
-            if (game.getState() != Game.STATE_PENDING)
-            {
-                isInGame = true;
-            }
-            else
+            if (!(isInGame = game.getState() != Game.STATE_PENDING))
             {
                 Integer gameIDToDelete = (Integer)request.get("gameid");
 
-                if (null == gameIDToDelete)
-                {
-                    missingParameters = true;
-                }
-                else
+                if (!(missingParameters = null == gameIDToDelete))
                 {
                     int gID = gameIDToDelete.intValue();
                     int playerGID = game.getID();
 
-                    if (playerGID != gID)
-                    {
-                        invalidGameID = true;
-                    }
-                    else
+                    if (!(invalidGameID = playerGID != gID))
                     {
                         try
                         {
@@ -584,30 +572,25 @@ public class ClientConnection extends Thread
         boolean gameOccupied = false;
         boolean sameUser = false;
 
+        Player opponent = null;
+        String myChatToken = null, opponentChatToken = null;
+
         synchronized (game)
         {
-            if (game.getState() != Game.STATE_PENDING)
-            {
-                gameOccupied = true;
-            }
-            else
+            if (!(gameOccupied = game.getState() != Game.STATE_PENDING))
             {
                 String gameName = game.getName();
-                Player opponent = game.getPlayer1();
+                opponent = game.getPlayer1();
 
                 int myUserID = player.getUserID();
                 int opponentUserID = opponent.getUserID();
 
-                if (myUserID == opponentUserID)
-                {
-                    sameUser = true;
-                }
-                else
+                if (!(sameUser = myUserID == opponentUserID))
                 {
                     try
                     {
-                        String myChatToken = Game.generateChatToken(gameID, myUserID, gameName);
-                        String opponentChatToken = Game.generateChatToken(gameID, opponentUserID, gameName);
+                        myChatToken = Game.generateChatToken(gameID, myUserID, gameName);
+                        opponentChatToken = Game.generateChatToken(gameID, opponentUserID, gameName);
 
                         db.connect();
                         db.startTransaction();
@@ -655,16 +638,16 @@ public class ClientConnection extends Thread
             return;
         }
 
-        Player opponent = player.getOpponent();
-
         HashMap myMsg = aResponseWithResult(Result.OK);
         myMsg.put("opponentname", opponent.getName());
         myMsg.put("opponentid", opponent.getUserID());
+        myMsg.put("chattoken", myChatToken);
         writeMessage(myMsg);
 
         HashMap msg = aPushMessage();
         msg.put("opponentname", player.getName());
         msg.put("opponentid", player.getUserID());
+        msg.put("chattoken", opponentChatToken);
 
         opponent.getConnection().writeMessage(msg);
     }

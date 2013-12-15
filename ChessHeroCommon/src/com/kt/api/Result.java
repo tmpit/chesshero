@@ -28,7 +28,7 @@ public class Result
 
     public static final int INVALID_REQUEST = 400;      // Any request / Invalid request format has been sent and the request couldn't be parsed
     public static final int MISSING_PARAMETERS = 401;   // Any request / Parameters are missing
-    public static final int UNRECOGNIZED_ACTION = 402;  // Any request / Wrong action code has been sent
+    public static final int UNRECOGNIZED_ACTION = 402;  // Any request / Unrecognized action code has been sent
     public static final int INVALID_PARAM = 403;        // Any request / Wrong parameter type (e.g. server is expecting STR, client sends INT)
 
     public static final int INTERNAL_ERROR = 500;       // Any request / ...
