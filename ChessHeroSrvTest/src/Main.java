@@ -77,6 +77,11 @@ public class Main
             {
                 disconnect();
             }
+            else if (args[0].equals("reconnect"))
+            {
+                disconnect();
+                connect();
+            }
             else if (args[0].equals("switchmode"))
             {
                 interactive = !interactive;
