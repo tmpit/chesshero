@@ -73,6 +73,35 @@ public class ClientConnection extends Thread
     {
         listen();
 
+        Game game = player.getGame();
+
+        if (game != null)
+        {
+            synchronized (game)
+            {
+                if (Game.STATE_PENDING == game.getState())
+                {
+                    try
+                    {
+                        int gameID = game.getID();
+
+                        db.connect();
+                        db.deleteGame(gameID);
+
+                        Game.removeGame(gameID);
+                    }
+                    catch (SQLException e)
+                    {
+                        SLog.write("Exception while deleting game due to EOF: " + e);
+                    }
+                }
+                else if (Game.STATE_STARTED == game.getState())
+                {
+                    // TODO: end game
+                }
+            }
+        }
+
         closeSocket();
         db.disconnect();
     }
