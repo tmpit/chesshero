@@ -23,22 +23,13 @@ public class Main
     private static CHESCOReader reader;
     private static CHESCOWriter writer;
 
-    private static boolean interactive = true;
-
     public static void main(String []args)
     {
         while (true)
         {
             try
             {
-                if (interactive)
-                {
-                    startInteractive();
-                }
-                else
-                {
-                    startStatic();
-                }
+                start();
             }
             catch (Throwable e)
             {
@@ -47,7 +38,7 @@ public class Main
         }
     }
 
-    public static void startInteractive() throws IOException
+    public static void start() throws IOException
     {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -69,6 +60,10 @@ public class Main
             {
                 System.exit(0);
             }
+            else if (args[0].equals("routine"))
+            {
+                routine();
+            }
             else if (args[0].equals("connect"))
             {
                 connect();
@@ -82,10 +77,9 @@ public class Main
                 disconnect();
                 connect();
             }
-            else if (args[0].equals("switchmode"))
+            else if (args[0].equals("listen"))
             {
-                interactive = !interactive;
-                break;
+                listen(Integer.parseInt(args[1]));
             }
             else if (args[0].equals("login"))
             {
@@ -107,6 +101,10 @@ public class Main
             {
                 fetchGames(Integer.parseInt(args[1]), Integer.parseInt(args[2]));
             }
+            else if (args[0].equals("joingame"))
+            {
+                joinGame(Integer.parseInt(args[1]));
+            }
             else
             {
                 SLog.write("Unrecognized command");
@@ -114,9 +112,10 @@ public class Main
         }
     }
 
-    public static void startStatic() throws IOException
+    public static void routine() throws IOException
     {
-
+        connect();
+        login("tttt", "pppp");
     }
 
     public static void connect() throws IOException
@@ -138,6 +137,24 @@ public class Main
         writer = null;
     }
 
+    public static void listen(int messages) throws IOException
+    {
+        if (messages < 0)
+        {
+            while (true)
+            {
+                SLog.write(reader.read());
+            }
+        }
+        else
+        {
+            while (messages-- > 0)
+            {
+                SLog.write(reader.read());
+            }
+        }
+    }
+
     public static void login(String name, String pass) throws IOException
     {
         HashMap req = new HashMap();
@@ -146,7 +163,7 @@ public class Main
         req.put("password", pass);
         writer.write(req);
 
-        SLog.write(reader.read());
+        listen(1);
     }
 
     public static void reg(String name, String pass) throws IOException
@@ -157,7 +174,7 @@ public class Main
         req.put("password", pass);
         writer.write(req);
 
-        SLog.write(reader.read());
+        listen(1);
     }
 
     public static void createGame(String name) throws IOException
@@ -167,7 +184,7 @@ public class Main
         req.put("gamename", name);
         writer.write(req);
 
-        SLog.write(reader.read());
+        listen(1);
     }
 
     public static void cancelGame(int gameid) throws IOException
@@ -177,7 +194,7 @@ public class Main
         req.put("gameid", gameid);
         writer.write(req);
 
-        SLog.write(reader.read());
+        listen(1);
     }
 
     public static void fetchGames(int offset, int limit) throws IOException
@@ -188,6 +205,16 @@ public class Main
         req.put("limit", limit);
         writer.write(req);
 
-        SLog.write(reader.read());
+        listen(1);
+    }
+
+    public static void joinGame(int gameID) throws IOException
+    {
+        HashMap req = new HashMap();
+        req.put("action", Action.JOIN_GAME);
+        req.put("gameid", gameID);
+        writer.write(req);
+
+        listen(1);
     }
 }
