@@ -3,6 +3,9 @@ package com.kt;
 import com.kt.api.Action;
 import com.kt.chesco.CHESCOReader;
 import com.kt.chesco.CHESCOWriter;
+import com.kt.game.Game;
+import com.kt.game.GameController;
+import com.kt.game.Player;
 import com.kt.utils.ChessHeroException;
 import com.kt.api.Result;
 import com.kt.utils.SLog;
@@ -29,20 +32,13 @@ public class ClientConnection extends Thread
 {
     private final static int READ_TIMEOUT = 15 * 1000; // In milliseconds
 
-    private final static int NONE = -1;
-
     private boolean running = true;
     private Socket sock = null;
     private CHESCOReader reader = null;
     private CHESCOWriter writer = null;
     private Database db = null;
 
-    private boolean hasAuthenticated = false;
-    private int userID = NONE;
-
-    private int gameID = NONE;
-    private boolean isWaitingPlayer = false;
-    private boolean isInGame = false;
+    private Player player = null;
 
     ClientConnection(Socket sock) throws IOException
     {
@@ -51,11 +47,6 @@ public class ClientConnection extends Thread
 
         reader = new CHESCOReader(sock.getInputStream());
         writer = new CHESCOWriter(sock.getOutputStream());
-    }
-
-    public int getUserID()
-    {
-        return userID;
     }
 
     private void closeSocket()
@@ -132,7 +123,7 @@ public class ClientConnection extends Thread
         {
             int code = e.getCode();
             SLog.write("Chess hero exception: " + code);
-            writeMessage(responseWithResult(code));
+            writeMessage(aResponseWithResult(code));
         }
         catch (Exception e)
         {
@@ -140,14 +131,21 @@ public class ClientConnection extends Thread
         }
     }
 
-    private HashMap<String, Object> responseWithResult(int result)
+    private HashMap<String, Object> aResponseWithResult(int result)
     {
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("result", result);
         return map;
     }
 
-    private void writeMessage(HashMap<String, Object> message)
+    private HashMap<String, Object> aPushMessage()
+    {
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("push", true);
+        return map;
+    }
+
+    public synchronized void writeMessage(HashMap<String, Object> message)
     {
         try
         {
@@ -170,11 +168,11 @@ public class ClientConnection extends Thread
 
             if (null == action)
             {
-                writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+                writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
                 return;
             }
 
-            if (!hasAuthenticated && action != Action.LOGIN && action != Action.REGISTER)
+            if (null == player && action != Action.LOGIN && action != Action.REGISTER)
             {
                 SLog.write("Client attempting unauthorized action");
                 throw new ChessHeroException(Result.AUTH_REQUIRED);
@@ -213,15 +211,15 @@ public class ClientConnection extends Thread
         catch (ClassCastException e)
         {
             SLog.write("A request parameter is not of the appropriate type");
-            writeMessage(responseWithResult(Result.INVALID_PARAM));
+            writeMessage(aResponseWithResult(Result.INVALID_PARAM));
         }
     }
 
     private void handleRegister(HashMap<String, Object> request) throws ChessHeroException
     {
-        if (hasAuthenticated)
+        if (player != null)
         {
-            writeMessage(responseWithResult(Result.ALREADY_LOGGEDIN));
+            writeMessage(aResponseWithResult(Result.ALREADY_LOGGEDIN));
             return;
         }
 
@@ -230,25 +228,25 @@ public class ClientConnection extends Thread
 
         if (null == name || null == pass)
         {
-            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
             return;
         }
 
         if (!Credentials.isNameValid(name))
         {
-            writeMessage(responseWithResult(Result.INVALID_NAME));
+            writeMessage(aResponseWithResult(Result.INVALID_NAME));
             return;
         }
 
         if (Credentials.isBadUser(name))
         {
-            writeMessage(responseWithResult(Result.BAD_USER));
+            writeMessage(aResponseWithResult(Result.BAD_USER));
             return;
         }
 
         if (!Credentials.isPassValid(pass))
         {
-            writeMessage(responseWithResult(Result.INVALID_PASS));
+            writeMessage(aResponseWithResult(Result.INVALID_PASS));
             return;
         }
 
@@ -258,7 +256,7 @@ public class ClientConnection extends Thread
 
             if (db.userExists(name))
             {
-                writeMessage(responseWithResult(Result.USER_EXISTS));
+                writeMessage(aResponseWithResult(Result.USER_EXISTS));
                 return;
             }
 
@@ -267,16 +265,16 @@ public class ClientConnection extends Thread
 
             db.insertUser(name, passHash, salt);
 
-            userID = db.getUserID(name);
+            int userID = db.getUserID(name);
 
             if (-1 == userID)
             {   // Could not fetch the user id
                 throw new ChessHeroException(Result.INTERNAL_ERROR);
             }
 
-            hasAuthenticated = true;
+            player = new Player(userID, name, this);
 
-            HashMap response = responseWithResult(Result.OK);
+            HashMap response = aResponseWithResult(Result.OK);
             response.put("username", name);
             response.put("userid", userID);
             writeMessage(response);
@@ -299,9 +297,9 @@ public class ClientConnection extends Thread
 
     private void handleLogin(HashMap<String, Object> request) throws ChessHeroException
     {
-        if (hasAuthenticated)
+        if (player != null)
         {
-            writeMessage(responseWithResult(Result.ALREADY_LOGGEDIN));
+            writeMessage(aResponseWithResult(Result.ALREADY_LOGGEDIN));
             return;
         }
 
@@ -310,7 +308,7 @@ public class ClientConnection extends Thread
 
         if (null == name || null == pass)
         {
-            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
             return;
         }
 
@@ -322,20 +320,20 @@ public class ClientConnection extends Thread
 
             if (null == auth || !auth.matches(pass))
             {
-                writeMessage(responseWithResult(Result.INVALID_CREDENTIALS));
+                writeMessage(aResponseWithResult(Result.INVALID_CREDENTIALS));
                 return;
             }
 
-            userID = db.getUserID(name);
+            int userID = db.getUserID(name);
 
             if (-1 == userID)
             {
                 throw new ChessHeroException(Result.INTERNAL_ERROR);
             }
 
-            hasAuthenticated = true;
+            player = new Player (userID, name, this);
 
-            HashMap response = responseWithResult(Result.OK);
+            HashMap response = aResponseWithResult(Result.OK);
             response.put("username", name);
             response.put("userid", userID);
 
@@ -359,9 +357,9 @@ public class ClientConnection extends Thread
 
     private void handleCreateGame(HashMap<String, Object> request) throws ChessHeroException
     {
-        if (gameID != NONE)
+        if (player.getGame() != null)
         {
-            writeMessage(responseWithResult(Result.ALREADY_PLAYING));
+            writeMessage(aResponseWithResult(Result.ALREADY_PLAYING));
             return;
         }
 
@@ -369,7 +367,13 @@ public class ClientConnection extends Thread
 
         if (null == gameName)
         {
-            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
+            return;
+        }
+
+        if (!Game.isGameNameValid(gameName))
+        {
+            writeMessage(aResponseWithResult(Result.INVALID_GAME_NAME));
             return;
         }
 
@@ -384,14 +388,13 @@ public class ClientConnection extends Thread
                 throw new ChessHeroException(Result.INTERNAL_ERROR);
             }
 
-            Game game = new Game(gameID, gameName, this);
+            Game game = new Game(gameID, gameName);
             game.setState(Game.STATE_PENDING);
+            player.join(game);
+
             Game.addGame(game);
 
-            this.gameID = gameID;
-            isWaitingPlayer = true;
-
-            HashMap response = responseWithResult(Result.OK);
+            HashMap response = aResponseWithResult(Result.OK);
             response.put("gameid", gameID);
             writeMessage(response);
         }
@@ -408,55 +411,85 @@ public class ClientConnection extends Thread
 
     private void handleCancelGame(HashMap<String, Object> request) throws ChessHeroException
     {
-        if (NONE == gameID)
+        Game game = player.getGame();
+
+        if (null == game)
         {
-            writeMessage(responseWithResult(Result.NOT_PLAYING));
+            writeMessage(aResponseWithResult(Result.NOT_PLAYING));
             return;
+        }
+
+        // Using flags to write any errors outside of the synchronized block so that the
+        // lock on the object is not prolonged so much by IO operations
+        boolean isInGame = false;
+        boolean missingParameters = false;
+        boolean invalidGameID = false;
+
+        synchronized (game)
+        {
+            if (game.getState() != Game.STATE_PENDING)
+            {
+                isInGame = true;
+            }
+            else
+            {
+                Integer gameIDToDelete = (Integer)request.get("gameid");
+
+                if (null == gameIDToDelete)
+                {
+                    missingParameters = true;
+                }
+                else
+                {
+                    int gID = gameIDToDelete.intValue();
+                    int playerGID = game.getID();
+
+                    if (playerGID != gID)
+                    {
+                        invalidGameID = true;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            db.connect();
+                            db.deleteGame(gID);
+
+                            Game.removeGame(gID);
+                        }
+                        catch (SQLException e)
+                        {
+                            SLog.write("Exception while deleting game: " + e);
+                            throw new ChessHeroException(Result.INTERNAL_ERROR);
+                        }
+                        finally
+                        {
+                            db.disconnect();
+                        }
+                    }
+                }
+            }
         }
 
         if (isInGame)
         {
-            writeMessage(responseWithResult(Result.CANCEL_NA));
+            writeMessage(aResponseWithResult(Result.CANCEL_NA));
             return;
         }
 
-        Integer gameIDToDelete = (Integer)request.get("gameid");
-
-        if (null == gameIDToDelete)
+        if (missingParameters)
         {
-            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
             return;
         }
 
-        int gid = gameIDToDelete.intValue();
-
-        if (gameID != gid)
+        if (invalidGameID)
         {
-            writeMessage(responseWithResult(Result.INVALID_GAME_ID));
+            writeMessage(aResponseWithResult(Result.INVALID_GAME_ID));
             return;
         }
 
-        try
-        {
-            db.connect();
-
-            db.deleteGame(gid);
-
-            Game.removeGame(gameID);
-            isWaitingPlayer = false;
-            gameID = NONE;
-
-            writeMessage(responseWithResult(Result.OK));
-        }
-        catch (SQLException e)
-        {
-            SLog.write("Exception while deleting game: " + e);
-            throw new ChessHeroException(Result.INTERNAL_ERROR);
-        }
-        finally
-        {
-            db.disconnect();
-        }
+        writeMessage(aResponseWithResult(Result.OK));
     }
 
     private void handleFetchGames(HashMap<String, Object> request) throws ChessHeroException
@@ -466,7 +499,7 @@ public class ClientConnection extends Thread
 
         if (null == offset || null == limit)
         {
-            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
             return;
         }
 
@@ -476,7 +509,7 @@ public class ClientConnection extends Thread
 
             ArrayList games = db.fetchGames(Game.STATE_PENDING, offset, limit);
 
-            HashMap response = responseWithResult(Result.OK);
+            HashMap response = aResponseWithResult(Result.OK);
             response.put("games", games);
             writeMessage(response);
         }
@@ -492,9 +525,9 @@ public class ClientConnection extends Thread
 
     private void handleJoinGame(HashMap<String, Object> request) throws ChessHeroException
     {
-        if (gameID != NONE)
+        if (player.getGame() != null)
         {
-            writeMessage(responseWithResult(Result.ALREADY_PLAYING));
+            writeMessage(aResponseWithResult(Result.ALREADY_PLAYING));
             return;
         }
 
@@ -502,7 +535,7 @@ public class ClientConnection extends Thread
 
         if (null == joinGameID)
         {
-            writeMessage(responseWithResult(Result.MISSING_PARAMETERS));
+            writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
             return;
         }
 
@@ -512,12 +545,12 @@ public class ClientConnection extends Thread
 
         if (null == game)
         {
-            writeMessage(responseWithResult(Result.INVALID_GAME_ID));
+            writeMessage(aResponseWithResult(Result.INVALID_GAME_ID));
             return;
         }
 
         // Using flags to write any errors outside of the synchronized block so that the
-        // lock on the object is released as soon as possible
+        // lock on the object is not prolonged so much by IO operations
         boolean gameOccupied = false;
 
         synchronized (game)
@@ -531,20 +564,25 @@ public class ClientConnection extends Thread
                 try
                 {
                     String gameName = game.getName();
-                    int otherUserID = game.getOtherUserID(userID);
+                    Player opponent = game.getPlayer1();
 
-                    String myChatToken = Game.generateChatToken(gameID, userID, gameName);
-                    String otherChatToken = Game.generateChatToken(gameID, otherUserID, gameName);
+                    int myUserID = player.getUserID();
+                    int opponentUserID = opponent.getUserID();
+
+                    String myChatToken = Game.generateChatToken(gameID, myUserID, gameName);
+                    String opponentChatToken = Game.generateChatToken(gameID, opponentUserID, gameName);
 
                     db.connect();
                     db.startTransaction();
 
                     db.updateGameState(gameID, Game.STATE_STARTED);
-                    db.insertPlayerPair(gameID, userID, myChatToken, otherUserID, otherChatToken);
+                    db.insertPlayerPair(gameID, myUserID, myChatToken, opponentUserID, opponentChatToken);
 
                     db.commit();
 
                     game.setState(Game.STATE_STARTED);
+                    player.join(game);
+                    GameController controller = new GameController(game);
                 }
                 catch (Exception e)
                 {
@@ -558,8 +596,7 @@ public class ClientConnection extends Thread
                     {
                     }
 
-                    writeMessage(responseWithResult(Result.INTERNAL_ERROR));
-                    return;
+                    throw new ChessHeroException(Result.INTERNAL_ERROR);
                 }
                 finally
                 {
@@ -570,10 +607,16 @@ public class ClientConnection extends Thread
 
         if (gameOccupied)
         {
-            writeMessage(responseWithResult(Result.GAME_OCCUPIED));
+            writeMessage(aResponseWithResult(Result.GAME_OCCUPIED));
             return;
         }
 
-        game.join(this);
+        writeMessage(aResponseWithResult(Result.OK));
+
+        HashMap msg = aPushMessage();
+        msg.put("gameid", gameID);
+
+        ClientConnection other = player.getOpponent().getConnection();
+        other.writeMessage(msg);
     }
 }
