@@ -24,7 +24,7 @@ public class Credentials
 
     public static boolean isNameValid(String name)
     {
-        int length = name.length();
+        int length = name.trim().length();
         return (length >= MIN_NAME_LENGTH && length <= MAX_NAME_LENGTH);
     }
 

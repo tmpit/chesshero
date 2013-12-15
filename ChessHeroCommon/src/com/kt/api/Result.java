@@ -19,10 +19,11 @@ public class Result
     public static final int BAD_USER = 105;             // Registration / The server doesn't like you
     public static final int ALREADY_LOGGEDIN = 106;     // Registration, Login / You have already logged in
     public static final int ALREADY_PLAYING = 107;      // Create game, Join game / You are already playing or waiting for player to join
-    public static final int NOT_PLAYING = 108;          // Cancel game / You cannot cancel a game because you are not in a game
-    public static final int CANCEL_NA = 109;            // Cancel game / Cancel is not applicable (e.g. you are already paired with a player)
-    public static final int INVALID_GAME_ID = 110;      // Cancel game, Join game / Invalid game id provided
-    public static final int GAME_OCCUPIED = 111;        // Join game / Game cannot be joined because two players are already playing it
+    public static final int INVALID_GAME_NAME = 108;    // Create game / The game name is invalid (e.g. too short/long etc)
+    public static final int NOT_PLAYING = 109;          // Cancel game / You cannot cancel a game because you are not in a game
+    public static final int CANCEL_NA = 110;            // Cancel game / Cancel is not applicable (e.g. you are already paired with a player)
+    public static final int INVALID_GAME_ID = 111;      // Cancel game, Join game / Invalid game id provided
+    public static final int GAME_OCCUPIED = 112;        // Join game / Game cannot be joined because two players are already playing it
 
     public static final int INVALID_REQUEST = 400;      // Any request / Invalid request format has been sent and the request couldn't be parsed
     public static final int MISSING_PARAMETERS = 401;   // Any request / Parameters are missing
