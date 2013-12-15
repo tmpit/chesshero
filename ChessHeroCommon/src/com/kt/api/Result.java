@@ -24,6 +24,7 @@ public class Result
     public static final int CANCEL_NA = 110;            // Cancel game / Cancel is not applicable (e.g. you are already paired with a player)
     public static final int INVALID_GAME_ID = 111;      // Cancel game, Join game / Invalid game id provided
     public static final int GAME_OCCUPIED = 112;        // Join game / Game cannot be joined because two players are already playing it
+    public static final int DUPLICATE_PLAYER = 113;     // Join game / Game cannot be joined because the same user has created the game
 
     public static final int INVALID_REQUEST = 400;      // Any request / Invalid request format has been sent and the request couldn't be parsed
     public static final int MISSING_PARAMETERS = 401;   // Any request / Parameters are missing

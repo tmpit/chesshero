@@ -485,6 +485,7 @@ public class ClientConnection extends Thread
                             db.deleteGame(gID);
 
                             Game.removeGame(gID);
+                            player.leave();
                         }
                         catch (SQLException e)
                         {
@@ -581,6 +582,7 @@ public class ClientConnection extends Thread
         // Using flags to write any errors outside of the synchronized block so that the
         // lock on the object is not prolonged so much by IO operations
         boolean gameOccupied = false;
+        boolean sameUser = false;
 
         synchronized (game)
         {
@@ -590,46 +592,53 @@ public class ClientConnection extends Thread
             }
             else
             {
-                try
+                String gameName = game.getName();
+                Player opponent = game.getPlayer1();
+
+                int myUserID = player.getUserID();
+                int opponentUserID = opponent.getUserID();
+
+                if (myUserID == opponentUserID)
                 {
-                    String gameName = game.getName();
-                    Player opponent = game.getPlayer1();
-
-                    int myUserID = player.getUserID();
-                    int opponentUserID = opponent.getUserID();
-
-                    String myChatToken = Game.generateChatToken(gameID, myUserID, gameName);
-                    String opponentChatToken = Game.generateChatToken(gameID, opponentUserID, gameName);
-
-                    db.connect();
-                    db.startTransaction();
-
-                    db.updateGameState(gameID, Game.STATE_STARTED);
-                    db.insertPlayerPair(gameID, myUserID, myChatToken, opponentUserID, opponentChatToken);
-
-                    db.commit();
-
-                    game.setState(Game.STATE_STARTED);
-                    player.join(game);
-                    GameController controller = new GameController(game);
+                    sameUser = true;
                 }
-                catch (Exception e)
+                else
                 {
-                    SLog.write("Exception raised while joining game: " + e);
-
                     try
                     {
-                        db.rollback();
-                    }
-                    catch (SQLException ignore)
-                    {
-                    }
+                        String myChatToken = Game.generateChatToken(gameID, myUserID, gameName);
+                        String opponentChatToken = Game.generateChatToken(gameID, opponentUserID, gameName);
 
-                    throw new ChessHeroException(Result.INTERNAL_ERROR);
-                }
-                finally
-                {
-                    db.disconnect();
+                        db.connect();
+                        db.startTransaction();
+
+                        db.updateGameState(gameID, Game.STATE_STARTED);
+                        db.insertPlayerPair(gameID, myUserID, myChatToken, opponentUserID, opponentChatToken);
+
+                        db.commit();
+
+                        game.setState(Game.STATE_STARTED);
+                        player.join(game);
+                        GameController controller = new GameController(game);
+                    }
+                    catch (Exception e)
+                    {
+                        SLog.write("Exception raised while joining game: " + e);
+
+                        try
+                        {
+                            db.rollback();
+                        }
+                        catch (SQLException ignore)
+                        {
+                        }
+
+                        throw new ChessHeroException(Result.INTERNAL_ERROR);
+                    }
+                    finally
+                    {
+                        db.disconnect();
+                    }
                 }
             }
         }
@@ -637,6 +646,12 @@ public class ClientConnection extends Thread
         if (gameOccupied)
         {
             writeMessage(aResponseWithResult(Result.GAME_OCCUPIED));
+            return;
+        }
+
+        if (sameUser)
+        {
+            writeMessage(aResponseWithResult(Result.DUPLICATE_PLAYER));
             return;
         }
 
