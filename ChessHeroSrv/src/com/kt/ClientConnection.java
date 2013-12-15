@@ -522,11 +522,11 @@ public class ClientConnection extends Thread
         Integer offset = (Integer)request.get("offset");
         Integer limit = (Integer)request.get("limit");
 
-        if (null == offset)
+        if (null == offset || offset < 0)
         {
             offset = DEFAULT_FETCH_GAMES_OFFSET;
         }
-        if (null == limit)
+        if (null == limit || limit < 0)
         {
             limit = DEFAULT_FETCH_GAMES_LIMIT;
         }
