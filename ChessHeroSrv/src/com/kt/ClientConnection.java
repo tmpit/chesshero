@@ -92,12 +92,26 @@ public class ClientConnection extends Thread
                         int gameID = game.getID();
 
                         db.connect();
+						db.startTransaction();
+
                         db.deleteGame(gameID);
+						db.removePlayer(gameID, player.getUserID());
+
+						db.commit();
 
                         Game.removeGame(gameID);
                     }
                     catch (SQLException e)
                     {
+						try
+						{
+							db.rollback();
+						}
+						catch (SQLException eeeeeeeee)
+						{
+							SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYER WITH ID: " + player.getUserID());
+						}
+
                         SLog.write("Exception while deleting game due to EOF: " + e);
                     }
                 }
@@ -427,6 +441,7 @@ public class ClientConnection extends Thread
         try
         {
             db.connect();
+			db.startTransaction();
 
             int gameID = db.insertGame(gameName, Game.STATE_PENDING);
 
@@ -435,18 +450,46 @@ public class ClientConnection extends Thread
                 throw new ChessHeroException(Result.INTERNAL_ERROR);
             }
 
+			int userID = player.getUserID();
+			String chatToken = Game.generateChatToken(gameID, userID, gameName);
+			db.insertPlayer(gameID, userID, chatToken, color);
+
             Game game = new Game(gameID, gameName);
             game.setState(Game.STATE_PENDING);
             player.join(game, (color.equals("white") ? Player.Color.WHITE : Player.Color.BLACK));
 
             Game.addGame(game);
 
+			db.commit();
+
             HashMap response = aResponseWithResult(Result.OK);
             response.put("gameid", gameID);
+			response.put("chattoken", chatToken);
             writeMessage(response);
         }
+		catch (NoSuchAlgorithmException e)
+		{
+			try
+			{
+				db.rollback();
+			}
+			catch (SQLException ignore)
+			{
+			}
+
+			SLog.write("Exception while generating chat token: " + e);
+			throw new ChessHeroException(Result.INTERNAL_ERROR);
+		}
         catch (SQLException e)
         {
+			try
+			{
+				db.rollback();
+			}
+			catch (SQLException ignore)
+			{
+			}
+
             SLog.write("Exception while creating game: " + e);
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
@@ -491,13 +534,25 @@ public class ClientConnection extends Thread
                     try
                     {
                         db.connect();
+						db.startTransaction();
                         db.deleteGame(gID);
+						db.removePlayer(gID, player.getUserID());
 
                         Game.removeGame(gID);
                         player.leave();
+
+						db.commit();
                     }
                     catch (SQLException e)
                     {
+						try
+						{
+							db.rollback();
+						}
+						catch(SQLException ignore)
+						{
+						}
+
                         SLog.write("Exception while deleting game: " + e);
                         throw new ChessHeroException(Result.INTERNAL_ERROR);
                     }
@@ -542,7 +597,7 @@ public class ClientConnection extends Thread
         {
             db.connect();
 
-            ArrayList games = db.fetchGames(Game.STATE_PENDING, offset, limit);
+            ArrayList games = db.getGamesAndPlayerInfo(Game.STATE_PENDING, offset, limit);
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("games", games);
@@ -590,7 +645,7 @@ public class ClientConnection extends Thread
         boolean sameUser = false;
 
         Player opponent = null;
-        String myChatToken = null, opponentChatToken = null;
+        String myChatToken = null;
 
         synchronized (game)
         {
@@ -607,18 +662,18 @@ public class ClientConnection extends Thread
                     try
                     {
                         myChatToken = Game.generateChatToken(gameID, myUserID, gameName);
-                        opponentChatToken = Game.generateChatToken(gameID, opponentUserID, gameName);
 
                         db.connect();
                         db.startTransaction();
 
+						Player.Color opponentColor = opponent.getColor();
+						Player.Color myColor = (opponentColor == Player.Color.WHITE ? Player.Color.BLACK : Player.Color.WHITE);
+
                         db.updateGameState(gameID, Game.STATE_STARTED);
-                        db.insertPlayerPair(gameID, myUserID, myChatToken, opponentUserID, opponentChatToken);
+                        db.insertPlayer(gameID, myUserID, myChatToken, (myColor == Player.Color.WHITE ? "white" : "black"));
 
                         db.commit();
 
-                        Player.Color opponentColor = opponent.getColor();
-                        Player.Color myColor = (opponentColor == Player.Color.WHITE ? Player.Color.BLACK : Player.Color.WHITE);
                         player.join(game, myColor);
 
                         game.setState(Game.STATE_STARTED);
@@ -661,13 +716,12 @@ public class ClientConnection extends Thread
         HashMap myMsg = aResponseWithResult(Result.OK);
         myMsg.put("opponentname", opponent.getName());
         myMsg.put("opponentid", opponent.getUserID());
-        myMsg.put("chattoken", myChatToken);
+		myMsg.put("chattoken", myChatToken);
         writeMessage(myMsg);
 
         HashMap msg = aPushMessage();
         msg.put("opponentname", player.getName());
         msg.put("opponentid", player.getUserID());
-        msg.put("chattoken", opponentChatToken);
 
         opponent.getConnection().writeMessage(msg);
     }
@@ -697,7 +751,7 @@ public class ClientConnection extends Thread
         {
             if (!(invalidGameID = game.getID() != gameID) && !(gameHasNotStarted = game.getState() != Game.STATE_STARTED))
             {
-
+                // TODO: figure out how colors are stored in db if they are stored at all so that fetch game returns the player color as well
             }
         }
 
