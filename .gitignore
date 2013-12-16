@@ -2,3 +2,4 @@
 workspace.xml
 *.DS_Store
 *codeStyleSettings.xml
+*/.idea/dictionaries
