@@ -91,7 +91,7 @@ public class Main
             }
             else if (args[0].equals("creategame"))
             {
-                createGame(args[1]);
+                createGame(args[1], (args.length > 2 ? args[2] : null));
             }
             else if (args[0].equals("cancelgame"))
             {
@@ -186,11 +186,15 @@ public class Main
         listen(1);
     }
 
-    public static void createGame(String name) throws IOException
+    public static void createGame(String name, String color) throws IOException
     {
         HashMap req = new HashMap();
         req.put("action", Action.CREATE_GAME);
         req.put("gamename", name);
+		if (color != null)
+		{
+			req.put("color", color);
+		}
         writer.write(req);
 
         listen(1);
