@@ -24,7 +24,16 @@ public class ChessBoardPanel extends JPanel {
     ChessBoardFieldPanel [][] chessBoardFields  = new ChessBoardFieldPanel[8][8];
     String[] colLabels = new String[]{"A","B","C","D","E","F","G","H"};
     String[] rowLabels = new String[]{"1","2","3","4","5","6","7","8"};
-    public boolean isBoardReversed = false;
+    private boolean isBoardReversed = false;
+
+    public boolean getIsBoardReversed() {
+        return isBoardReversed;
+    }
+
+    public void setIsBoardReversed(boolean isBoardReversed) {
+        this.isBoardReversed = isBoardReversed;
+        this.redrawBoard();
+    }
 
     public ChessBoardPanel(Game game, int pieceSize){
 
@@ -160,7 +169,7 @@ public class ChessBoardPanel extends JPanel {
             labelFirstRows.setHorizontalAlignment(SwingConstants.HORIZONTAL);
             labelSecondRows.setHorizontalAlignment(SwingConstants.HORIZONTAL);
             if (i > 0 && i < 9) {
-                if (isBoardReversed) {
+                if (isBoardReversed == false) {
                     labelFirstCols.setText(colLabels[i-1]);
                     labelSecondCols.setText(colLabels[i-1]);
                     labelFirstRows.setText(rowLabels[7-(i-1)]);
@@ -195,9 +204,9 @@ public class ChessBoardPanel extends JPanel {
 
         for(ChessBoardFieldPanel[] chessBoardFieldRow : this.chessBoardFields){
             for (ChessBoardFieldPanel chessBoardField : chessBoardFieldRow){
-                if (isBoardReversed) GridOpt.gridx = (chessBoardField.fieldPosition.col+1);
+                if (isBoardReversed == false) GridOpt.gridx = (chessBoardField.fieldPosition.col+1);
                 else GridOpt.gridx = 9 - (chessBoardField.fieldPosition.col+1);
-                if (isBoardReversed) GridOpt.gridy = 9 - (chessBoardField.fieldPosition.row+1);
+                if (isBoardReversed == false) GridOpt.gridy = 9 - (chessBoardField.fieldPosition.row+1);
                 else GridOpt.gridy = (chessBoardField.fieldPosition.row+1);
                 this.add(chessBoardField,GridOpt);
             }

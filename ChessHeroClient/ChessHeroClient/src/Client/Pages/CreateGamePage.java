@@ -1,5 +1,11 @@
 package Client.Pages;
 
+import Client.Game.ChessColor;
+import Client.Game.ChessPieces.ChessPiece;
+import Client.Game.Game;
+import Client.Game.GameController;
+import Client.Game.NetworkPlayer;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DateFormatter;
@@ -236,7 +242,13 @@ public class CreateGamePage extends ChessHeroPage {
         createGameSettings = getCreateGameSettings();
         System.out.println(createGameSettings.toString());
 //        holder.NavigateToPage(new LobbyPage());
-        getHolder().NavigateToPage(new PlayGamePage());
+
+        GameController newGameController = new GameController(new Game(),new NetworkPlayer(1), ChessColor.White, new NetworkPlayer(2),ChessColor.Black);
+        newGameController.game.startNewGame(newGameController.game.getWhitePlayer(), newGameController.game.getBlackPlayer());
+
+        newGameController.game.setTakenPieces(newGameController.game.getPlayerStartingPieceSet(newGameController.player.getGamePlayer()),newGameController.opponent.getGamePlayer());
+
+        getHolder().NavigateToPage(new PlayGamePage(newGameController));
     }
 
 
