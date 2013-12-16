@@ -28,31 +28,33 @@ public class Game
         return (length >= MIN_NAME_LENGTH && length <= MAX_NAME_LENGTH);
     }
 
-    private static HashMap<Integer, Game> games = new HashMap<Integer, Game>();
+	private static HashMap<Integer, Game> games = new HashMap<Integer, Game>();
 
-    public static void addGame(Game game)
-    {
-        synchronized (games)
-        {
-            games.put(game.id, game);
-        }
-    }
+	public static void addGame(Game game)
+	{
+		synchronized (games)
+		{
+			games.put(game.id, game);
+		}
+	}
 
-    public static void removeGame(int gameID)
-    {
-        synchronized (games)
-        {
-            games.remove(gameID);
-        }
-    }
+	public static Game removeGame(int gameID)
+	{
+		synchronized(games)
+		{
+			Game game = games.get(gameID);
+			games.remove(gameID);
+			return game;
+		}
+	}
 
-    public static Game getGame(int gameID)
-    {
-        synchronized (games)
-        {
-            return games.get(gameID);
-        }
-    }
+	public static Game getGame(int gameID)
+	{
+		synchronized (games)
+		{
+			return games.get(gameID);
+		}
+	}
 
     public static String generateChatToken(int gameID, int userID, String gameName) throws NoSuchAlgorithmException
     {

@@ -138,8 +138,6 @@ class Database
 
         try
         {
-            connect();
-
             stmt = conn.prepareStatement("SELECT COUNT(*) FROM users WHERE name = ?");
             stmt.setString(1, username);
 
@@ -167,8 +165,6 @@ class Database
 
         try
         {
-            connect();
-
             stmt = conn.prepareStatement("SELECT id FROM users WHERE name = ?");
             stmt.setString(1, username);
 
@@ -194,8 +190,6 @@ class Database
 
         try
         {
-            connect();
-
             stmt = conn.prepareStatement("SELECT pass, salt FROM users WHERE name = ?");
             stmt.setString(1, username);
 
@@ -222,8 +216,6 @@ class Database
 
         try
         {
-            connect();
-
             stmt = conn.prepareStatement("INSERT INTO users (name, pass, salt) VALUES (?, ?, ?)");
             stmt.setString(1, name);
             stmt.setString(2, passHash);
@@ -246,8 +238,6 @@ class Database
 
         try
         {
-            connect();
-
             stmt = conn.prepareStatement("INSERT INTO games (gname, state) VALUES (?, ?)");
             stmt.setString(1, name);
             stmt.setShort(2, state);
@@ -279,8 +269,6 @@ class Database
 
         try
         {
-            connect();
-
             stmt = conn.prepareStatement("DELETE FROM games WHERE gid = ?");
             stmt.setInt(1, gameID);
 
@@ -292,15 +280,13 @@ class Database
         }
     }
 
-    public ArrayList fetchGames(short state, int offset, int limit) throws SQLException
+    public ArrayList getGames(short state, int offset, int limit) throws SQLException
     {
         PreparedStatement stmt = null;
         ResultSet set = null;
 
         try
         {
-            connect();
-
             stmt = conn.prepareStatement("SELECT gid, gname FROM games WHERE state = ? LIMIT ?, ?");
             stmt.setShort(1, state);
             stmt.setInt(2, offset);
@@ -326,14 +312,46 @@ class Database
         }
     }
 
+	// Get games of the specified state within offset and limit and returns player color along with game info
+	public ArrayList<HashMap> getGamesAndPlayerInfo(short state, int offset, int limit) throws SQLException
+	{
+		PreparedStatement stmt = null;
+		ResultSet set = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("SELECT games.gid, games.gname, players.color FROM games LEFT JOIN players USING(gid) WHERE games.state = ? LIMIT ?, ?");
+			stmt.setShort(1, state);
+			stmt.setInt(2, offset);
+			stmt.setInt(3, limit);
+
+			set =  stmt.executeQuery();
+			ArrayList<HashMap> games = new ArrayList<HashMap>();
+
+			while (set.next())
+			{
+				HashMap game = new HashMap();
+				game.put("gameid", set.getInt(1));
+				game.put("gamename", set.getString(2));
+				game.put("playercolor", set.getString(3));
+
+				games.add(game);
+			}
+
+			return games;
+		}
+		finally
+		{
+			closeResources(stmt, set);
+		}
+	}
+
     public void updateGameState(int gameID, short state) throws SQLException
     {
         PreparedStatement stmt = null;
 
         try
         {
-            connect();
-
             stmt = conn.prepareStatement("UPDATE games SET state = ? WHERE gid = ?");
             stmt.setShort(1, state);
             stmt.setInt(2, gameID);
@@ -346,25 +364,41 @@ class Database
         }
     }
 
-    public void insertPlayerPair(int gameID, int uid1, String token1, int uid2, String token2) throws SQLException
-    {
-        PreparedStatement stmt = null;
+	public void insertPlayer(int gameID, int userID, String token, String color) throws SQLException
+	{
+		PreparedStatement stmt = null;
 
-        try
-        {
-            stmt = conn.prepareStatement("INSERT INTO players (gid, uid, token) VALUES (?, ?, ?), (?, ?, ?)");
-            stmt.setInt(1, gameID);
-            stmt.setInt(2, uid1);
-            stmt.setString(3, token1);
-            stmt.setInt(4, gameID);
-            stmt.setInt(5, uid2);
-            stmt.setString(6, token2);
+		try
+		{
+			stmt = conn.prepareStatement("INSERT INTO players (gid, uid, token, color) VALUES (?, ?, ?, ?)");
+			stmt.setInt(1, gameID);
+			stmt.setInt(2, userID);
+			stmt.setString(3, token);
+			stmt.setString(4, color);
 
-            stmt.executeUpdate();
-        }
-        finally
-        {
-            closeResources(stmt, null);
-        }
-    }
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
+
+	public void removePlayer(int gameID, int userID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("DELETE FROM players WHERE gid = ? AND uid = ?");
+			stmt.setInt(1, gameID);
+			stmt.setInt(2, userID);
+
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
 }

@@ -30,10 +30,10 @@ public class Action
     // Create game
     // Description: Create a new game that would be available to all players
     // Parameters: [gamename:STR], [color:STR] - either 'black' or 'white', optional, default value is 'white' if not specified
-    // Returns: [gameid:INT]
+    // Returns: [gameid:INT], [chattoken:STR]
     // Additional: If the user successfully creates a game, they should expect a push message
     // to be sent when another player joins the game. The message will contain the following parameters:
-    // [opponentname:STR], [opponentid:INT], [chattoken:STR]
+    // [opponentname:STR], [opponentid:INT]
     public static final int CREATE_GAME = 3;
 
     // Cancel game
@@ -45,7 +45,7 @@ public class Action
     // Description: Fetch all games waiting for a second player to join
     // Parameters: [offset:INT] - optional, [limit:INT] - optional. Default offset is 0, default limit is 100
     // Returns: [games:ARR]
-    // - Each element in games has: [gameid:INT], [gamename:STR]
+    // - Each element in games has: [gameid:INT], [gamename:STR], [playercolor:STR] (the color of the creator of the game)
     public static final int FETCH_GAMES = 5;
 
     // Join game
