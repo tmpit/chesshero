@@ -54,7 +54,7 @@ public class Action
     // Description: Fetch all games waiting for a second player to join
     // Parameters:
 	// - [offset:INT] - optional, the offset within the games list, default value is 0
-	// - [limit:INT] - optional, the maximum number of entries after offset default value is 100, maximum value is 1000
+	// - [limit:INT] - optional, the maximum number of entries after offset, default value is 100, maximum value is 1000
     // Returns:
 	// - [games:ARR] - each element in the array has:
 	// 		- [gameid:INT] - the id of the game

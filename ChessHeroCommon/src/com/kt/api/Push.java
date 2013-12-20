@@ -30,7 +30,7 @@ public class Push
 	// In the first case, this event will be sent to both players
 	// In the second and third cases, this event will be sent to the player that is still in the game
 	// Parameters:
-	// - [winner:INT] - the user id of the winner (this will be the player that is still in the game)
+	// - [winner:INT] - the user id of the winner
 	// - [opponentexited:BOOL] - optional, sent when the other player exits the game, always true
 	// - [opponentdisconnected:BOOL] - optional, sent when the other player disconnects from the server, always true
 	public static final int GAME_ENDED = 2;
