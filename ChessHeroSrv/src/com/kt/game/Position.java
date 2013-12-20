@@ -5,8 +5,6 @@ package com.kt.game;
  */
 public class Position
 {
-	private static char[] horizontal = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
-
 	// Position has to be in the format [horizontal position : vertical position] e.g. A1, H3, etc.
 	// Returns null if the position is not valid
 	public static Position positionFromBoardPosition(String pos)
@@ -18,19 +16,9 @@ public class Position
 
 		pos = pos.toLowerCase();
 
-		char hor = pos.charAt(0);
-		int x = -1;
+		int x = pos.charAt(0) - 'a';
 
-		for (int i = 0; i < 8; i++)
-		{
-			if (horizontal[i] == hor)
-			{
-				x = i;
-				break;
-			}
-		}
-
-		if (-1 == x)
+		if (x < 0 || x > 7)
 		{	// Invalid position
 			return null;
 		}
