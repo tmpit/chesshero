@@ -118,6 +118,10 @@ public class Main
 			{
 				exitGame(Integer.parseInt(args[1]));
 			}
+			else if (args[0].equals("move"))
+			{
+				move(args[1], args[2]);
+			}
             else
             {
                 SLog.write("Unrecognized command");
@@ -246,6 +250,17 @@ public class Main
 		HashMap req = new HashMap();
 		req.put("action", Action.EXIT_GAME);
 		req.put("gameid", gameID);
+		writer.write(req);
+
+		listen(1);
+	}
+
+	public static void move(String from, String to) throws IOException
+	{
+		HashMap req = new HashMap();
+		req.put("action", Action.MOVE);
+		req.put("from", from);
+		req.put("to", to);
 		writer.write(req);
 
 		listen(1);
