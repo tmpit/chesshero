@@ -12,7 +12,7 @@ public class Player
     private ClientConnection connection;
     private Game game;
 
-    public enum Color { NONE, WHITE, BLACK }
+    public enum Color {NONE, WHITE, BLACK}
     private Color color = Color.NONE;
 
     public Player(int userID, String name, ClientConnection connection)

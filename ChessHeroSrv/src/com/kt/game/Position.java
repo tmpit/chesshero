@@ -5,8 +5,8 @@ package com.kt.game;
  */
 public class Position
 {
-	// Position has to be in the format [horizontal position : vertical position] e.g. A1, H3, etc.
-	// Returns null if the position is not valid
+	// Create a Position object from a board position string e.g. A1, H3, C1, etc.
+	// Returns null if the board position is not valid
 	public static Position positionFromBoardPosition(String pos)
 	{
 		if (pos.length() != 2)
@@ -16,6 +16,7 @@ public class Position
 
 		pos = pos.toLowerCase();
 
+		// x is offset from character 'a'
 		int x = pos.charAt(0) - 'a';
 
 		if (x < 0 || x > 7)
@@ -23,6 +24,7 @@ public class Position
 			return null;
 		}
 
+		// Minus one to convert into index
 		int y = Character.getNumericValue(pos.charAt(1)) - 1;
 
 		if (y < 0 || y > 7)
@@ -45,6 +47,7 @@ public class Position
 			return null;
 		}
 
+		// Add one to the second character as it is an index
 		return String.format("%c%c", (char)('a' + x), Character.forDigit(y + 1, 10));
 	}
 

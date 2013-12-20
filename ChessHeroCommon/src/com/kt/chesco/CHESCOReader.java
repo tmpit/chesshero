@@ -30,7 +30,7 @@ public class CHESCOReader
         switch (type)
         {
             case CHESCO.TYPE_BOOL:
-                return new Boolean((reader.get() != 0 ? true : false));
+                return new Boolean(reader.get() != 0);
 
             case CHESCO.TYPE_INT:
                 byte intData[] = reader.get(4);

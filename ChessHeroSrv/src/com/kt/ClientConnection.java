@@ -30,7 +30,8 @@ import java.util.Map;
  * Time: 7:56 PM
  * To change this template use File | Settings | File Templates.
  */
-
+// TODO: keep client connections in a map or something
+// TODO: move game cancel and end in separate methods
 public class ClientConnection extends Thread
 {
     private static final int READ_TIMEOUT = 15 * 1000; // In milliseconds
