@@ -26,6 +26,7 @@ public class Result
     public static final int GAME_OCCUPIED = 112;        // Join game / Game cannot be joined because two players are already playing it
     public static final int DUPLICATE_PLAYER = 113;     // Join game / Game cannot be joined because the same user has created the game
     public static final int EXIT_NA = 114;              // Exit game / Exit is not applicable (e.g. game has not started yet)
+	public static final int MOVE_NA = 115;				// Move / Move is not applicable (e.g. game has not started yet)
 
     public static final int INVALID_REQUEST = 400;      // Any request / Invalid request format has been sent and the request couldn't be parsed
     public static final int MISSING_PARAMETERS = 401;   // Any request / Parameters are missing

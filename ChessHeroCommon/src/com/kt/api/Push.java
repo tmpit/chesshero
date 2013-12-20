@@ -15,7 +15,9 @@ public class Push
 
 	// Game started
 	// Description: This event is sent to the creator of a game when another player joins the game
-	// Parameters: [opponentname:STR], [opponentid:INT]
+	// Parameters:
+	// - [opponentname:STR] - the username of the opponent
+	// - [opponentid:INT] - the user id of the opponent
 	public static final int GAME_STARTED = 1;
 
 	// Game ended
@@ -27,8 +29,16 @@ public class Push
 	// Whoever exits the game (one way or another) before its natural end is considered defeated.
 	// In the first case, this event will be sent to both players
 	// In the second and third cases, this event will be sent to the player that is still in the game
-	// Parameters: [winner:INT] - the user id of the winner (this will be the player that is still in the game)
-	// [opponentexited:BOOL] - optional parameter sent when the other player exits the game, always true
-	// [opponentdisconnected:BOOL] - optional parameter sent when the other player disconnects from the server, always true
+	// Parameters:
+	// - [winner:INT] - the user id of the winner (this will be the player that is still in the game)
+	// - [opponentexited:BOOL] - optional, sent when the other player exits the game, always true
+	// - [opponentdisconnected:BOOL] - optional, sent when the other player disconnects from the server, always true
 	public static final int GAME_ENDED = 2;
+
+	// Game move
+	// Description: This event is sent to the opponent of a player after that player performs moves a chess piece
+	// Parameters:
+	// - [from:STR] - the starting position of the chess piece
+	// - [to:STR] - the destination position of the chess piece
+	public static final int GAME_MOVE = 3;
 }
