@@ -45,7 +45,7 @@ public class Position
 			return null;
 		}
 
-		return String.format("%c%c", horizontal[x], Character.forDigit(y, 10));
+		return String.format("%c%c", 'a' + x, Character.forDigit(y, 10));
 	}
 
 	protected int x;
