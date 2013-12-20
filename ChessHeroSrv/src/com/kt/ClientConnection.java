@@ -1,6 +1,7 @@
 package com.kt;
 
 import com.kt.api.Action;
+import com.kt.api.Push;
 import com.kt.chesco.CHESCOReader;
 import com.kt.chesco.CHESCOWriter;
 import com.kt.game.Game;
@@ -28,12 +29,14 @@ import java.util.Map;
  * Time: 7:56 PM
  * To change this template use File | Settings | File Templates.
  */
+// TODO: keep connections in a dictionary or something
 public class ClientConnection extends Thread
 {
     private static final int READ_TIMEOUT = 15 * 1000; // In milliseconds
 
     private static final int DEFAULT_FETCH_GAMES_OFFSET = 0;
     private static final int DEFAULT_FETCH_GAMES_LIMIT = 100;
+	private static final int MAX_FETCH_GAMES_LIMIT = 1000;
 
     private static final String DEFAULT_PLAYER_COLOR = "white";
 
@@ -85,12 +88,12 @@ public class ClientConnection extends Thread
         {
             synchronized (game)
             {
+				int gameID = game.getID();
+
                 if (Game.STATE_PENDING == game.getState())
                 {
                     try
                     {
-                        int gameID = game.getID();
-
                         db.connect();
 						db.startTransaction();
 
@@ -99,26 +102,75 @@ public class ClientConnection extends Thread
 
 						db.commit();
 
-                        Game.removeGame(gameID);
+						game.setState(Game.STATE_FINISHED);
+						Game.removeGame(gameID);
                     }
                     catch (SQLException e)
                     {
+						SLog.write("Exception while cancelling game due to EOF: " + e);
+
 						try
 						{
 							db.rollback();
 						}
 						catch (SQLException eeeeeeeee)
 						{
+							SLog.write("" + eeeeeeeee + eeeeeeeee.getStackTrace());
 							SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYER WITH ID: " + player.getUserID());
 						}
-
-                        SLog.write("Exception while deleting game due to EOF: " + e);
                     }
                 }
                 else if (Game.STATE_STARTED == game.getState())
                 {
-                    // TODO: end game
-                }
+					Player opponent = null;
+
+                    try
+					{
+						db.connect();
+						db.startTransaction();
+
+						opponent = player.getOpponent();
+
+						db.deleteGame(gameID);
+						db.removePlayersForGame(gameID);
+						db.insertResult(gameID, opponent.getUserID(), player.getUserID());
+
+						db.commit();
+
+						game.setState(Game.STATE_FINISHED);
+						player.leave();
+						opponent.leave();
+						Game.removeGame(gameID);
+					}
+					catch (Exception e)
+					{
+						SLog.write("Exception while ending game due to EOF: " + e);
+
+						try
+						{
+							db.rollback();
+						}
+						catch (SQLException eeeeeeeee)
+						{
+							SLog.write("" + eeeeeeeee + eeeeeeeee.getStackTrace());
+							SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYERS WITH IDS: " + player.getUserID() + ", " + opponent.getUserID());
+						}
+					}
+
+					if (opponent != null)
+					{
+						HashMap msg = aPushWithEvent(Push.GAME_ENDED);
+						msg.put("winner", opponent.getUserID());
+						msg.put("opponentdisconnected", true);
+
+						ClientConnection conn = opponent.getConnection();
+
+						if (conn != null)
+						{
+							conn.writeMessage(msg);
+						}
+					}
+				}
             }
         }
 
@@ -178,6 +230,7 @@ public class ClientConnection extends Thread
         catch (Exception e)
         {
             SLog.write("Surprise exception: " + e);
+			SLog.write(e.getStackTrace());
         }
     }
 
@@ -188,10 +241,11 @@ public class ClientConnection extends Thread
         return map;
     }
 
-    private HashMap<String, Object> aPushMessage()
+    private HashMap<String, Object> aPushWithEvent(int event)
     {
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("push", true);
+		map.put("event", event);
         return map;
     }
 
@@ -588,7 +642,7 @@ public class ClientConnection extends Thread
         {
             offset = DEFAULT_FETCH_GAMES_OFFSET;
         }
-        if (null == limit || limit < 0)
+        if (null == limit || limit < 0 || limit > MAX_FETCH_GAMES_LIMIT)
         {
             limit = DEFAULT_FETCH_GAMES_LIMIT;
         }
@@ -719,7 +773,7 @@ public class ClientConnection extends Thread
 		myMsg.put("chattoken", myChatToken);
         writeMessage(myMsg);
 
-        HashMap msg = aPushMessage();
+        HashMap msg = aPushWithEvent(Push.GAME_STARTED);
         msg.put("opponentname", player.getName());
         msg.put("opponentid", player.getUserID());
 
@@ -747,12 +801,48 @@ public class ClientConnection extends Thread
         boolean invalidGameID = false;
         boolean gameHasNotStarted = false;
 
+		Player opponent = null;
+		int opponentUserID = 0;
+
         synchronized (game)
         {
             if (!(invalidGameID = game.getID() != gameID) && !(gameHasNotStarted = game.getState() != Game.STATE_STARTED))
             {
-                // TODO: figure out how colors are stored in db if they are stored at all so that fetch game returns the player color as well
-            }
+				try
+				{
+					db.connect();
+					db.startTransaction();
+
+					opponent = player.getOpponent();
+					opponentUserID = opponent.getUserID();
+
+					db.deleteGame(gameID);
+					db.removePlayersForGame(gameID);
+					db.insertResult(gameID, opponentUserID, player.getUserID());
+
+					db.commit();
+
+					game.setState(Game.STATE_FINISHED);
+					player.leave();
+					opponent.leave();
+
+					Game.removeGame(gameID);
+				}
+				catch (SQLException e)
+				{
+					try
+					{
+						db.rollback();
+					}
+					catch (SQLException ignore)
+					{
+					}
+				}
+				finally
+				{
+					db.disconnect();
+				}
+			}
         }
 
         if (invalidGameID)
@@ -767,6 +857,13 @@ public class ClientConnection extends Thread
             return;
         }
 
-        writeMessage(aResponseWithResult(Result.OK));
+		HashMap myMsg = aResponseWithResult(Result.OK);
+		myMsg.put("winner", opponentUserID);
+        writeMessage(myMsg);
+
+		HashMap msg = aPushWithEvent(Push.GAME_ENDED);
+		msg.put("winner", opponentUserID);
+		msg.put("opponentexited", true);
+		opponent.getConnection().writeMessage(msg);
     }
 }

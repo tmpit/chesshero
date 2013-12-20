@@ -39,7 +39,7 @@ public class Action
 
     // Fetch games
     // Description: Fetch all games waiting for a second player to join
-    // Parameters: [offset:INT] - optional, [limit:INT] - optional. Default offset is 0, default limit is 100
+    // Parameters: [offset:INT] - optional, [limit:INT] - optional. Default offset is 0, default limit is 100, max limit is 1000
     // Returns: [games:ARR]
     // - Each element in games has: [gameid:INT], [gamename:STR], [playercolor:STR] (the color of the creator of the game)
     public static final int FETCH_GAMES = 5;
@@ -53,5 +53,6 @@ public class Action
     // Exit game
     // Parameters: [gameid:INT]
     // Description: Exit the current game. Whoever exits the game before its natural end is considered defeated
+	// Returns: [winner:INT] - the user id of the winner
     public static final int EXIT_GAME = 7;
 }
