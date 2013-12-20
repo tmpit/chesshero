@@ -23,7 +23,7 @@ public class Position
 			return null;
 		}
 
-		int y = Character.getNumericValue(pos.charAt(1));
+		int y = Character.getNumericValue(pos.charAt(1)) - 1;
 
 		if (y < 0 || y > 7)
 		{	// Invalid position
@@ -45,7 +45,7 @@ public class Position
 			return null;
 		}
 
-		return String.format("%c%c", 'a' + x, Character.forDigit(y, 10));
+		return String.format("%c%c", 'a' + x, Character.forDigit(y + 1, 10));
 	}
 
 	protected int x;
