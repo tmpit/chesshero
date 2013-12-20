@@ -11,7 +11,6 @@ public class Action
 
     // Each request to the server should always have at least one parameter [action:INT].
     // Each response from the server should have at least one parameter [result:INT].
-    // Each message from the server that is not a response to a request should have parameter [push:BOOL] which is always true.
     // The following are all action codes recognized by the server, their additional parameters required for each action,
     // and all additional parameters returned if the request has succeeded:
 
@@ -31,9 +30,6 @@ public class Action
     // Description: Create a new game that would be available to all players
     // Parameters: [gamename:STR], [color:STR] - either 'black' or 'white', optional, default value is 'white' if not specified
     // Returns: [gameid:INT], [chattoken:STR]
-    // Additional: If the user successfully creates a game, they should expect a push message
-    // to be sent when another player joins the game. The message will contain the following parameters:
-    // [opponentname:STR], [opponentid:INT]
     public static final int CREATE_GAME = 3;
 
     // Cancel game
