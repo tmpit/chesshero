@@ -7,6 +7,7 @@ import com.kt.chesco.CHESCOWriter;
 import com.kt.game.Game;
 import com.kt.game.GameController;
 import com.kt.game.Player;
+import com.kt.game.Position;
 import com.kt.utils.ChessHeroException;
 import com.kt.api.Result;
 import com.kt.utils.SLog;
@@ -29,7 +30,7 @@ import java.util.Map;
  * Time: 7:56 PM
  * To change this template use File | Settings | File Templates.
  */
-// TODO: keep connections in a dictionary or something
+
 public class ClientConnection extends Thread
 {
     private static final int READ_TIMEOUT = 15 * 1000; // In milliseconds
@@ -312,6 +313,10 @@ public class ClientConnection extends Thread
                     handleExitGame(request);
                     break;
 
+				case Action.MOVE:
+					handleMove(request);
+					break;
+
                 default:
                     throw new ChessHeroException(Result.UNRECOGNIZED_ACTION);
             }
@@ -523,6 +528,9 @@ public class ClientConnection extends Thread
         }
 		catch (NoSuchAlgorithmException e)
 		{
+			SLog.write("Exception raised while generating chat token for new game: " + e);
+			SLog.write("Stack: " + e.getStackTrace());
+
 			try
 			{
 				db.rollback();
@@ -531,11 +539,13 @@ public class ClientConnection extends Thread
 			{
 			}
 
-			SLog.write("Exception while generating chat token: " + e);
 			throw new ChessHeroException(Result.INTERNAL_ERROR);
 		}
         catch (SQLException e)
         {
+			SLog.write("Exception raised while creating game: " + e);
+			SLog.write("Stack: " + e.getStackTrace());
+
 			try
 			{
 				db.rollback();
@@ -544,7 +554,6 @@ public class ClientConnection extends Thread
 			{
 			}
 
-            SLog.write("Exception while creating game: " + e);
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
         finally
@@ -599,6 +608,9 @@ public class ClientConnection extends Thread
                     }
                     catch (SQLException e)
                     {
+						SLog.write("Exception raised while cancelling game: " + e);
+						SLog.write("Stack: " + e.getStackTrace());
+
 						try
 						{
 							db.rollback();
@@ -607,7 +619,6 @@ public class ClientConnection extends Thread
 						{
 						}
 
-                        SLog.write("Exception while deleting game: " + e);
                         throw new ChessHeroException(Result.INTERNAL_ERROR);
                     }
                     finally
@@ -659,6 +670,9 @@ public class ClientConnection extends Thread
         }
         catch (SQLException e)
         {
+			SLog.write("Exception raised while fetching games: " + e);
+			SLog.write("Stack: " + e.getStackTrace());
+
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
         finally
@@ -736,6 +750,7 @@ public class ClientConnection extends Thread
                     catch (Exception e)
                     {
                         SLog.write("Exception raised while joining game: " + e);
+						SLog.write("Stack: " + e.getStackTrace());
 
                         try
                         {
@@ -830,6 +845,9 @@ public class ClientConnection extends Thread
 				}
 				catch (SQLException e)
 				{
+					SLog.write("Exception raised while exiting game: " + e);
+					SLog.write("Stack: " + e.getStackTrace());
+
 					try
 					{
 						db.rollback();
@@ -866,4 +884,119 @@ public class ClientConnection extends Thread
 		msg.put("opponentexited", true);
 		opponent.getConnection().writeMessage(msg);
     }
+
+	private void handleMove(HashMap<String, Object> request) throws ChessHeroException
+	{
+		Game game = player.getGame();
+
+		if (null == game)
+		{
+			writeMessage(aResponseWithResult(Result.NOT_PLAYING));
+			return;
+		}
+
+		String fromStr = (String)request.get("from");
+		String toStr = (String)request.get("to");
+
+		if (null == fromStr || null == toStr)
+		{
+			writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
+			return;
+		}
+
+		boolean gameNotStarted = false;
+		boolean invalidPosition = false;
+		int result = 0;
+		Player opponent = null;
+		Player winner = null;
+
+		synchronized (game)
+		{
+			if (!(gameNotStarted = game.getState() != Game.STATE_STARTED))
+			{
+				Position from = Position.positionFromBoardPosition(fromStr);
+				Position to = Position.positionFromBoardPosition(toStr);
+
+				if (!(invalidPosition = null == from || null == to))
+				{
+					GameController controller = game.getController();
+
+					opponent = player.getOpponent();
+					result = controller.execute(from, to);
+					winner = controller.getWinner();
+
+					if (winner != null)
+					{
+						try
+						{
+							int gameID = game.getID();
+
+							db.connect();
+							db.startTransaction();
+
+							db.deleteGame(gameID);
+							db.removePlayersForGame(gameID);
+							db.insertResult(gameID, winner.getUserID(), (winner == player ? opponent.getUserID() : player.getUserID()));
+
+							db.commit();
+
+							game.setState(Game.STATE_FINISHED);
+							Game.removeGame(gameID);
+
+							player.leave();
+							opponent.leave();
+						}
+						catch (SQLException e)
+						{
+							SLog.write("Exception raised while ending game: " + e);
+							SLog.write("Stack: " + e.getStackTrace());
+
+							throw new ChessHeroException(Result.INTERNAL_ERROR);
+						}
+						finally
+						{
+							db.disconnect();
+						}
+					}
+				}
+			}
+		}
+
+		if (gameNotStarted)
+		{
+			writeMessage(aResponseWithResult(Result.MOVE_NA));
+			return;
+		}
+
+		if (invalidPosition)
+		{
+			writeMessage(aResponseWithResult(Result.INVALID_MOVE_FORMAT));
+			return;
+		}
+
+		writeMessage(aResponseWithResult(result));
+
+		if (result != Result.OK)
+		{
+			return;
+		}
+
+		ClientConnection opponentConnection = opponent.getConnection();
+
+		HashMap msg = aPushWithEvent(Push.GAME_MOVE);
+		msg.put("from", fromStr);
+		msg.put("to", toStr);
+		opponentConnection.writeMessage(msg);
+
+		if (null == winner)
+		{
+			return;
+		}
+
+		HashMap endMsg = aPushWithEvent(Push.GAME_ENDED);
+		endMsg.put("winner", winner.getUserID());
+
+		writeMessage(endMsg);
+		opponentConnection.writeMessage(endMsg);
+	}
 }
