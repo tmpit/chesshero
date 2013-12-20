@@ -114,6 +114,10 @@ public class Main
             {
                 joinGame(Integer.parseInt(args[1]));
             }
+			else if (args[0].equals("exitgame"))
+			{
+				exitGame(Integer.parseInt(args[1]));
+			}
             else
             {
                 SLog.write("Unrecognized command");
@@ -236,4 +240,14 @@ public class Main
 
         listen(1);
     }
+
+	public static void exitGame(int gameID) throws IOException
+	{
+		HashMap req = new HashMap();
+		req.put("action", Action.EXIT_GAME);
+		req.put("gameid", gameID);
+		writer.write(req);
+
+		listen(1);
+	}
 }
