@@ -402,6 +402,23 @@ class Database
 		}
 	}
 
+	public void removePlayersForGame(int gameID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("DELETE FROM players WHERE gid = ?");
+			stmt.setInt(1, gameID);
+
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
+
 	public void insertResult(int gameID, int winnerUserID, int loserUserID) throws SQLException
 	{
 		PreparedStatement stmt = null;
