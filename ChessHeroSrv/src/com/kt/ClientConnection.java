@@ -116,8 +116,8 @@ public class ClientConnection extends Thread
 						}
 						catch (SQLException eeeeeeeee)
 						{
-							SLog.write("" + eeeeeeeee + eeeeeeeee.getStackTrace());
-							SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYER WITH ID: " + player.getUserID());
+							eeeeeeeee.printStackTrace();
+							SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYER: " + player);
 						}
                     }
                 }
@@ -153,8 +153,8 @@ public class ClientConnection extends Thread
 						}
 						catch (SQLException eeeeeeeee)
 						{
-							SLog.write("" + eeeeeeeee + eeeeeeeee.getStackTrace());
-							SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYERS WITH IDS: " + player.getUserID() + ", " + opponent.getUserID());
+							eeeeeeeee.printStackTrace();
+							SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYERS: " + player + ", " + opponent);
 						}
 					}
 
@@ -231,7 +231,7 @@ public class ClientConnection extends Thread
         catch (Exception e)
         {
             SLog.write("Surprise exception: " + e);
-			SLog.write(e.getStackTrace());
+			e.printStackTrace();
         }
     }
 
@@ -529,7 +529,7 @@ public class ClientConnection extends Thread
 		catch (NoSuchAlgorithmException e)
 		{
 			SLog.write("Exception raised while generating chat token for new game: " + e);
-			SLog.write("Stack: " + e.getStackTrace());
+			e.printStackTrace();
 
 			try
 			{
@@ -544,7 +544,7 @@ public class ClientConnection extends Thread
         catch (SQLException e)
         {
 			SLog.write("Exception raised while creating game: " + e);
-			SLog.write("Stack: " + e.getStackTrace());
+			e.printStackTrace();
 
 			try
 			{
@@ -609,7 +609,7 @@ public class ClientConnection extends Thread
                     catch (SQLException e)
                     {
 						SLog.write("Exception raised while cancelling game: " + e);
-						SLog.write("Stack: " + e.getStackTrace());
+						e.printStackTrace();
 
 						try
 						{
@@ -671,7 +671,7 @@ public class ClientConnection extends Thread
         catch (SQLException e)
         {
 			SLog.write("Exception raised while fetching games: " + e);
-			SLog.write("Stack: " + e.getStackTrace());
+			e.printStackTrace();
 
             throw new ChessHeroException(Result.INTERNAL_ERROR);
         }
@@ -750,7 +750,7 @@ public class ClientConnection extends Thread
                     catch (Exception e)
                     {
                         SLog.write("Exception raised while joining game: " + e);
-						SLog.write("Stack: " + e.getStackTrace());
+						e.printStackTrace();
 
                         try
                         {
@@ -846,7 +846,7 @@ public class ClientConnection extends Thread
 				catch (SQLException e)
 				{
 					SLog.write("Exception raised while exiting game: " + e);
-					SLog.write("Stack: " + e.getStackTrace());
+					e.printStackTrace();
 
 					try
 					{
@@ -949,7 +949,15 @@ public class ClientConnection extends Thread
 						catch (SQLException e)
 						{
 							SLog.write("Exception raised while ending game: " + e);
-							SLog.write("Stack: " + e.getStackTrace());
+							e.printStackTrace();
+
+							try
+							{
+								db.rollback();
+							}
+							catch (SQLException ignore)
+							{
+							}
 
 							throw new ChessHeroException(Result.INTERNAL_ERROR);
 						}
