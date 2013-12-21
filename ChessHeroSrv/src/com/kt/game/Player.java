@@ -9,7 +9,6 @@ public class Player
 {
     private int userID;
     private String name;
-    private ClientConnection connection;
     private Game game;
 
     public enum Color {NONE, WHITE, BLACK}
@@ -19,7 +18,6 @@ public class Player
     {
         this.userID = userID;
         this.name = name;
-        this.connection = connection;
     }
 
     public int getUserID()
@@ -30,11 +28,6 @@ public class Player
     public String getName()
     {
         return name;
-    }
-
-    public ClientConnection getConnection()
-    {
-        return connection;
     }
 
     public Game getGame()

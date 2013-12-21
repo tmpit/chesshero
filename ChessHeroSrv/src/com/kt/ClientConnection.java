@@ -30,7 +30,6 @@ import java.util.Map;
  * Time: 7:56 PM
  * To change this template use File | Settings | File Templates.
  */
-// TODO: keep client connections in a map or something
 // TODO: move game cancel and end in separate methods
 public class ClientConnection extends Thread
 {
@@ -41,6 +40,36 @@ public class ClientConnection extends Thread
 	private static final int MAX_FETCH_GAMES_LIMIT = 1000;
 
     private static final String DEFAULT_PLAYER_COLOR = "white";
+
+	private static final HashMap<String, ClientConnection> playerConnections = new HashMap<String, ClientConnection>();
+
+	private static void putConnection(int gameID, int userID, ClientConnection conn)
+	{
+		synchronized (playerConnections)
+		{
+			playerConnections.put(gameID + ":" + userID, conn);
+		}
+	}
+
+	private static ClientConnection getConnection(int gameID, int userID)
+	{
+		synchronized (playerConnections)
+		{
+			return playerConnections.get(gameID + ":" + userID);
+		}
+	}
+
+	private static ClientConnection popConnection(int gameID, int userID)
+	{
+		String key = gameID + ":" + userID;
+
+		synchronized (playerConnections)
+		{
+			ClientConnection conn = playerConnections.get(key);
+			playerConnections.remove(key);
+			return conn;
+		}
+	}
 
     private boolean running = true;
     private Socket sock = null;
@@ -106,6 +135,8 @@ public class ClientConnection extends Thread
 
 						game.setState(Game.STATE_FINISHED);
 						Game.removeGame(gameID);
+
+						popConnection(gameID, player.getUserID());
                     }
                     catch (SQLException e)
                     {
@@ -124,7 +155,9 @@ public class ClientConnection extends Thread
                 }
                 else if (Game.STATE_STARTED == game.getState())
                 {
+					int opponentUserID = 0;
 					Player opponent = null;
+					ClientConnection opponentConnection = null;
 
                     try
 					{
@@ -133,9 +166,12 @@ public class ClientConnection extends Thread
 
 						opponent = player.getOpponent();
 
+						int myUserID = player.getUserID();
+						opponentUserID = opponent.getUserID();
+
 						db.deleteGame(gameID);
 						db.removePlayersForGame(gameID);
-						db.insertResult(gameID, opponent.getUserID(), player.getUserID());
+						db.insertResult(gameID, opponentUserID, myUserID);
 
 						db.commit();
 
@@ -143,6 +179,9 @@ public class ClientConnection extends Thread
 						player.leave();
 						opponent.leave();
 						Game.removeGame(gameID);
+
+						popConnection(gameID, myUserID);
+						opponentConnection = popConnection(gameID, opponentUserID);
 					}
 					catch (Exception e)
 					{
@@ -159,25 +198,20 @@ public class ClientConnection extends Thread
 						}
 					}
 
-					if (opponent != null)
+					if (opponentConnection != null)
 					{
-						HashMap msg = aPushWithEvent(Push.GAME_ENDED);
-						msg.put("winner", opponent.getUserID());
-						msg.put("opponentdisconnected", true);
+						HashMap push = aPushWithEvent(Push.GAME_ENDED);
+						push.put("winner", opponentUserID);
+						push.put("opponentdisconnected", true);
 
-						ClientConnection conn = opponent.getConnection();
-
-						if (conn != null)
-						{
-							conn.writeMessage(msg);
-						}
+						opponentConnection.writeMessage(push);
 					}
 				}
             }
         }
 
+		db.disconnect();
         closeSocket();
-        db.disconnect();
     }
 
     private void listen()
@@ -514,13 +548,15 @@ public class ClientConnection extends Thread
 			String chatToken = Game.generateChatToken(gameID, userID, gameName);
 			db.insertPlayer(gameID, userID, chatToken, color);
 
-            Game game = new Game(gameID, gameName);
-            game.setState(Game.STATE_PENDING);
-            player.join(game, (color.equals("white") ? Player.Color.WHITE : Player.Color.BLACK));
-
-            Game.addGame(game);
-
 			db.commit();
+
+			putConnection(gameID, userID, this);
+
+			Game game = new Game(gameID, gameName);
+			game.setState(Game.STATE_PENDING);
+			player.join(game, (color.equals("white") ? Player.Color.WHITE : Player.Color.BLACK));
+
+			Game.addGame(game);
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("gameid", gameID);
@@ -597,15 +633,20 @@ public class ClientConnection extends Thread
                 {
                     try
                     {
+						int uID = player.getUserID();
+
                         db.connect();
 						db.startTransaction();
-                        db.deleteGame(gID);
-						db.removePlayer(gID, player.getUserID());
 
-                        Game.removeGame(gID);
-                        player.leave();
+                        db.deleteGame(gID);
+						db.removePlayer(gID, uID);
 
 						db.commit();
+
+						Game.removeGame(gID);
+						player.leave();
+
+						popConnection(gID, uID);
                     }
                     catch (SQLException e)
                     {
@@ -743,6 +784,8 @@ public class ClientConnection extends Thread
 
                         db.commit();
 
+						putConnection(gameID, myUserID, this);
+
                         player.join(game, myColor);
 
                         game.setState(Game.STATE_STARTED);
@@ -783,17 +826,23 @@ public class ClientConnection extends Thread
             return;
         }
 
+		int opponentUserID = opponent.getUserID();
+
         HashMap myMsg = aResponseWithResult(Result.OK);
         myMsg.put("opponentname", opponent.getName());
-        myMsg.put("opponentid", opponent.getUserID());
+        myMsg.put("opponentid", opponentUserID);
 		myMsg.put("chattoken", myChatToken);
         writeMessage(myMsg);
 
-        HashMap msg = aPushWithEvent(Push.GAME_STARTED);
-        msg.put("opponentname", player.getName());
-        msg.put("opponentid", player.getUserID());
+		ClientConnection opponentConnection = getConnection(gameID, opponentUserID);
+		if (opponentConnection != null)
+		{
+			HashMap msg = aPushWithEvent(Push.GAME_STARTED);
+			msg.put("opponentname", player.getName());
+			msg.put("opponentid", player.getUserID());
 
-        opponent.getConnection().writeMessage(msg);
+			opponentConnection.writeMessage(msg);
+		}
     }
 
     private void handleExitGame(HashMap<String, Object> request) throws ChessHeroException
@@ -818,6 +867,7 @@ public class ClientConnection extends Thread
         boolean gameHasNotStarted = false;
 
 		Player opponent = null;
+		ClientConnection opponentConnection = null;
 		int opponentUserID = 0;
 
         synchronized (game)
@@ -829,12 +879,13 @@ public class ClientConnection extends Thread
 					db.connect();
 					db.startTransaction();
 
+					int myUserID = player.getUserID();
 					opponent = player.getOpponent();
 					opponentUserID = opponent.getUserID();
 
 					db.deleteGame(gameID);
 					db.removePlayersForGame(gameID);
-					db.insertResult(gameID, opponentUserID, player.getUserID());
+					db.insertResult(gameID, opponentUserID, myUserID);
 
 					db.commit();
 
@@ -843,6 +894,9 @@ public class ClientConnection extends Thread
 					opponent.leave();
 
 					Game.removeGame(gameID);
+
+					popConnection(gameID, myUserID);
+					opponentConnection = popConnection(gameID, opponentUserID);
 				}
 				catch (SQLException e)
 				{
@@ -880,10 +934,14 @@ public class ClientConnection extends Thread
 		myMsg.put("winner", opponentUserID);
         writeMessage(myMsg);
 
-		HashMap msg = aPushWithEvent(Push.GAME_ENDED);
-		msg.put("winner", opponentUserID);
-		msg.put("opponentexited", true);
-		opponent.getConnection().writeMessage(msg);
+		if (opponentConnection != null)
+		{
+			HashMap msg = aPushWithEvent(Push.GAME_ENDED);
+			msg.put("winner", opponentUserID);
+			msg.put("opponentexited", true);
+
+			opponentConnection.writeMessage(msg);
+		}
     }
 
 	private void handleMove(HashMap<String, Object> request) throws ChessHeroException
@@ -908,8 +966,8 @@ public class ClientConnection extends Thread
 		boolean gameNotStarted = false;
 		boolean invalidPosition = false;
 		int result = 0;
-		Player opponent = null;
 		Player winner = null;
+		ClientConnection opponentConnection = null;
 
 		synchronized (game)
 		{
@@ -922,22 +980,27 @@ public class ClientConnection extends Thread
 				{
 					GameController controller = game.getController();
 
-					opponent = player.getOpponent();
+					Player opponent = player.getOpponent();
 					result = controller.execute(from, to);
 					winner = controller.getWinner();
+
+					int gameID = game.getID();
+					int opponentUserID = opponent.getUserID();
+
+					opponentConnection = getConnection(gameID, opponentUserID);
 
 					if (winner != null)
 					{
 						try
 						{
-							int gameID = game.getID();
+							int myUserID = player.getUserID();
 
 							db.connect();
 							db.startTransaction();
 
 							db.deleteGame(gameID);
 							db.removePlayersForGame(gameID);
-							db.insertResult(gameID, winner.getUserID(), (winner == player ? opponent.getUserID() : player.getUserID()));
+							db.insertResult(gameID, winner.getUserID(), (winner == player ? opponentUserID : myUserID));
 
 							db.commit();
 
@@ -946,6 +1009,9 @@ public class ClientConnection extends Thread
 
 							player.leave();
 							opponent.leave();
+
+							popConnection(gameID, myUserID);
+							popConnection(gameID, opponentUserID);
 						}
 						catch (SQLException e)
 						{
@@ -990,12 +1056,14 @@ public class ClientConnection extends Thread
 			return;
 		}
 
-		ClientConnection opponentConnection = opponent.getConnection();
+		if (opponentConnection != null)
+		{
+			HashMap msg = aPushWithEvent(Push.GAME_MOVE);
+			msg.put("from", fromStr);
+			msg.put("to", toStr);
 
-		HashMap msg = aPushWithEvent(Push.GAME_MOVE);
-		msg.put("from", fromStr);
-		msg.put("to", toStr);
-		opponentConnection.writeMessage(msg);
+			opponentConnection.writeMessage(msg);
+		}
 
 		if (null == winner)
 		{
@@ -1006,6 +1074,10 @@ public class ClientConnection extends Thread
 		endMsg.put("winner", winner.getUserID());
 
 		writeMessage(endMsg);
-		opponentConnection.writeMessage(endMsg);
+
+		if (opponentConnection != null)
+		{
+			opponentConnection.writeMessage(endMsg);
+		}
 	}
 }
