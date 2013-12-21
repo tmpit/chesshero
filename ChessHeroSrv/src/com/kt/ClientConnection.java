@@ -123,80 +123,32 @@ public class ClientConnection extends Thread
 
                 if (Game.STATE_PENDING == game.getState())
                 {
-                    try
-                    {
-                        db.connect();
-						db.startTransaction();
+					try
+					{
+						cancelGame(game);
+					}
+					catch (ChessHeroException ignore)
+					{
+					}
 
-                        db.deleteGame(gameID);
-						db.removePlayer(gameID, player.getUserID());
-
-						db.commit();
-
-						game.setState(Game.STATE_FINISHED);
-						Game.removeGame(gameID);
-
-						popConnection(gameID, player.getUserID());
-                    }
-                    catch (SQLException e)
-                    {
-						SLog.write("Exception while cancelling game due to EOF: " + e);
-
-						try
-						{
-							db.rollback();
-						}
-						catch (SQLException eeeeeeeee)
-						{
-							eeeeeeeee.printStackTrace();
-							SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYER: " + player);
-						}
-                    }
+					popConnection(gameID, player.getUserID());
                 }
                 else if (Game.STATE_STARTED == game.getState())
                 {
-					int opponentUserID = 0;
-					Player opponent = null;
+					int myUserID = player.getUserID();
+					int opponentUserID = player.getOpponent().getUserID();
 					ClientConnection opponentConnection = null;
 
-                    try
+					try
 					{
-						db.connect();
-						db.startTransaction();
-
-						opponent = player.getOpponent();
-
-						int myUserID = player.getUserID();
-						opponentUserID = opponent.getUserID();
-
-						db.deleteGame(gameID);
-						db.removePlayersForGame(gameID);
-						db.insertResult(gameID, opponentUserID, myUserID);
-
-						db.commit();
-
-						game.setState(Game.STATE_FINISHED);
-						player.leave();
-						opponent.leave();
-						Game.removeGame(gameID);
-
-						popConnection(gameID, myUserID);
-						opponentConnection = popConnection(gameID, opponentUserID);
+						endGame(game, opponentUserID, myUserID);
 					}
-					catch (Exception e)
+					catch (ChessHeroException ignore)
 					{
-						SLog.write("Exception while ending game due to EOF: " + e);
-
-						try
-						{
-							db.rollback();
-						}
-						catch (SQLException eeeeeeeee)
-						{
-							eeeeeeeee.printStackTrace();
-							SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYERS: " + player + ", " + opponent);
-						}
 					}
+
+					popConnection(gameID, myUserID);
+					opponentConnection = popConnection(gameID, opponentUserID);
 
 					if (opponentConnection != null)
 					{
@@ -284,6 +236,90 @@ public class ClientConnection extends Thread
 		map.put("event", event);
         return map;
     }
+
+	private void cancelGame(Game game) throws ChessHeroException
+	{
+		try
+		{
+			int uID = player.getUserID();
+			int gID = game.getID();
+
+			db.connect();
+			db.startTransaction();
+
+			db.deleteGame(gID);
+			db.removePlayer(gID, uID);
+
+			db.commit();
+
+			Game.removeGame(gID);
+			player.leave();
+		}
+		catch (SQLException e)
+		{
+			SLog.write("Exception raised while cancelling game: " + e);
+			e.printStackTrace();
+
+			try
+			{
+				db.rollback();
+			}
+			catch(SQLException wut)
+			{
+				SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYER: " + player);
+				wut.printStackTrace();
+			}
+
+			throw new ChessHeroException(Result.INTERNAL_ERROR);
+		}
+		finally
+		{
+			db.disconnect();
+		}
+	}
+
+	private void endGame(Game game, int winnerID, int loserID) throws ChessHeroException
+	{
+		try
+		{
+			db.connect();
+			db.startTransaction();
+
+			int gameID = game.getID();
+			Player opponent = player.getOpponent();
+
+			db.deleteGame(gameID);
+			db.removePlayersForGame(gameID);
+			db.insertResult(gameID, winnerID, loserID);
+
+			db.commit();
+
+			game.setState(Game.STATE_FINISHED);
+			player.leave();
+			opponent.leave();
+
+			Game.removeGame(gameID);
+		}
+		catch (SQLException e)
+		{
+			SLog.write("Exception raised while exiting game: " + e);
+			e.printStackTrace();
+
+			try
+			{
+				db.rollback();
+			}
+			catch (SQLException wut)
+			{
+				SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYERS: " + player + ", " + player.getOpponent());
+				wut.printStackTrace();
+			}
+		}
+		finally
+		{
+			db.disconnect();
+		}
+	}
 
     public synchronized void writeMessage(HashMap<String, Object> message)
     {
@@ -627,46 +663,11 @@ public class ClientConnection extends Thread
             if (!(isInGame = game.getState() != Game.STATE_PENDING))
             {
                 int gID = gameIDToDelete.intValue();
-                int playerGID = game.getID();
 
-                if (!(invalidGameID = playerGID != gID))
+                if (!(invalidGameID = game.getID() != gID))
                 {
-                    try
-                    {
-						int uID = player.getUserID();
-
-                        db.connect();
-						db.startTransaction();
-
-                        db.deleteGame(gID);
-						db.removePlayer(gID, uID);
-
-						db.commit();
-
-						Game.removeGame(gID);
-						player.leave();
-
-						popConnection(gID, uID);
-                    }
-                    catch (SQLException e)
-                    {
-						SLog.write("Exception raised while cancelling game: " + e);
-						e.printStackTrace();
-
-						try
-						{
-							db.rollback();
-						}
-						catch(SQLException ignore)
-						{
-						}
-
-                        throw new ChessHeroException(Result.INTERNAL_ERROR);
-                    }
-                    finally
-                    {
-                        db.disconnect();
-                    }
+                    cancelGame(game);
+					popConnection(gID, player.getUserID());
                 }
             }
         }
@@ -866,7 +867,6 @@ public class ClientConnection extends Thread
         boolean invalidGameID = false;
         boolean gameHasNotStarted = false;
 
-		Player opponent = null;
 		ClientConnection opponentConnection = null;
 		int opponentUserID = 0;
 
@@ -874,47 +874,13 @@ public class ClientConnection extends Thread
         {
             if (!(invalidGameID = game.getID() != gameID) && !(gameHasNotStarted = game.getState() != Game.STATE_STARTED))
             {
-				try
-				{
-					db.connect();
-					db.startTransaction();
+				int myUserID = player.getUserID();
+				opponentUserID = player.getOpponent().getUserID();
 
-					int myUserID = player.getUserID();
-					opponent = player.getOpponent();
-					opponentUserID = opponent.getUserID();
+				endGame(game, opponentUserID, myUserID);
 
-					db.deleteGame(gameID);
-					db.removePlayersForGame(gameID);
-					db.insertResult(gameID, opponentUserID, myUserID);
-
-					db.commit();
-
-					game.setState(Game.STATE_FINISHED);
-					player.leave();
-					opponent.leave();
-
-					Game.removeGame(gameID);
-
-					popConnection(gameID, myUserID);
-					opponentConnection = popConnection(gameID, opponentUserID);
-				}
-				catch (SQLException e)
-				{
-					SLog.write("Exception raised while exiting game: " + e);
-					e.printStackTrace();
-
-					try
-					{
-						db.rollback();
-					}
-					catch (SQLException ignore)
-					{
-					}
-				}
-				finally
-				{
-					db.disconnect();
-				}
+				popConnection(gameID, myUserID);
+				opponentConnection = popConnection(gameID, opponentUserID);
 			}
         }
 
@@ -980,58 +946,21 @@ public class ClientConnection extends Thread
 				{
 					GameController controller = game.getController();
 
-					Player opponent = player.getOpponent();
 					result = controller.execute(from, to);
 					winner = controller.getWinner();
 
 					int gameID = game.getID();
-					int opponentUserID = opponent.getUserID();
+					int myUserID = player.getUserID();
+					int opponentUserID = player.getOpponent().getUserID();
 
 					opponentConnection = getConnection(gameID, opponentUserID);
 
 					if (winner != null)
 					{
-						try
-						{
-							int myUserID = player.getUserID();
+						endGame(game, winner.getUserID(), (winner.getUserID() == myUserID ? opponentUserID : myUserID));
 
-							db.connect();
-							db.startTransaction();
-
-							db.deleteGame(gameID);
-							db.removePlayersForGame(gameID);
-							db.insertResult(gameID, winner.getUserID(), (winner == player ? opponentUserID : myUserID));
-
-							db.commit();
-
-							game.setState(Game.STATE_FINISHED);
-							Game.removeGame(gameID);
-
-							player.leave();
-							opponent.leave();
-
-							popConnection(gameID, myUserID);
-							popConnection(gameID, opponentUserID);
-						}
-						catch (SQLException e)
-						{
-							SLog.write("Exception raised while ending game: " + e);
-							e.printStackTrace();
-
-							try
-							{
-								db.rollback();
-							}
-							catch (SQLException ignore)
-							{
-							}
-
-							throw new ChessHeroException(Result.INTERNAL_ERROR);
-						}
-						finally
-						{
-							db.disconnect();
-						}
+						popConnection(gameID, player.getUserID());
+						popConnection(gameID, opponentUserID);
 					}
 				}
 			}
