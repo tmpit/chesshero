@@ -28,16 +28,16 @@ public class Connection
 
     private static Connection singleton = null;
 
-    private ClientSocket sock;
+    private ClientSocket sock = null;
     private ArrayList<ConnectionListener> listeners = new ArrayList<ConnectionListener>();
     private ArrayList<Object> readResponses = new ArrayList<Object>();
 
     private boolean verbose = false;
 
     private boolean isConnecting = false;
-    private boolean isListening = false;
     private boolean shouldNotifyDisconnection = false; // Used to make sure listeners are notified about the disconnection after the last request has completed
 
+	private ListenTask listenTask = null;
     private RequestTask currentRequestTask = null;
     private Timer timeoutTimer = null;
 
@@ -127,6 +127,11 @@ public class Connection
 
     public void disconnect()
     {
+		if (listenTask != null)
+		{
+			listenTask.cancel(true);
+		}
+
         doDisconnect(true);
     }
 
@@ -138,41 +143,27 @@ public class Connection
             return;
         }
 
-        if (sock != null && !sock.isConnected())
+        if (null == sock || !sock.isConnected())
         {
             SLog.write("Attempting to disconnect when socket is disconnecting or already disconnected");
             return;
         }
 
-        new DisconnectTask(sock, notify)
-        {
-            @Override
-            protected Void doInBackground()
-            {
-                try
-                {
-                    sock.disconnect();
-                    success = true;
-                }
-                catch (IOException e)
-                {
-                    log("Failed to disconnect: " + e);
-                }
+		try
+		{
+			sock.disconnect();
+		}
+		catch (IOException e)
+		{
+			log("Exception while disconnecting socket: " + e);
+		}
 
-                return null;
-            }
+		sock = null;
 
-            @Override
-            public void done()
-            {
-                if (success && notify)
-                {
-                    notifySocketDisconnected(false);
-                }
-            }
-        }.execute();
-
-        sock = null;
+		if (notify)
+		{
+			notifySocketDisconnected(false);
+		}
     }
 
     private void listen()
@@ -183,21 +174,19 @@ public class Connection
             return;
         }
 
-        if (sock != null && !sock.isConnected())
+        if (null == sock || !sock.isConnected())
         {
             SLog.write("Attempting to listen for messages when socket is not connected");
             return;
         }
 
-        if (isListening)
+        if (listenTask != null)
         {
             SLog.write("Attempting to listen for messages when already listening");
             return;
         }
 
-        isListening = true;
-
-        new ListenTask()
+        listenTask = new ListenTask()
         {
             @Override
             protected Void doInBackground()
@@ -260,9 +249,17 @@ public class Connection
                 }
             }
 
-            @Override protected void done()
+            @Override
+			protected void done()
             {
-                isListening = false;
+				listenTask = null;
+
+				if (this.isCancelled())
+				{	// If this task is cancelled, this means disconnect is called from the outside and that the socket will
+					// be disconnected properly and the user notified
+					return;
+				}
+
                 doDisconnect(false);
 
                 if (null == currentRequestTask)
@@ -274,7 +271,9 @@ public class Connection
                     shouldNotifyDisconnection = true;
                 }
             }
-        }.execute();
+        };
+
+		listenTask.execute();
     }
 
     public void sendRequest(Request request)
@@ -285,7 +284,7 @@ public class Connection
             return;
         }
 
-        if (sock != null && !sock.isConnected())
+        if (null == sock || !sock.isConnected())
         {
             SLog.write("Attempting to send request when socket is not connected");
             return;
@@ -412,18 +411,6 @@ public class Connection
     private abstract class BackgroundTask extends SwingWorker<Void, Void>
     {
         protected boolean success = false;
-    }
-
-    private abstract class DisconnectTask extends BackgroundTask
-    {
-        protected ClientSocket sock;
-        protected boolean notify;
-
-        public DisconnectTask(ClientSocket sock, boolean notify)
-        {
-            this.sock = sock;
-            this.notify = notify;
-        }
     }
 
     private abstract class ListenTask extends SwingWorker<Void, HashMap<String, Object>>
