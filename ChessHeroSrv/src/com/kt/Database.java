@@ -419,6 +419,23 @@ class Database
 		}
 	}
 
+	public void insertResult(int gameID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("INSERT INTO results (gid) VALUES (?)");
+			stmt.setInt(1, gameID);
+
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
+
 	public void insertResult(int gameID, int winnerUserID, int loserUserID) throws SQLException
 	{
 		PreparedStatement stmt = null;

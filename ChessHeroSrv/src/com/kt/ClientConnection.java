@@ -4,10 +4,7 @@ import com.kt.api.Action;
 import com.kt.api.Push;
 import com.kt.chesco.CHESCOReader;
 import com.kt.chesco.CHESCOWriter;
-import com.kt.game.Game;
-import com.kt.game.GameController;
-import com.kt.game.Player;
-import com.kt.game.Position;
+import com.kt.game.*;
 import com.kt.utils.ChessHeroException;
 import com.kt.api.Result;
 import com.kt.utils.SLog;
@@ -16,12 +13,10 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.InputMismatchException;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,7 +25,7 @@ import java.util.Map;
  * Time: 7:56 PM
  * To change this template use File | Settings | File Templates.
  */
-// TODO: move game cancel and end in separate methods
+
 public class ClientConnection extends Thread
 {
     private static final int READ_TIMEOUT = 15 * 1000; // In milliseconds
@@ -41,34 +36,59 @@ public class ClientConnection extends Thread
 
     private static final String DEFAULT_PLAYER_COLOR = "white";
 
+	private static final HashMap<Integer, Game> games = new HashMap<Integer, Game>();
 	private static final HashMap<String, ClientConnection> playerConnections = new HashMap<String, ClientConnection>();
 
-	private static void putConnection(int gameID, int userID, ClientConnection conn)
+	private static synchronized void putConnection(int gameID, int userID, ClientConnection conn)
 	{
-		synchronized (playerConnections)
-		{
-			playerConnections.put(gameID + ":" + userID, conn);
-		}
+		playerConnections.put(gameID + ":" + userID, conn);
 	}
 
-	private static ClientConnection getConnection(int gameID, int userID)
+	private static synchronized ClientConnection getConnection(int gameID, int userID)
 	{
-		synchronized (playerConnections)
-		{
-			return playerConnections.get(gameID + ":" + userID);
-		}
+		return playerConnections.get(gameID + ":" + userID);
 	}
 
-	private static ClientConnection popConnection(int gameID, int userID)
+	private static synchronized ClientConnection popConnection(int gameID, int userID)
 	{
 		String key = gameID + ":" + userID;
+		ClientConnection conn = playerConnections.get(key);
+		playerConnections.remove(key);
+		return conn;
+	}
 
-		synchronized (playerConnections)
+	public static synchronized void addGame(Game game)
+	{
+		games.put(game.getID(), game);
+	}
+
+	public static synchronized Game removeGame(int gameID)
+	{
+		Game game = games.get(gameID);
+		games.remove(gameID);
+		return game;
+	}
+
+	public static synchronized Game getGame(int gameID)
+	{
+		return games.get(gameID);
+	}
+
+	public static String generateChatToken(int gameID, int userID, String gameName) throws NoSuchAlgorithmException
+	{
+		String cat1 = gameName + gameID + userID;
+
+		MessageDigest digest = MessageDigest.getInstance("SHA-1");
+		byte tokenData[] = digest.digest(cat1.getBytes());
+
+		Formatter formatter = new Formatter();
+
+		for (byte b : tokenData)
 		{
-			ClientConnection conn = playerConnections.get(key);
-			playerConnections.remove(key);
-			return conn;
+			formatter.format("%02x", b);
 		}
+
+		return formatter.toString();
 	}
 
     private boolean running = true;
@@ -135,19 +155,22 @@ public class ClientConnection extends Thread
                 }
                 else if (Game.STATE_STARTED == game.getState())
                 {
-					int myUserID = player.getUserID();
-					int opponentUserID = player.getOpponent().getUserID();
+					Player opponent = player.getOpponent();
+					int opponentUserID = opponent.getUserID();
 					ClientConnection opponentConnection = null;
+
+					// End the game with the opponent as the winner
+					game.getController().endGame(opponent);
 
 					try
 					{
-						endGame(game, opponentUserID, myUserID);
+						finalizeGame(game);
 					}
 					catch (ChessHeroException ignore)
 					{
 					}
 
-					popConnection(gameID, myUserID);
+					popConnection(gameID, player.getUserID());
 					opponentConnection = popConnection(gameID, opponentUserID);
 
 					if (opponentConnection != null)
@@ -252,7 +275,7 @@ public class ClientConnection extends Thread
 
 			db.commit();
 
-			Game.removeGame(gID);
+			removeGame(gID);
 			player.leave();
 		}
 		catch (SQLException e)
@@ -278,7 +301,7 @@ public class ClientConnection extends Thread
 		}
 	}
 
-	private void endGame(Game game, int winnerID, int loserID) throws ChessHeroException
+	private void finalizeGame(Game game) throws ChessHeroException
 	{
 		try
 		{
@@ -286,19 +309,28 @@ public class ClientConnection extends Thread
 			db.startTransaction();
 
 			int gameID = game.getID();
-			Player opponent = player.getOpponent();
 
 			db.deleteGame(gameID);
 			db.removePlayersForGame(gameID);
-			db.insertResult(gameID, winnerID, loserID);
+
+			Player winner = game.getWinner();
+			Player loser = winner.getOpponent();
+
+			if (null == winner)
+			{	// Draw
+				db.insertResult(gameID);
+			}
+			else
+			{
+				db.insertResult(gameID, winner.getUserID(), loser.getUserID());
+			}
 
 			db.commit();
 
-			game.setState(Game.STATE_FINISHED);
-			player.leave();
-			opponent.leave();
+			winner.leave();
+			loser.leave();
 
-			Game.removeGame(gameID);
+			removeGame(gameID);
 		}
 		catch (SQLException e)
 		{
@@ -456,7 +488,7 @@ public class ClientConnection extends Thread
                 throw new ChessHeroException(Result.INTERNAL_ERROR);
             }
 
-            player = new Player(userID, name, this);
+            player = new Player(userID, name);
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("username", name);
@@ -515,7 +547,7 @@ public class ClientConnection extends Thread
                 throw new ChessHeroException(Result.INTERNAL_ERROR);
             }
 
-            player = new Player (userID, name, this);
+            player = new Player (userID, name);
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("username", name);
@@ -581,7 +613,7 @@ public class ClientConnection extends Thread
             }
 
 			int userID = player.getUserID();
-			String chatToken = Game.generateChatToken(gameID, userID, gameName);
+			String chatToken = generateChatToken(gameID, userID, gameName);
 			db.insertPlayer(gameID, userID, chatToken, color);
 
 			db.commit();
@@ -590,9 +622,9 @@ public class ClientConnection extends Thread
 
 			Game game = new Game(gameID, gameName);
 			game.setState(Game.STATE_PENDING);
-			player.join(game, (color.equals("white") ? Player.Color.WHITE : Player.Color.BLACK));
+			player.join(game, (color.equals("white") ? Color.WHITE : Color.BLACK));
 
-			Game.addGame(game);
+			addGame(game);
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("gameid", gameID);
@@ -742,7 +774,7 @@ public class ClientConnection extends Thread
 
         int gameID = joinGameID.intValue();
 
-        Game game = Game.getGame(gameID);
+        Game game = getGame(gameID);
 
         if (null == game)
         {
@@ -772,16 +804,16 @@ public class ClientConnection extends Thread
                 {
                     try
                     {
-                        myChatToken = Game.generateChatToken(gameID, myUserID, gameName);
+                        myChatToken = generateChatToken(gameID, myUserID, gameName);
 
                         db.connect();
                         db.startTransaction();
 
-						Player.Color opponentColor = opponent.getColor();
-						Player.Color myColor = (opponentColor == Player.Color.WHITE ? Player.Color.BLACK : Player.Color.WHITE);
+						Color opponentColor = opponent.getColor();
+						Color myColor = opponentColor.Opposite;
 
                         db.updateGameState(gameID, Game.STATE_STARTED);
-                        db.insertPlayer(gameID, myUserID, myChatToken, (myColor == Player.Color.WHITE ? "white" : "black"));
+                        db.insertPlayer(gameID, myUserID, myChatToken, (myColor == Color.WHITE ? "white" : "black"));
 
                         db.commit();
 
@@ -874,12 +906,15 @@ public class ClientConnection extends Thread
         {
             if (!(invalidGameID = game.getID() != gameID) && !(gameHasNotStarted = game.getState() != Game.STATE_STARTED))
             {
-				int myUserID = player.getUserID();
-				opponentUserID = player.getOpponent().getUserID();
+				Player opponent = player.getOpponent();
+				opponentUserID = opponent.getUserID();
 
-				endGame(game, opponentUserID, myUserID);
+				// End the game with the opponent as the winner
+				game.getController().endGame(opponent);
 
-				popConnection(gameID, myUserID);
+				finalizeGame(game);
+
+				popConnection(gameID, player.getUserID());
 				opponentConnection = popConnection(gameID, opponentUserID);
 			}
         }
@@ -932,6 +967,7 @@ public class ClientConnection extends Thread
 		boolean gameNotStarted = false;
 		boolean invalidPosition = false;
 		int result = 0;
+		boolean gameFinished = false;
 		Player winner = null;
 		ClientConnection opponentConnection = null;
 
@@ -947,7 +983,8 @@ public class ClientConnection extends Thread
 					GameController controller = game.getController();
 
 					result = controller.execute(from, to);
-					winner = controller.getWinner();
+					gameFinished = Game.STATE_FINISHED == game.getState();
+					winner = game.getWinner();
 
 					int gameID = game.getID();
 					int myUserID = player.getUserID();
@@ -955,9 +992,9 @@ public class ClientConnection extends Thread
 
 					opponentConnection = getConnection(gameID, opponentUserID);
 
-					if (winner != null)
+					if (gameFinished)
 					{
-						endGame(game, winner.getUserID(), (winner.getUserID() == myUserID ? opponentUserID : myUserID));
+						finalizeGame(game);
 
 						popConnection(gameID, player.getUserID());
 						popConnection(gameID, opponentUserID);
@@ -994,13 +1031,17 @@ public class ClientConnection extends Thread
 			opponentConnection.writeMessage(msg);
 		}
 
-		if (null == winner)
+		if (false == gameFinished)
 		{
 			return;
 		}
 
 		HashMap endMsg = aPushWithEvent(Push.GAME_ENDED);
-		endMsg.put("winner", winner.getUserID());
+
+		if (winner != null)
+		{	// winner will be null when game is draw
+			endMsg.put("winner", winner.getUserID());
+		}
 
 		writeMessage(endMsg);
 
