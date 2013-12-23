@@ -16,6 +16,16 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Current Database: `chesshero`
+--
+
+/*!40000 DROP DATABASE IF EXISTS `chesshero`*/;
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `chesshero` /*!40100 DEFAULT CHARACTER SET utf8 */;
+
+USE `chesshero`;
+
+--
 -- Table structure for table `games`
 --
 
@@ -27,7 +37,7 @@ CREATE TABLE `games` (
   `gname` varchar(256) NOT NULL,
   `state` smallint(6) NOT NULL,
   PRIMARY KEY (`gid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -55,9 +65,8 @@ DROP TABLE IF EXISTS `results`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `results` (
   `gid` int(10) unsigned NOT NULL,
-  `winner` int(10) unsigned NOT NULL,
-  `loser` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`gid`,`winner`,`loser`)
+  `winner` int(10) unsigned DEFAULT NULL,
+  `loser` int(10) unsigned DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -74,7 +83,7 @@ CREATE TABLE `users` (
   `pass` char(64) NOT NULL,
   `salt` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -86,4 +95,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-12-17  0:26:31
+-- Dump completed on 2013-12-24  0:54:23
