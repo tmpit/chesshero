@@ -122,7 +122,7 @@ public class Game
 		return winner;
 	}
 
-	public void initializeBoard()
+	protected void initializeBoard()
 	{
 		ArrayList<ChessPiece> player1Pieces = player1.getActivePieces();
 

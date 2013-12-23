@@ -821,8 +821,8 @@ public class ClientConnection extends Thread
 
                         player.join(game, myColor);
 
-                        game.setState(Game.STATE_STARTED);
-                        new GameController(game);
+                        GameController controller = new GameController(game);
+						controller.startGame();
                     }
                     catch (Exception e)
                     {

@@ -17,7 +17,23 @@ public class GameController
 
 	public int execute(Position from, Position to)
 	{
+		if (null == game || game.getState() != Game.STATE_STARTED)
+		{
+			return Result.NOT_PLAYING;
+		}
+
 		return Result.OK;
+	}
+
+	public void startGame()
+	{
+		if (Game.STATE_STARTED == game.getState())
+		{
+			return;
+		}
+
+		game.setState(Game.STATE_STARTED);
+		game.initializeBoard();
 	}
 
 	// Used for prematurely ending a game
