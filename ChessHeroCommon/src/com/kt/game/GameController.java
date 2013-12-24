@@ -57,6 +57,7 @@ public class GameController
 
 		fromField.setChessPiece(null);
 		toField.setChessPiece(piece);
+		game.turn = executor.getOpponent();
 
 		return Result.OK;
 	}
