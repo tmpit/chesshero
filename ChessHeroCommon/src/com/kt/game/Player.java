@@ -121,6 +121,14 @@ public class Player
 		return takenPieces;
 	}
 
+	protected void takePiece(ChessPiece toPiece)
+	{
+		if (activePieces.remove(piece))
+		{
+			takenPieces.add(piece);
+		}
+	}
+
 	public String toString()
 	{
 		return "<Player :: userid: " + userID + ", name: " + name + ", color: " + (color == Color.WHITE ? "white" : "black") + ">";

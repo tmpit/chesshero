@@ -50,10 +50,18 @@ public class GameController
 		}
 
 		BoardField toField = board[to.x][to.y];
+		ChessPiece toPiece = toField.getChessPiece();
 
-		if (toField.getChessPiece() != null)
+		if (toPiece != null)
 		{
-			return Result.INVALID_MOVE;
+			Player owner = toPiece.getOwner();
+
+			if (owner == executor)
+			{	// Cannot take your own chess piece
+				return Result.INVALID_MOVE;
+			}
+
+			owner.takePiece(toPiece);
 		}
 
 		fromField.setChessPiece(null);
