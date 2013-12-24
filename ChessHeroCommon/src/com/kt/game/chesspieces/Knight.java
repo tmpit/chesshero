@@ -17,10 +17,10 @@ public class Knight extends ChessPiece
 			MovementSet.LEFT2_DOWN,
 			MovementSet.RIGHT2_UP,
 			MovementSet.RIGHT2_DOWN,
-			MovementSet.LEFT_UP2,
-			MovementSet.LEFT_DOWN2,
-			MovementSet.RIGHT_UP2,
-			MovementSet.RIGHT_DOWN2
+			MovementSet.UP2_LEFT,
+			MovementSet.DOWN2_LEFT,
+			MovementSet.UP2_RIGHT,
+			MovementSet.DOWN2_RIGHT
 	)));
 
 	public Knight(Position position, Player owner)
@@ -29,8 +29,27 @@ public class Knight extends ChessPiece
 	}
 
 	@Override
-	public boolean isMoveValid()
+	public boolean isMoveValid(Position pos)
 	{
-		return false;
+		int myX = position.getX();
+		int myY = position.getY();
+		int x = pos.getX();
+		int y = pos.getY();
+		pos.subtract(position); // Subtract current position to get relative offset
+
+		if (x > myX && y > myY)
+		{
+			return pos.equals(MovementSet.RIGHT2_UP) || pos.equals(MovementSet.UP2_RIGHT);
+		}
+		if (x < myX && y < myY)
+		{
+			return pos.equals(MovementSet.LEFT2_DOWN) || pos.equals(MovementSet.DOWN2_LEFT);
+		}
+		if (x > myX && y < myY)
+		{
+			return pos.equals(MovementSet.RIGHT2_DOWN) || pos.equals(MovementSet.DOWN2_RIGHT);
+		}
+
+		return pos.equals(MovementSet.UP2_LEFT) || pos.equals(MovementSet.LEFT2_UP);
 	}
 }

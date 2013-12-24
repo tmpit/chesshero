@@ -17,14 +17,16 @@ public class King extends ChessPiece
 			MovementSet.UP_LEFT, MovementSet.UP_RIGHT, MovementSet.DOWN_LEFT, MovementSet.DOWN_RIGHT
 	)), true);
 
+	protected boolean hasMoved = false;
+
 	public King(Position position, Player owner)
 	{
 		super(position, owner, set);
 	}
 
 	@Override
-	public boolean isMoveValid()
+	public boolean isMoveValid(Position pos)
 	{
-		return false;
+		return Math.abs(position.getX() - pos.getX()) < 2 && Math.abs(position.getY() - pos.getY()) < 2; // No more than one step in any direction
 	}
 }

@@ -70,6 +70,43 @@ public class Position
 		return y;
 	}
 
+	public boolean equals(Position pos)
+	{
+		return (pos.x == x && pos.y == y);
+	}
+
+	public Position plus(Position pos)
+	{
+		return new Position(x + pos.x, y + pos.y);
+	}
+
+	public Position minus(Position pos)
+	{
+		return new Position(x - pos.x, y - pos.y);
+	}
+
+	public void add(Position pos)
+	{
+		x += pos.x;
+		y += pos.y;
+	}
+
+	public void subtract(Position pos)
+	{
+		x -= pos.x;
+		y -= pos.y;
+	}
+
+	public boolean isHorizontalOrVerticalTo(Position pos)
+	{
+		return x == pos.x || y == pos.y;
+	}
+
+	public boolean isDiagonalTo(Position pos)
+	{
+		return Math.abs(x - pos.x) == Math.abs(y - pos.y);
+	}
+
 	@Override
 	public String toString()
 	{

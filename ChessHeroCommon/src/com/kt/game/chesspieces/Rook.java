@@ -16,14 +16,16 @@ public class Rook extends ChessPiece
 			MovementSet.UP, MovementSet.LEFT, MovementSet.DOWN, MovementSet.RIGHT
 	)));
 
+	protected boolean hasMoved = false;
+
 	public Rook(Position position, Player owner)
 	{
 		super(position, owner, set);
 	}
 
 	@Override
-	public boolean isMoveValid()
+	public boolean isMoveValid(Position pos)
 	{
-		return false;
+		return position.isHorizontalOrVerticalTo(pos);
 	}
 }

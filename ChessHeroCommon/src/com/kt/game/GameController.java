@@ -17,7 +17,7 @@ public class GameController
 
 	public int execute(Position from, Position to)
 	{
-		if (null == game || game.getState() != Game.STATE_STARTED)
+		if (game.getState() != Game.STATE_STARTED)
 		{
 			return Result.NOT_PLAYING;
 		}

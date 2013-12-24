@@ -26,10 +26,10 @@ public class MovementSet
 	public static final Position LEFT2_DOWN = new Position(-2, -1);
 	public static final Position RIGHT2_UP = new Position(2, 1);
 	public static final Position RIGHT2_DOWN = new Position(2, -1);
-	public static final Position LEFT_UP2 = new Position(-1, 2);
-	public static final Position LEFT_DOWN2 = new Position(-1, -2);
-	public static final Position RIGHT_UP2 = new Position(1, 2);
-	public static final Position RIGHT_DOWN2 = new Position(1, -2);
+	public static final Position UP2_LEFT = new Position(-1, 2);
+	public static final Position UP2_RIGHT = new Position(1, 2);
+	public static final Position DOWN2_LEFT = new Position(-1, -2);
+	public static final Position DOWN2_RIGHT = new Position(1, -2);
 
 	private Collection<Position> set;
 	private boolean single = false;

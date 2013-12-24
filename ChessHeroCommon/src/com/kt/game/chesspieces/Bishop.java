@@ -22,8 +22,8 @@ public class Bishop extends ChessPiece
 	}
 
 	@Override
-	public boolean isMoveValid()
+	public boolean isMoveValid(Position pos)
 	{
-		return false;
+		return position.isDiagonalTo(pos);
 	}
 }
