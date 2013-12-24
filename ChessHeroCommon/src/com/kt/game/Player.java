@@ -24,6 +24,11 @@ public class Player
 		this.name = name;
 	}
 
+	public boolean equals(Player player)
+	{
+		return userID == player.userID;
+	}
+
 	public int getUserID()
 	{
 		return userID;

@@ -13,7 +13,6 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 
 /**
@@ -238,18 +237,18 @@ public class Main
 
 				case Action.JOIN_GAME:
 					theGame = new Game(-1, "");
-					Color opponentcolor = Color.NONE;
+					Color opponentColor = Color.NONE;
 
 					for (HashMap game : availableGames)
 					{
 						if ((Integer)game.get("gameid") == joinID)
 						{
 							String theColor = (String)game.get("playercolor");
-							opponentcolor = (theColor.equals("white") ? Color.WHITE : Color.BLACK);
+							opponentColor = (theColor.equals("white") ? Color.WHITE : Color.BLACK);
 						}
 					}
 
-					if (Color.NONE == opponentcolor)
+					if (Color.NONE == opponentColor)
 					{
 						SLog.write("Cannot start game as player color cannot be determined");
 						try { disconnect(); } catch (IOException ignore) {}
@@ -258,9 +257,9 @@ public class Main
 						return;
 					}
 
-					me.join(theGame, opponentcolor.Opposite);
+					me.join(theGame, opponentColor.Opposite);
 					notMe = new Player((Integer)msg.get("opponentid"), (String)msg.get("opponentname"));
-					notMe.join(theGame, opponentcolor);
+					notMe.join(theGame, opponentColor);
 					new GameController(theGame).startGame();
 					printBoard();
 					break;

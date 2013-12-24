@@ -24,7 +24,7 @@ public class GameController
 			return Result.NOT_PLAYING;
 		}
 
-		if (executor != game.turn)
+		if (!executor.equals(game.turn))
 		{
 			return Result.NOT_YOUR_TURN;
 		}
@@ -39,7 +39,7 @@ public class GameController
 			return Result.NO_CHESSPIECE;
 		}
 
-		if (piece.getOwner() != executor)
+		if (!piece.getOwner().equals(executor))
 		{
 			return Result.NOT_YOUR_CHESSPIECE;
 		}
@@ -56,7 +56,7 @@ public class GameController
 		{
 			Player owner = toPiece.getOwner();
 
-			if (owner == executor)
+			if (owner.equals(executor))
 			{	// Cannot take your own chess piece
 				return Result.INVALID_MOVE;
 			}
