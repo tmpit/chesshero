@@ -20,9 +20,9 @@ public class King extends ChessPiece
 
 	protected boolean hasMoved = false;
 
-	public King(Position position, Player owner)
+	public King(Position position, Player owner, Color color)
 	{
-		super(position, owner, set);
+		super(position, owner, color, set);
 	}
 
 	@Override

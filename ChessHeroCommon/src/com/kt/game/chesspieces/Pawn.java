@@ -4,6 +4,7 @@ import com.kt.game.Color;
 import com.kt.game.MovementSet;
 import com.kt.game.Player;
 import com.kt.game.Position;
+import com.kt.utils.SLog;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,16 +20,16 @@ public class Pawn extends ChessPiece
 
 	protected boolean hasMoved = false;
 
-	public Pawn(Position position, Player owner)
+	public Pawn(Position position, Player owner, Color color)
 	{
-		super(position, owner, set);
+		super(position, owner, color, set);
 	}
 
 	@Override
 	public boolean isMoveValid(Position pos)
 	{
-		int vertical = pos.getX() - position.getX();
-		int horizontal = Math.abs(pos.getY() - position.getY());
+		int vertical = pos.getY() - position.getY();
+		int horizontal = Math.abs(pos.getX() - position.getX());
 
 		if (Color.BLACK == color)
 		{	// Black is positioned at the top, flip the sign

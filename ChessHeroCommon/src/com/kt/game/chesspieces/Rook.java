@@ -19,9 +19,9 @@ public class Rook extends ChessPiece
 
 	protected boolean hasMoved = false;
 
-	public Rook(Position position, Player owner)
+	public Rook(Position position, Player owner, Color color)
 	{
-		super(position, owner, set);
+		super(position, owner, color, set);
 	}
 
 	@Override

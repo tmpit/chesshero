@@ -2,6 +2,7 @@ package com.kt.game;
 
 import com.kt.api.Result;
 import com.kt.game.chesspieces.ChessPiece;
+import com.kt.utils.SLog;
 
 /**
  * Created by Toshko on 12/23/13.

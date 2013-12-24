@@ -23,15 +23,15 @@ public class Game
 
 	public static ArrayList<ChessPiece> initialWhiteChessPieces(Player owner)
 	{
-		return aSetOfChessPieces(owner, true);
+		return aSetOfChessPieces(owner, Color.WHITE, true);
 	}
 
 	public static ArrayList<ChessPiece> initialBlackChessPieces(Player owner)
 	{
-		return aSetOfChessPieces(owner, false);
+		return aSetOfChessPieces(owner, Color.BLACK, false);
 	}
 
-	private static ArrayList<ChessPiece> aSetOfChessPieces(Player owner, boolean bottom)
+	private static ArrayList<ChessPiece> aSetOfChessPieces(Player owner, Color color, boolean bottom)
 	{
 		int pawnRow = (bottom ? 1 : 6);
 		int mainRow = (bottom ? 0 : 7);
@@ -40,17 +40,17 @@ public class Game
 
 		for (int i = 0; i < 8; i++)
 		{
-			pieces.add(new Pawn(new Position(i, pawnRow), owner));
+			pieces.add(new Pawn(new Position(i, pawnRow), owner, color));
 		}
 
-		pieces.add(new Rook(new Position(0, mainRow), owner));
-		pieces.add(new Rook(new Position(7, mainRow), owner));
-		pieces.add(new Knight(new Position(1, mainRow), owner));
-		pieces.add(new Knight(new Position(6, mainRow), owner));
-		pieces.add(new Bishop(new Position(2, mainRow), owner));
-		pieces.add(new Bishop(new Position(5, mainRow), owner));
-		pieces.add(new Queen(new Position(3, mainRow), owner));
-		pieces.add(new King(new Position(4, mainRow), owner));
+		pieces.add(new Rook(new Position(0, mainRow), owner, color));
+		pieces.add(new Rook(new Position(7, mainRow), owner, color));
+		pieces.add(new Knight(new Position(1, mainRow), owner, color));
+		pieces.add(new Knight(new Position(6, mainRow), owner, color));
+		pieces.add(new Bishop(new Position(2, mainRow), owner, color));
+		pieces.add(new Bishop(new Position(5, mainRow), owner, color));
+		pieces.add(new Queen(new Position(3, mainRow), owner, color));
+		pieces.add(new King(new Position(4, mainRow), owner, color));
 
 		return pieces;
 	}

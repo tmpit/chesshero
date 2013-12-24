@@ -4,6 +4,7 @@ import com.kt.game.Color;
 import com.kt.game.MovementSet;
 import com.kt.game.Player;
 import com.kt.game.Position;
+import com.kt.utils.SLog;
 
 /**
  * Created by Toshko on 12/23/13.
@@ -16,11 +17,11 @@ public abstract class ChessPiece
 
 	protected MovementSet movementSet;
 
-	public ChessPiece(Position position, Player owner, MovementSet movementSet)
+	public ChessPiece(Position position, Player owner, Color color, MovementSet movementSet)
 	{
 		this.position = position;
 		this.owner = owner;
-		this.color = owner.getColor();
+		this.color = color;
 		this.movementSet = movementSet;
 	}
 

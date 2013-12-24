@@ -24,9 +24,9 @@ public class Knight extends ChessPiece
 			MovementSet.DOWN2_RIGHT
 	)));
 
-	public Knight(Position position, Player owner)
+	public Knight(Position position, Player owner, Color color)
 	{
-		super(position, owner, set);
+		super(position, owner, color, set);
 	}
 
 	@Override
