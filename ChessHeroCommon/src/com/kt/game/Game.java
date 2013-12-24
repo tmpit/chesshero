@@ -127,9 +127,9 @@ public class Game
 	{
 		Color color = Color.BLACK;
 
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < BOARD_SIDE; i++)
 		{
-			for (int j = 0; j < 8; j++)
+			for (int j = 0; j < BOARD_SIDE; j++)
 			{
 				board[i][j] = new BoardField(new Position(i, j), color);
 				color = color.Opposite;
