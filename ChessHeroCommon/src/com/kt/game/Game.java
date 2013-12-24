@@ -1,6 +1,7 @@
 package com.kt.game;
 
 import com.kt.game.chesspieces.*;
+import com.kt.utils.SLog;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -124,6 +125,19 @@ public class Game
 
 	protected void initializeBoard()
 	{
+		Color color = Color.BLACK;
+
+		for (int i = 0; i < 8; i++)
+		{
+			for (int j = 0; j < 8; j++)
+			{
+				board[i][j] = new BoardField(new Position(i, j), color);
+				color = color.Opposite;
+			}
+
+			color = color.Opposite;
+		}
+
 		ArrayList<ChessPiece> player1Pieces = player1.getActivePieces();
 
 		for (ChessPiece piece : player1Pieces)

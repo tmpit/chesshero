@@ -33,4 +33,10 @@ public class BoardField
 	{
 		this.chessPiece = aPiece;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "<BoardField :: pos: " + position + ", color: " + color + ", chesspiece: " + chessPiece + ">";
+	}
 }
