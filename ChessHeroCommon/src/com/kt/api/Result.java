@@ -29,6 +29,11 @@ public class Result
 	public static final int MOVE_NA = 115;				// Move / Move is not applicable (e.g. game has not started yet)
 	public static final int INVALID_MOVE_FORMAT = 116;	// Move / from or to parameters are not valid chessboard coordinates
 
+	public static final int NOT_YOUR_TURN = 200;		// Move / it is not your turn to make a move
+	public static final int NO_CHESSPIECE = 201;		// Move / from parameter is not the location of a chess piece
+	public static final int NOT_YOUR_CHESSPIECE = 202;	// Move / attempting to move a chess piece that is not your own
+	public static final int INVALID_MOVE = 203;			// Move / the chess piece you are trying to move cannot move to the specified position
+
     public static final int INVALID_REQUEST = 400;      // Any request / Invalid request format has been sent and the request couldn't be parsed
     public static final int MISSING_PARAMETERS = 401;   // Any request / Parameters are missing
     public static final int UNRECOGNIZED_ACTION = 402;  // Any request / Unrecognized action code has been sent

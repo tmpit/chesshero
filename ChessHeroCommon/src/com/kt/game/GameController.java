@@ -1,6 +1,7 @@
 package com.kt.game;
 
 import com.kt.api.Result;
+import com.kt.game.chesspieces.ChessPiece;
 
 /**
  * Created by Toshko on 12/23/13.
@@ -15,12 +16,45 @@ public class GameController
 		game.controller = this;
 	}
 
-	public int execute(Position from, Position to)
+	public int execute(Player executor, Position from, Position to)
 	{
 		if (game.getState() != Game.STATE_STARTED)
 		{
 			return Result.NOT_PLAYING;
 		}
+
+		if (executor != game.turn)
+		{
+			return Result.NOT_YOUR_TURN;
+		}
+
+		BoardField fromField = game.board[from.x][from.y];
+		ChessPiece piece = fromField.getChessPiece();
+
+		if (null == piece)
+		{
+			return Result.NO_CHESSPIECE;
+		}
+
+		if (piece.getOwner() != executor)
+		{
+			return Result.NOT_YOUR_CHESSPIECE;
+		}
+
+		if (!piece.isMoveValid(to))
+		{
+			return Result.INVALID_MOVE;
+		}
+
+		BoardField toField = game.board[to.x][to.y];
+
+		if (toField.getChessPiece() != null)
+		{
+			return Result.INVALID_MOVE;
+		}
+
+		fromField.setChessPiece(null);
+		toField.setChessPiece(piece);
 
 		return Result.OK;
 	}
@@ -34,6 +68,15 @@ public class GameController
 
 		game.setState(Game.STATE_STARTED);
 		game.initializeBoard();
+
+		if (Color.WHITE == game.player1.getColor())
+		{
+			game.turn = game.player1;
+		}
+		else
+		{
+			game.turn = game.player2;
+		}
 	}
 
 	// Used for prematurely ending a game

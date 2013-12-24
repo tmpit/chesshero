@@ -982,7 +982,7 @@ public class ClientConnection extends Thread
 				{
 					GameController controller = game.getController();
 
-					result = controller.execute(from, to);
+					result = controller.execute(player, from, to);
 					gameFinished = Game.STATE_FINISHED == game.getState();
 					winner = game.getWinner();
 
