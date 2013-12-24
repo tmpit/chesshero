@@ -26,12 +26,13 @@ public class Main
     private static CHESCOReader reader;
     private static CHESCOWriter writer;
 
-	private static boolean shouldRespondToMessages = false;
+	private static boolean shouldRespondToMessages = true;
 
 	private static int lastAction;
 	private static String joinColor;
 	private static int joinID;
 	private static ArrayList<HashMap> availableGames;
+	private static String[] lastMovePair;
 
 	private static Player me;
 	private static Player notMe;
@@ -76,7 +77,7 @@ public class Main
             }
             else if (args[0].equals("routine"))
             {
-                routine();
+                routine(Integer.parseInt(args[1]));
             }
             else if (args[0].equals("connect"))
             {
@@ -143,10 +144,21 @@ public class Main
         }
     }
 
-    public static void routine() throws IOException
+    public static void routine(int index) throws IOException
     {
-        connect();
-        login("tttt", "pppp");
+		if (1 == index)
+		{
+			connect();
+			login("tttt", "pppp");
+			createGame("mygame", "white");
+			listen(1);
+		}
+		else if (2 == index)
+		{
+			connect();
+			login("toshko", "parola");
+			fetchGames(-1, -1);
+		}
     }
 
     public static void connect() throws IOException
@@ -175,32 +187,27 @@ public class Main
         {
             while (true)
             {
-				HashMap msg = (HashMap)reader.read();
-				SLog.write(msg);
-
-				if (shouldRespondToMessages)
-				{
-					handleMessage(msg);
-				}
+				handleMessage((HashMap)reader.read());
             }
         }
         else
         {
             while (messages-- > 0)
             {
-				HashMap msg = (HashMap)reader.read();
-                SLog.write(msg);
-
-				if (shouldRespondToMessages)
-				{
-					handleMessage(msg);
-				}
+				handleMessage((HashMap)reader.read());
             }
         }
     }
 
 	public static void handleMessage(HashMap msg)
 	{
+		SLog.write(msg);
+
+		if (!shouldRespondToMessages)
+		{
+			return;
+		}
+
 		if (msg.containsKey("result"))
 		{
 			if ((Integer)msg.get("result") != Result.OK)
@@ -262,6 +269,15 @@ public class Main
 					theGame = null;
 					notMe = null;
 					break;
+
+				case Action.MOVE:
+					theGame.getController().execute(me, Position.positionFromBoardPosition(lastMovePair[0]), Position.positionFromBoardPosition(lastMovePair[1]));
+					printBoard();
+					break;
+
+				default:
+					SLog.write("unrecognized action");
+					break;
 			}
 		}
 		else if (msg.containsKey("push"))
@@ -283,9 +299,18 @@ public class Main
 				case Push.GAME_MOVE:
 					Position from = Position.positionFromBoardPosition((String)msg.get("from"));
 					Position to = Position.positionFromBoardPosition((String)msg.get("to"));
-					theGame.getController().execute(from, to);
+					theGame.getController().execute(notMe, from, to);
+					printBoard();
+					break;
+
+				default:
+					SLog.write("unrecognized push event");
 					break;
 			}
+		}
+		else
+		{
+			SLog.write("unrecognized message");
 		}
 	}
 
@@ -391,6 +416,7 @@ public class Main
 	public static void move(String from, String to) throws IOException
 	{
 		lastAction = Action.MOVE;
+		lastMovePair = new String[]{from, to};
 
 		HashMap req = new HashMap();
 		req.put("action", Action.MOVE);
