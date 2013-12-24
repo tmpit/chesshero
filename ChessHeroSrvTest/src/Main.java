@@ -1,7 +1,10 @@
 import com.kt.*;
 import com.kt.api.Action;
+import com.kt.api.Push;
+import com.kt.api.Result;
 import com.kt.chesco.CHESCOReader;
 import com.kt.chesco.CHESCOWriter;
+import com.kt.game.*;
 import com.kt.utils.SLog;
 
 import java.io.BufferedReader;
@@ -22,6 +25,17 @@ public class Main
 
     private static CHESCOReader reader;
     private static CHESCOWriter writer;
+
+	private static boolean shouldRespondToMessages = false;
+
+	private static int lastAction;
+	private static String joinColor;
+	private static int joinID;
+	private static ArrayList<HashMap> availableGames;
+
+	private static Player me;
+	private static Player notMe;
+	private static Game theGame;
 
     public static void main(String []args)
     {
@@ -137,7 +151,8 @@ public class Main
 
     public static void connect() throws IOException
     {
-        sock = new Socket(InetAddress.getLocalHost(), 4848);
+//        sock = new Socket(InetAddress.getByName("95.111.43.117"), 4848);
+		sock = new Socket(InetAddress.getLocalHost(), 4848);
 
         reader = new CHESCOReader(sock.getInputStream());
         writer = new CHESCOWriter(sock.getOutputStream());
@@ -160,20 +175,124 @@ public class Main
         {
             while (true)
             {
-                SLog.write(reader.read());
+				HashMap msg = (HashMap)reader.read();
+				SLog.write(msg);
+
+				if (shouldRespondToMessages)
+				{
+					handleMessage(msg);
+				}
             }
         }
         else
         {
             while (messages-- > 0)
             {
-                SLog.write(reader.read());
+				HashMap msg = (HashMap)reader.read();
+                SLog.write(msg);
+
+				if (shouldRespondToMessages)
+				{
+					handleMessage(msg);
+				}
             }
         }
     }
 
+	public static void handleMessage(HashMap msg)
+	{
+		if (msg.containsKey("result"))
+		{
+			if ((Integer)msg.get("result") != Result.OK)
+			{
+				return;
+			}
+
+			switch (lastAction)
+			{
+				case Action.LOGIN:
+				case Action.REGISTER:
+					me = new Player((Integer)msg.get("userid"), (String)msg.get("username"));
+					break;
+
+				case Action.CREATE_GAME:
+					theGame = new Game(-1, "");
+					me.join(theGame, (null == joinColor ? Color.WHITE : joinColor.equals("white") ? Color.WHITE : Color.BLACK));
+					break;
+
+				case Action.CANCEL_GAME:
+					me.leave();
+					theGame = null;
+					break;
+
+				case Action.FETCH_GAMES:
+					availableGames = (ArrayList)msg.get("games");
+					break;
+
+				case Action.JOIN_GAME:
+					theGame = new Game(-1, "");
+					Color opponentcolor = Color.NONE;
+
+					for (HashMap game : availableGames)
+					{
+						if ((Integer)game.get("gameid") == joinID)
+						{
+							String theColor = (String)game.get("playercolor");
+							opponentcolor = (theColor.equals("white") ? Color.WHITE : Color.BLACK);
+						}
+					}
+
+					if (Color.NONE == opponentcolor)
+					{
+						SLog.write("Cannot start game as player color cannot be determined");
+						try { disconnect(); } catch (IOException ignore) {}
+						me = null;
+						theGame = null;
+						return;
+					}
+
+					me.join(theGame, opponentcolor.Opposite);
+					notMe = new Player((Integer)msg.get("opponentid"), (String)msg.get("opponentname"));
+					notMe.join(theGame, opponentcolor);
+					new GameController(theGame).startGame();
+					printBoard();
+					break;
+
+				case Action.EXIT_GAME:
+					theGame = null;
+					notMe = null;
+					break;
+			}
+		}
+		else if (msg.containsKey("push"))
+		{
+			switch((Integer)msg.get("event"))
+			{
+				case Push.GAME_STARTED:
+					notMe = new Player((Integer)msg.get("opponentid"), (String)msg.get("opponentname"));
+					notMe.join(theGame, me.getColor().Opposite);
+					new GameController(theGame).startGame();
+					printBoard();
+					break;
+
+				case Push.GAME_ENDED:
+					notMe = null;
+					theGame = null;
+					break;
+
+				case Push.GAME_MOVE:
+					Position from = Position.positionFromBoardPosition((String)msg.get("from"));
+					Position to = Position.positionFromBoardPosition((String)msg.get("to"));
+					theGame.getController().execute(from, to);
+					break;
+			}
+		}
+	}
+
     public static void login(String name, String pass) throws IOException
     {
+		lastAction = Action.LOGIN;
+
         HashMap req = new HashMap();
         req.put("action", Action.LOGIN);
         req.put("username", name);
@@ -185,6 +304,8 @@ public class Main
 
     public static void reg(String name, String pass) throws IOException
     {
+		lastAction = Action.REGISTER;
+
         HashMap req = new HashMap();
         req.put("action", Action.REGISTER);
         req.put("username", name);
@@ -196,6 +317,9 @@ public class Main
 
     public static void createGame(String name, String color) throws IOException
     {
+		lastAction = Action.CREATE_GAME;
+		joinColor = color;
+
         HashMap req = new HashMap();
         req.put("action", Action.CREATE_GAME);
         req.put("gamename", name);
@@ -210,6 +334,8 @@ public class Main
 
     public static void cancelGame(int gameid) throws IOException
     {
+		lastAction = Action.CANCEL_GAME;
+
         HashMap req = new HashMap();
         req.put("action", Action.CANCEL_GAME);
         req.put("gameid", gameid);
@@ -220,6 +346,8 @@ public class Main
 
     public static void fetchGames(int offset, int limit) throws IOException
     {
+		lastAction = Action.FETCH_GAMES;
+
         HashMap req = new HashMap();
         req.put("action", Action.FETCH_GAMES);
         if (offset != -1)
@@ -237,6 +365,9 @@ public class Main
 
     public static void joinGame(int gameID) throws IOException
     {
+		lastAction = Action.JOIN_GAME;
+		joinID = gameID;
+
         HashMap req = new HashMap();
         req.put("action", Action.JOIN_GAME);
         req.put("gameid", gameID);
@@ -247,6 +378,8 @@ public class Main
 
 	public static void exitGame(int gameID) throws IOException
 	{
+		lastAction = Action.EXIT_GAME;
+
 		HashMap req = new HashMap();
 		req.put("action", Action.EXIT_GAME);
 		req.put("gameid", gameID);
@@ -257,6 +390,8 @@ public class Main
 
 	public static void move(String from, String to) throws IOException
 	{
+		lastAction = Action.MOVE;
+
 		HashMap req = new HashMap();
 		req.put("action", Action.MOVE);
 		req.put("from", from);
@@ -264,5 +399,10 @@ public class Main
 		writer.write(req);
 
 		listen(1);
+	}
+
+	public static void printBoard()
+	{
+		SLog.write(theGame);
 	}
 }
