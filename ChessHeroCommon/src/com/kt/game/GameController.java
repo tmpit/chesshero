@@ -72,13 +72,13 @@ public class GameController
 		game.setState(Game.STATE_STARTED);
 		game.initializeBoard();
 
-		if (Color.WHITE == game.getPlayer1().getColor())
+		if (Color.WHITE == game.player1.getColor())
 		{
-			game.turn = game.getPlayer1();
+			game.turn = game.player1;
 		}
 		else
 		{
-			game.turn = game.getPlayer2();
+			game.turn = game.player2;
 		}
 	}
 

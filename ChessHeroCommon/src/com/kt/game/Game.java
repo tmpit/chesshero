@@ -66,8 +66,8 @@ public class Game
 	private int id;
 	private String name;
 
-	private Player player1;
-	private Player player2;
+	protected Player player1;
+	protected Player player2;
 
 	private BoardField board[][] = new BoardField[BOARD_SIDE][BOARD_SIDE];
 
