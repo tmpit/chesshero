@@ -66,12 +66,12 @@ public class Game
 	private int id;
 	private String name;
 
-	protected Player player1;
-	protected Player player2;
+	private Player player1;
+	private Player player2;
+
+	private BoardField board[][] = new BoardField[BOARD_SIDE][BOARD_SIDE];
 
 	protected GameController controller;
-
-	protected BoardField board[][] = new BoardField[BOARD_SIDE][BOARD_SIDE];
 
 	protected Player turn = null;
 	protected Player inCheck = null;
@@ -155,6 +155,11 @@ public class Game
 			BoardField field = board[pos.x][pos.y];
 			field.setChessPiece(piece);
 		}
+	}
+
+	protected BoardField[][] getBoard()
+	{
+		return board;
 	}
 
 	@Override

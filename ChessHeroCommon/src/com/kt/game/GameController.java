@@ -28,7 +28,9 @@ public class GameController
 			return Result.NOT_YOUR_TURN;
 		}
 
-		BoardField fromField = game.board[from.x][from.y];
+		BoardField board[][] = game.getBoard();
+
+		BoardField fromField = board[from.x][from.y];
 		ChessPiece piece = fromField.getChessPiece();
 
 		if (null == piece)
@@ -46,7 +48,7 @@ public class GameController
 			return Result.INVALID_MOVE;
 		}
 
-		BoardField toField = game.board[to.x][to.y];
+		BoardField toField = board[to.x][to.y];
 
 		if (toField.getChessPiece() != null)
 		{
@@ -69,13 +71,13 @@ public class GameController
 		game.setState(Game.STATE_STARTED);
 		game.initializeBoard();
 
-		if (Color.WHITE == game.player1.getColor())
+		if (Color.WHITE == game.getPlayer1().getColor())
 		{
-			game.turn = game.player1;
+			game.turn = game.getPlayer1();
 		}
 		else
 		{
-			game.turn = game.player2;
+			game.turn = game.getPlayer2();
 		}
 	}
 
