@@ -37,6 +37,6 @@ public class BoardField
 	@Override
 	public String toString()
 	{
-		return "<BoardField :: pos: " + position + ", color: " + color + ", chesspiece: " + chessPiece + ">";
+		return String.format(" %s ", (null == chessPiece ? "-" : chessPiece.toString()));
 	}
 }

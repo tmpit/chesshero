@@ -1,5 +1,6 @@
 package com.kt.game.chesspieces;
 
+import com.kt.game.Color;
 import com.kt.game.MovementSet;
 import com.kt.game.Player;
 import com.kt.game.Position;
@@ -25,5 +26,11 @@ public class Bishop extends ChessPiece
 	public boolean isMoveValid(Position pos)
 	{
 		return position.isDiagonalTo(pos);
+	}
+
+	@Override
+	public String toString()
+	{
+		return (Color.WHITE == color ? "B" : "b");
 	}
 }

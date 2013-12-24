@@ -1,5 +1,6 @@
 package com.kt.game.chesspieces;
 
+import com.kt.game.Color;
 import com.kt.game.MovementSet;
 import com.kt.game.Player;
 import com.kt.game.Position;
@@ -51,5 +52,11 @@ public class Knight extends ChessPiece
 		}
 
 		return pos.equals(MovementSet.UP2_LEFT) || pos.equals(MovementSet.LEFT2_UP);
+	}
+
+	@Override
+	public String toString()
+	{
+		return (Color.WHITE == color ? "N" : "n");
 	}
 }

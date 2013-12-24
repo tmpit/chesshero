@@ -156,4 +156,45 @@ public class Game
 			field.setChessPiece(piece);
 		}
 	}
+
+	@Override
+	public String toString()
+	{
+		String base = "<Game :: id: " + id + ", name: " + name + ", players: " + player1 + " --- " + player2 + ">";
+
+		if (state != STATE_STARTED)
+		{
+			return base;
+		}
+
+		String description = "\n   ";
+
+		for (int i = 0; i < BOARD_SIDE; i++)
+		{
+			description += String.format(" %c ", (char)('a' + i));
+		}
+
+		description += "\n   ------------------------\n";
+
+		for (int i = 0; i < BOARD_SIDE; i++)
+		{
+			description += (i + 1) + " |";
+
+			for (int j = 0; j < BOARD_SIDE; j++)
+			{
+				description += board[j][i].toString();
+			}
+
+			description += "| " + (i + 1) + '\n';
+		}
+
+		description += "   ------------------------\n   ";
+
+		for (int i = 0; i < BOARD_SIDE; i++)
+		{
+			description += String.format(" %c ", (char)('a' + i));
+		}
+
+		return base + description;
+	}
 }

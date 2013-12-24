@@ -37,4 +37,10 @@ public class Pawn extends ChessPiece
 
 		return (0 == horizontal && 2 == vertical) || (1 == vertical && (0 == horizontal || 1 == horizontal));
 	}
+
+	@Override
+	public String toString()
+	{
+		return (Color.WHITE == color ? "P" : "p");
+	}
 }

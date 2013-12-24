@@ -1,5 +1,6 @@
 package com.kt.game.chesspieces;
 
+import com.kt.game.Color;
 import com.kt.game.MovementSet;
 import com.kt.game.Player;
 import com.kt.game.Position;
@@ -29,4 +30,11 @@ public class King extends ChessPiece
 	{
 		return Math.abs(position.getX() - pos.getX()) < 2 && Math.abs(position.getY() - pos.getY()) < 2; // No more than one step in any direction
 	}
+
+	@Override
+	public String toString()
+	{
+		return (Color.WHITE == color ? "K" : "k");
+	}
+
 }
