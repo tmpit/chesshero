@@ -121,7 +121,7 @@ public class Player
 		return takenPieces;
 	}
 
-	protected void takePiece(ChessPiece toPiece)
+	protected void takePiece(ChessPiece piece)
 	{
 		if (activePieces.remove(piece))
 		{

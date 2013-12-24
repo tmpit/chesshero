@@ -181,7 +181,7 @@ public class Game
 
 		description += "\n   ------------------------\n";
 
-		for (int i = 0; i < BOARD_SIDE; i++)
+		for (int i = BOARD_SIDE - 1; i >= 0; i--)
 		{
 			description += (i + 1) + " |";
 
