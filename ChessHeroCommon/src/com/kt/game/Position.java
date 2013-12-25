@@ -47,7 +47,6 @@ public class Position implements Cloneable
 			return null;
 		}
 
-		// Add one to the second character as it is an index
 		return String.format("%c%c", (char)('a' + x), (char)('1' + y));
 	}
 
