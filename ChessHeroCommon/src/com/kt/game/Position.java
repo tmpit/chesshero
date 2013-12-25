@@ -24,8 +24,8 @@ public class Position implements Cloneable
 			return null;
 		}
 
-		// Minus one to convert into index
-		int y = Character.getNumericValue(pos.charAt(1)) - 1;
+		// y is offset from character '1'
+		int y = pos.charAt(1) - '1';
 
 		if (y < 0 || y > 7)
 		{	// Invalid position
@@ -48,7 +48,7 @@ public class Position implements Cloneable
 		}
 
 		// Add one to the second character as it is an index
-		return String.format("%c%c", (char)('a' + x), Character.forDigit(y + 1, 10));
+		return String.format("%c%c", (char)('a' + x), (char)('1' + y));
 	}
 
 	protected int x;
