@@ -122,33 +122,51 @@ public class GameController
 		return Result.OK;
 	}
 
-	boolean isPathIntercepted(Position from, Position to)
+	private boolean isPathIntercepted(Position from, Position to)
 	{
 		// Normalizing the vector
 		int dx = to.x - from.x;
 		int dy = to.y - from.y;
 		Position step = new Position(dx / Math.abs(dx), dy / Math.abs(dy));
+
+		return firstChessPieceInDirection(from, step, to) != null;
+	}
+
+	// Returns the first chess piece in a direction starting from a position
+	// Search starts at 'from' + 'direction'
+	// Search ends when the end of the board is reached
+	private ChessPiece firstChessPieceInDirection(Position from, Position direction)
+	{
+		return firstChessPieceInDirection(from, direction, null);
+	}
+
+	// Returns the first chess piece in a direction starting from a position
+	// Search starts at 'from' + 'direction'
+	// Search ends at 'end' (if specified) or when the end of the board is reached, thus the 'end' position is not checked for a chess piece
+	private ChessPiece firstChessPieceInDirection(Position from, Position direction, Position end)
+	{
 		Position cursor = from.clone();
+		ChessPiece piece = null;
 		BoardField board[][] = game.getBoard();
-		boolean result = false;
 
 		do
 		{
-			cursor.add(step);
+			cursor.add(direction);
 
-			if (cursor.equals(to))
+			if (!cursor.isWithinBoard())
 			{
 				break;
 			}
 
-			if (board[cursor.x][cursor.y].getChessPiece() != null)
+			if (end != null && cursor.equals(end))
 			{
-				result = true;
 				break;
 			}
+
+			piece = board[cursor.x][cursor.y].getChessPiece();
 		}
-		while (true);
+		while (null == piece);
 
-		return result;
+		return piece;
 	}
 }

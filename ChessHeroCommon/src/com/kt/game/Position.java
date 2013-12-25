@@ -107,6 +107,11 @@ public class Position implements Cloneable
 		return Math.abs(x - pos.x) == Math.abs(y - pos.y);
 	}
 
+	public boolean isWithinBoard()
+	{
+		return x > -1 && x < 8 && y > -1 && y < 8;
+	}
+
 	@Override
 	public Position clone()
 	{
