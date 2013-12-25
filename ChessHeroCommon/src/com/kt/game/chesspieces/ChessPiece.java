@@ -30,6 +30,11 @@ public abstract class ChessPiece
 		return position;
 	}
 
+	public void setPosition(Position newPos)
+	{
+		position = newPos;
+	}
+
 	public Color getColor()
 	{
 		return color;

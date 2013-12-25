@@ -18,11 +18,23 @@ public class King extends ChessPiece
 			MovementSet.UP_LEFT, MovementSet.UP_RIGHT, MovementSet.DOWN_LEFT, MovementSet.DOWN_RIGHT
 	)), true);
 
-	protected boolean hasMoved = false;
+	private boolean moved = false;
 
 	public King(Position position, Player owner, Color color)
 	{
 		super(position, owner, color, set);
+	}
+
+	@Override
+	public void setPosition(Position newPos)
+	{
+		super.setPosition(newPos);
+		moved = true;
+	}
+
+	public boolean hasMoved()
+	{
+		return moved;
 	}
 
 	@Override

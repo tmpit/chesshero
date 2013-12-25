@@ -18,11 +18,23 @@ public class Pawn extends ChessPiece
 			MovementSet.UP, MovementSet.UP2, MovementSet.UP_LEFT, MovementSet.UP_RIGHT
 	)), true);
 
-	protected boolean hasMoved = false;
+	private boolean moved = false;
 
 	public Pawn(Position position, Player owner, Color color)
 	{
 		super(position, owner, color, set);
+	}
+
+	@Override
+	public void setPosition(Position newPos)
+	{
+		super.setPosition(newPos);
+		moved = true;
+	}
+
+	public boolean hasMoved()
+	{
+		return moved;
 	}
 
 	@Override

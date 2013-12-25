@@ -17,11 +17,23 @@ public class Rook extends ChessPiece
 			MovementSet.UP, MovementSet.LEFT, MovementSet.DOWN, MovementSet.RIGHT
 	)));
 
-	protected boolean hasMoved = false;
+	private boolean moved = false;
 
 	public Rook(Position position, Player owner, Color color)
 	{
 		super(position, owner, color, set);
+	}
+
+	@Override
+	public void setPosition(Position newPos)
+	{
+		super.setPosition(newPos);
+		moved = true;
+	}
+
+	public boolean hasMoved()
+	{
+		return moved;
 	}
 
 	@Override
