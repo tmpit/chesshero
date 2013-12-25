@@ -3,7 +3,7 @@ package com.kt.game;
 /**
  * Created by Toshko on 12/20/13.
  */
-public class Position
+public class Position implements Cloneable
 {
 	// Create a Position object from a board position string e.g. A1, H3, C1, etc.
 	// Returns null if the board position is not valid
@@ -105,6 +105,12 @@ public class Position
 	public boolean isDiagonalTo(Position pos)
 	{
 		return Math.abs(x - pos.x) == Math.abs(y - pos.y);
+	}
+
+	@Override
+	public Position clone()
+	{
+		return new Position(x, y);
 	}
 
 	@Override
