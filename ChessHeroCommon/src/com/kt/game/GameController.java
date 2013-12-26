@@ -4,6 +4,8 @@ import com.kt.api.Result;
 import com.kt.game.chesspieces.*;
 import com.kt.utils.SLog;
 
+import java.util.ArrayList;
+
 /**
  * Created by Toshko on 12/23/13.
  */
@@ -109,6 +111,41 @@ public class GameController
 			return Result.INVALID_MOVE;
 		}
 
+		if (movedPiece instanceof King)
+		{
+			
+		}
+		else
+		{	// Check whether the move would make the king in chess
+			Position kingPosition = findKing(executor.getActivePieces()).getPosition();
+
+			boolean horORVer = kingPosition.isHorizontalOrVerticalTo(from);
+			boolean diagonal = false;
+
+			if (horORVer || (diagonal = kingPosition.isDiagonalTo(from)))
+			{	// The chess piece we are moving is positioned horizontally, vertically or diagonally relative to the king
+				// Check if there is something between it and the king
+				Position direction = MovementSet.directionFromPositions(kingPosition, from); // The direction from the king to the old position of the piece we are moving
+
+				if (null == firstChessPieceInDirection(kingPosition, direction, from))
+				{	// There is nothing between the king and the chess piece we are moving
+					// Check if the new position of the chess piece clears a path to the king
+					Position nextDirection = MovementSet.directionFromPositions(kingPosition, to); // The direction from the king to the new position of the piece we are moving
+
+					if (!direction.equals(nextDirection))
+					{	// The new position of the chess piece we are moving clears a path to the king
+						ChessPiece interceptor = firstChessPieceInDirection(from, direction); // The chess piece the path to the king is cleared to
+
+						if (!interceptor.getOwner().equals(executor) &&
+								(interceptor instanceof Queen || (horORVer && interceptor instanceof Rook) || (diagonal && interceptor instanceof Bishop)))
+						{	// The chess piece is will make the king in chess
+							return Result.INVALID_MOVE;
+						}
+					}
+				}
+			}
+		}
+
 		if (toPiece != null)
 		{
 			pieceOwner.takePiece(toPiece);
@@ -124,12 +161,8 @@ public class GameController
 
 	private boolean isPathIntercepted(Position from, Position to)
 	{
-		// Normalizing the vector
-		int dx = to.x - from.x;
-		int dy = to.y - from.y;
-		Position step = new Position(dx / Math.abs(dx), dy / Math.abs(dy));
-
-		return firstChessPieceInDirection(from, step, to) != null;
+		Position direction = MovementSet.directionFromPositions(from, to);
+		return firstChessPieceInDirection(from, direction, to) != null;
 	}
 
 	// Returns the first chess piece in a direction starting from a position
@@ -142,7 +175,7 @@ public class GameController
 
 	// Returns the first chess piece in a direction starting from a position
 	// Search starts at 'from' + 'direction'
-	// Search ends at 'end' (if specified) or when the end of the board is reached, thus the 'end' position is not checked for a chess piece
+	// Search ends when 'end' is reached (if specified) or when the end of the board is reached, thus the 'end' position is not checked for a chess piece
 	private ChessPiece firstChessPieceInDirection(Position from, Position direction, Position end)
 	{
 		Position cursor = from.clone();
@@ -168,5 +201,18 @@ public class GameController
 		while (null == piece);
 
 		return piece;
+	}
+
+	private King findKing(ArrayList<ChessPiece> pieces)
+	{
+		for (ChessPiece piece : pieces)
+		{
+			if (piece instanceof King)
+			{
+				return (King)piece;
+			}
+		}
+
+		return null;
 	}
 }
