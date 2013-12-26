@@ -121,12 +121,70 @@ public class GameController
 		}
 
 		if (movedPiece instanceof King)
-		{
+		{	// Check whether the move would make the king in check
+			ArrayList<ChessPiece> opponentActivePieces = executor.getOpponent().getActivePieces();
 
+			for (ChessPiece piece : opponentActivePieces)
+			{
+				if (piece instanceof Pawn)
+				{	// No need to check all pawns, skip them here, we do a simpler check after the loop
+					continue;
+				}
+
+				if (piece.isMoveValid(to) && !isPathIntercepted(piece.getPosition(), to))
+				{	// The king will be in check if the move is executed
+					SLog.write("the king will be in check by: " + piece + " at position: " + piece.getPosition());
+					return Result.INVALID_MOVE;
+				}
+			}
+
+			// Check if the king would be in check by pawns at the destination position
+			Position left, right;
+
+			if (Color.WHITE == executor.getColor())
+			{
+				left = to.plus(MovementSet.UP_LEFT);
+				right = to.plus(MovementSet.UP_RIGHT);
+			}
+			else
+			{
+				left = to.plus(MovementSet.DOWN_LEFT);
+				right = to.plus(MovementSet.DOWN_RIGHT);
+			}
+
+			ChessPiece adjacent;
+			// TODO: add logic for when the other king is in check by this player's moves
+			if (left.isWithinBoard() && (adjacent = board[left.x][left.y].getChessPiece()) != null && adjacent instanceof Pawn)
+			{	// There is a pawn to the left
+				SLog.write("the king will be in check by a pawn :" + adjacent + " at position: " + adjacent.getPosition());
+				return Result.INVALID_MOVE; // TODO: consider using different error codes
+			}
+			if (right.isWithinBoard() && (adjacent = board[right.x][right.y].getChessPiece()) != null && adjacent instanceof Pawn)
+			{	// There is a pawn to the right
+				SLog.write("the king will be in check by a pawn :" + adjacent + " at position: " + adjacent.getPosition());
+				return Result.INVALID_MOVE;
+			}
 		}
 		else
-		{	// Check whether the move would make the king in chess
-			Position kingPosition = findKing(executor.getActivePieces()).getPosition();
+		{	// Check whether the move would make the king in check
+			King theKing = null;
+			ArrayList<ChessPiece> activePieces = executor.getActivePieces();
+			// TODO: consider making the king accessible more easily
+			for (ChessPiece piece : activePieces)
+			{
+				if (piece instanceof King)
+				{
+					theKing = (King)piece;
+					break;
+				}
+			}
+
+			if (null == theKing)
+			{
+				// TODO: end the game here
+			}
+
+			Position kingPosition = theKing.getPosition();
 
 			boolean horORVer = kingPosition.isHorizontalOrVerticalTo(from);
 			boolean diagonal = false;
@@ -147,7 +205,7 @@ public class GameController
 
 						if (!interceptor.getOwner().equals(executor) &&
 								(interceptor instanceof Queen || (horORVer && interceptor instanceof Rook) || (diagonal && interceptor instanceof Bishop)))
-						{	// The chess piece is will make the king in chess
+						{	// The chess piece is will make the king in check
 							SLog.write("the king will be in check by " + interceptor + " at position: " + interceptor.getPosition());
 							return Result.INVALID_MOVE;
 						}
@@ -211,18 +269,5 @@ public class GameController
 		while (null == piece);
 
 		return piece;
-	}
-
-	private King findKing(ArrayList<ChessPiece> pieces)
-	{
-		for (ChessPiece piece : pieces)
-		{
-			if (piece instanceof King)
-			{
-				return (King)piece;
-			}
-		}
-
-		return null;
 	}
 }
