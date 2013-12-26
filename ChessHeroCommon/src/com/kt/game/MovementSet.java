@@ -31,6 +31,16 @@ public class MovementSet
 	public static final Position DOWN2_LEFT = new Position(-1, -2);
 	public static final Position DOWN2_RIGHT = new Position(1, -2);
 
+	// Calculates the smallest delta between two positions
+	// Only works for positions that are diagonal, horizontal or vertical relative to one another,
+	// so before using this method make sure to use validation methods in Position class
+	public static Position directionFromPositions(Position from, Position to)
+	{
+		int dx = to.x - from.x;
+		int dy = to.y - from.y;
+		return new Position(dx / Math.abs(dx), dy / Math.abs(dy));
+	}
+
 	private Collection<Position> set;
 	private boolean single = false;
 
