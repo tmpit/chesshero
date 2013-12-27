@@ -5,6 +5,7 @@ import com.kt.game.chesspieces.*;
 import com.kt.utils.SLog;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by Toshko on 12/23/13.
@@ -197,15 +198,47 @@ public class GameController
 			}
 		}
 
+		// Change positions of chess pieces
+		// We do that before verification that the player's king is safe as it will be a lot faster and easier to do that check after positions have been updated
+		// If the player cannot actually make that move we can just revert back
+		movedPiece.setPosition(to);
+		fromField.setChessPiece(null);
+		toField.setChessPiece(movedPiece);
+
+		// Verify that the player's king is safe
+		Player inCheck = game.inCheck;
+
+		if (inCheck != null && inCheck.equals(executor))
+		{
+			ArrayList<ChessPiece> checkedBy = game.checkedBy;
+			Position myKingPosition = executor.getChessPieceSet().getKing().getPosition();
+
+			for (Iterator<ChessPiece> iterator = checkedBy.iterator(); iterator.hasNext();)
+			{
+				ChessPiece piece = iterator.next();
+
+				if (piece == toPiece || !piece.isMoveValid(myKingPosition) || isPathIntercepted(piece.getPosition(), myKingPosition))
+				{	// Remove if the piece is to be taken or if it can no longer take the king
+					iterator.remove();
+				}
+			}
+
+			if (checkedBy.size() != 0)
+			{	// The king is still in check - revert positions back to how they were before this move was executed
+				movedPiece.setPosition(from);
+				fromField.setChessPiece(movedPiece);
+				toField.setChessPiece(toPiece);
+
+				return Result.WRONG_MOVE;
+			}
+
+			game.inCheck = null;
+		}
+
 		if (toPiece != null)
 		{	// Take the opponent's piece
 			pieceOwner.takePiece(toPiece);
 		}
-
-		// Change positions of chess pieces
-		movedPiece.setPosition(to);
-		fromField.setChessPiece(null);
-		toField.setChessPiece(movedPiece);
 
 		// Update whose turn it is
 		Player opponent = executor.getOpponent();
@@ -222,7 +255,8 @@ public class GameController
 
 		ChessPiece discovery = firstChessPieceInDirection(opponentKingPosition, from);
 
-		if (discovery != null && discovery.getOwner().equals(executor) && discovery.isMoveValid(opponentKingPosition))
+		if (discovery != null && discovery.getOwner().equals(executor) &&
+				discovery.isMoveValid(opponentKingPosition) && !isPathIntercepted(discovery.getPosition(), opponentKingPosition))
 		{	// The opponent's king is in check by a chess piece discovered by the move
 			game.inCheck = opponent;
 			game.checkedBy.add(discovery);
