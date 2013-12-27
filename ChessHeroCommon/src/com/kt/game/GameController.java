@@ -153,7 +153,7 @@ public class GameController
 			}
 
 			ChessPiece adjacent;
-			// TODO: add logic for when the other king is in check by this player's moves
+
 			if (left.isWithinBoard() && (adjacent = board[left.x][left.y].getChessPiece()) != null && adjacent instanceof Pawn)
 			{	// There is a pawn to the left
 				SLog.write("the king will be in check by a pawn :" + adjacent + " at position: " + adjacent.getPosition());
@@ -167,21 +167,20 @@ public class GameController
 		}
 		else
 		{	// Check whether the move would make the king in check
-			King myKing = executor.getChessPieceSet().getKing();
-			Position kingPosition = myKing.getPosition();
+			Position myKingPosition = executor.getChessPieceSet().getKing().getPosition();
 
-			boolean horORVer = kingPosition.isHorizontalOrVerticalTo(from);
+			boolean horORVer = myKingPosition.isHorizontalOrVerticalTo(from);
 			boolean diagonal = false;
 
-			if (horORVer || (diagonal = kingPosition.isDiagonalTo(from)))
+			if (horORVer || (diagonal = myKingPosition.isDiagonalTo(from)))
 			{	// The chess piece we are moving is positioned horizontally, vertically or diagonally relative to the king
 				// Check if there is something between it and the king
-				Position direction = MovementSet.directionFromPositions(kingPosition, from); // The direction from the king to the old position of the piece we are moving
+				Position direction = MovementSet.directionFromPositions(myKingPosition, from); // The direction from the king to the old position of the piece we are moving
 				SLog.write("chess piece is at " + direction + " direction relative to the king");
-				if (null == firstChessPieceInDirection(kingPosition, direction, from))
+				if (null == firstChessPieceInDirection(myKingPosition, direction, from))
 				{	// There is nothing between the king and the chess piece we are moving
 					// Check if the new position of the chess piece clears a path to the king
-					Position nextDirection = MovementSet.directionFromPositions(kingPosition, to); // The direction from the king to the new position of the piece we are moving
+					Position nextDirection = MovementSet.directionFromPositions(myKingPosition, to); // The direction from the king to the new position of the piece we are moving
 					SLog.write("chess piece would be at " + nextDirection + " direction relative to the king");
 					if (!direction.equals(nextDirection))
 					{	// The new position of the chess piece we are moving clears a path to the king
@@ -199,14 +198,26 @@ public class GameController
 		}
 
 		if (toPiece != null)
-		{
+		{	// Take the opponent's piece
 			pieceOwner.takePiece(toPiece);
 		}
 
+		// Change positions of chess pieces
 		movedPiece.setPosition(to);
 		fromField.setChessPiece(null);
 		toField.setChessPiece(movedPiece);
-		game.turn = executor.getOpponent();
+
+		// Update whose turn it is
+		Player opponent = executor.getOpponent();
+		game.turn = opponent;
+
+		// Check whether this move would make the opponent's king in check
+		Position opponentKingPosition = opponent.getChessPieceSet().getKing().getPosition();
+
+		if (movedPiece.isMoveValid(opponentKingPosition) && !isPathIntercepted(to, opponentKingPosition))
+		{	// The opponent's king is in check
+			game.inCheck = opponent;
+		}
 
 		return Result.OK;
 	}
