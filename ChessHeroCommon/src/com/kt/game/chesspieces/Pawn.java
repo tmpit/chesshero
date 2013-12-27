@@ -53,7 +53,7 @@ public class Pawn extends ChessPiece
 			return 1 == horizontal && 1 == vertical;
 		}
 
-		return (0 == horizontal && 2 == vertical) || (1 == vertical && (0 == horizontal || 1 == horizontal));
+		return 0 == horizontal && (1 == vertical || 2 == vertical);
 	}
 
 	@Override

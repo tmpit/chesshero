@@ -82,12 +82,6 @@ public class GameController
 			return Result.NOT_YOUR_CHESSPIECE;
 		}
 
-		if (!movedPiece.isMoveValid(to, false))
-		{	// This chess piece does move in that fashion
-			SLog.write("the chess piece does not move in that fashion");
-			return Result.INVALID_MOVE;
-		}
-
 		BoardField toField = board[to.x][to.y];
 		ChessPiece toPiece = toField.getChessPiece(); // The chess piece that is at the destination position
 		Player pieceOwner = toPiece.getOwner(); // The owner of the chess piece at the destination position
@@ -98,17 +92,17 @@ public class GameController
 			return Result.INVALID_MOVE;
 		}
 
-		if (movedPiece instanceof Pawn)
-		{
+		if (!movedPiece.isMoveValid(to, (toPiece != null)))
+		{	// This chess piece does move in that fashion
+			SLog.write("the chess piece does not move in that fashion");
+			return Result.INVALID_MOVE;
+		}
+
+		if (movedPiece instanceof Pawn && null == toPiece)
+		{	// Additional checks for the pawn are needed only when it is moving forward, otherwise the isMoveValid method covers everything else
 			int vertical = Math.abs(to.y - from.y);
 			int horizontal = to.x - from.y;
 
-			// We don't need to make the basic move validation checks as isMoveValid has covered that
-			if (0 == horizontal && toPiece != null)
-			{	// Attempting to take a piece that is in front of the pawn
-				SLog.write("attempting to take a piece in front of the pawn");
-				return Result.INVALID_MOVE;
-			}
 			if (2 == vertical && (((Pawn)movedPiece).hasMoved() || isPathIntercepted(from, to)))
 			{	// Attempting to move the pawn 2 positions forward twice or attempting to go over another chess piece
 				SLog.write("attempting to move the pawn 2 positions forward twice or attempting to go over another chess piece with the pawn");
