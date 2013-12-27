@@ -50,8 +50,7 @@ public class Player
 
 	public boolean join(Game game, Color color)
 	{
-		ArrayList pieces = (color == Color.WHITE ? Game.initialWhiteChessPieces(this) : Game.initialBlackChessPieces(this));
-		ChessPieceSet set = new ChessPieceSet(pieces);
+		ChessPieceSet set = (color == Color.WHITE ? Game.initialWhiteChessPieces(this) : Game.initialBlackChessPieces(this));
 		return join(game, color, set);
 	}
 

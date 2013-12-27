@@ -21,17 +21,17 @@ public class Game
 
 	public static final int BOARD_SIDE = 8;
 
-	public static ArrayList<ChessPiece> initialWhiteChessPieces(Player owner)
+	public static ChessPieceSet initialWhiteChessPieces(Player owner)
 	{
 		return aSetOfChessPieces(owner, Color.WHITE, true);
 	}
 
-	public static ArrayList<ChessPiece> initialBlackChessPieces(Player owner)
+	public static ChessPieceSet initialBlackChessPieces(Player owner)
 	{
 		return aSetOfChessPieces(owner, Color.BLACK, false);
 	}
 
-	private static ArrayList<ChessPiece> aSetOfChessPieces(Player owner, Color color, boolean bottom)
+	private static ChessPieceSet aSetOfChessPieces(Player owner, Color color, boolean bottom)
 	{
 		int pawnRow = (bottom ? 1 : 6);
 		int mainRow = (bottom ? 0 : 7);
@@ -52,7 +52,7 @@ public class Game
 		pieces.add(new Queen(new Position(3, mainRow), owner, color));
 		pieces.add(new King(new Position(4, mainRow), owner, color));
 
-		return pieces;
+		return new ChessPieceSet(pieces);
 	}
 
 	public static boolean isGameNameValid(String name)
