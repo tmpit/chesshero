@@ -212,13 +212,15 @@ public class GameController
 		{
 			ArrayList<ChessPiece> checkedBy = game.checkedBy;
 			Position myKingPosition = executor.getChessPieceSet().getKing().getPosition();
-
+			SLog.write("king is in check");
 			for (Iterator<ChessPiece> iterator = checkedBy.iterator(); iterator.hasNext();)
 			{
 				ChessPiece piece = iterator.next();
+				SLog.write("threat: " + piece + " at position: " + piece.getPosition());
 
 				if (piece == toPiece || !piece.isMoveValid(myKingPosition) || isPathIntercepted(piece.getPosition(), myKingPosition))
 				{	// Remove if the piece is to be taken or if it can no longer take the king
+					SLog.write(piece + " no longer threatens the king");
 					iterator.remove();
 				}
 			}
@@ -232,23 +234,27 @@ public class GameController
 				return Result.WRONG_MOVE;
 			}
 
+			SLog.write("king is no longer in check");
 			game.inCheck = null;
 		}
 
 		if (toPiece != null)
 		{	// Take the opponent's piece
+			SLog.write("taking piece: " + toPiece + " at position: " + to);
 			pieceOwner.takePiece(toPiece);
 		}
 
 		// Update whose turn it is
 		Player opponent = executor.getOpponent();
 		game.turn = opponent;
+		SLog.write("player to play next turn: " + opponent);
 
 		// Check whether this move would make the opponent's king in check
 		Position opponentKingPosition = opponent.getChessPieceSet().getKing().getPosition();
 
 		if (movedPiece.isMoveValid(opponentKingPosition) && !isPathIntercepted(to, opponentKingPosition))
 		{	// The opponent's king is in check by the chess piece we just moved
+			SLog.write("opponent's king is in check by: " + movedPiece + " at position: " + to);
 			game.inCheck = opponent;
 			game.checkedBy.add(movedPiece);
 		}
@@ -258,6 +264,7 @@ public class GameController
 		if (discovery != null && discovery.getOwner().equals(executor) &&
 				discovery.isMoveValid(opponentKingPosition) && !isPathIntercepted(discovery.getPosition(), opponentKingPosition))
 		{	// The opponent's king is in check by a chess piece discovered by the move
+			SLog.write("opponent's king is in check by discovery by: " + discovery + " at position: " + discovery.getPosition());
 			game.inCheck = opponent;
 			game.checkedBy.add(discovery);
 		}
