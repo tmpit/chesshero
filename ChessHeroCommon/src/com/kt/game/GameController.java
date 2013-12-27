@@ -122,7 +122,7 @@ public class GameController
 
 		if (movedPiece instanceof King)
 		{	// Check whether the move would make the king in check
-			ArrayList<ChessPiece> opponentActivePieces = executor.getOpponent().getActivePieces();
+			ArrayList<ChessPiece> opponentActivePieces = executor.getOpponent().getChessPieceSet().getActivePieces();
 
 			for (ChessPiece piece : opponentActivePieces)
 			{
@@ -134,7 +134,7 @@ public class GameController
 				if (piece.isMoveValid(to) && !isPathIntercepted(piece.getPosition(), to))
 				{	// The king will be in check if the move is executed
 					SLog.write("the king will be in check by: " + piece + " at position: " + piece.getPosition());
-					return Result.INVALID_MOVE;
+					return Result.WRONG_MOVE;
 				}
 			}
 
@@ -157,33 +157,17 @@ public class GameController
 			if (left.isWithinBoard() && (adjacent = board[left.x][left.y].getChessPiece()) != null && adjacent instanceof Pawn)
 			{	// There is a pawn to the left
 				SLog.write("the king will be in check by a pawn :" + adjacent + " at position: " + adjacent.getPosition());
-				return Result.INVALID_MOVE; // TODO: consider using different error codes
+				return Result.WRONG_MOVE;
 			}
 			if (right.isWithinBoard() && (adjacent = board[right.x][right.y].getChessPiece()) != null && adjacent instanceof Pawn)
 			{	// There is a pawn to the right
 				SLog.write("the king will be in check by a pawn :" + adjacent + " at position: " + adjacent.getPosition());
-				return Result.INVALID_MOVE;
+				return Result.WRONG_MOVE;
 			}
 		}
 		else
 		{	// Check whether the move would make the king in check
-			King theKing = null;
-			ArrayList<ChessPiece> activePieces = executor.getActivePieces();
-			// TODO: consider making the king accessible more easily
-			for (ChessPiece piece : activePieces)
-			{
-				if (piece instanceof King)
-				{
-					theKing = (King)piece;
-					break;
-				}
-			}
-
-			if (null == theKing)
-			{
-				// TODO: end the game here
-			}
-
+			King theKing = executor.getChessPieceSet().getKing();
 			Position kingPosition = theKing.getPosition();
 
 			boolean horORVer = kingPosition.isHorizontalOrVerticalTo(from);
@@ -207,7 +191,7 @@ public class GameController
 								(interceptor instanceof Queen || (horORVer && interceptor instanceof Rook) || (diagonal && interceptor instanceof Bishop)))
 						{	// The chess piece is will make the king in check
 							SLog.write("the king will be in check by " + interceptor + " at position: " + interceptor.getPosition());
-							return Result.INVALID_MOVE;
+							return Result.WRONG_MOVE;
 						}
 					}
 				}

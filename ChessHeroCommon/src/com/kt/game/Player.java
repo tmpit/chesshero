@@ -15,8 +15,7 @@ public class Player
 	private Game game;
 	private Color color = Color.NONE;
 
-	private ArrayList<ChessPiece> activePieces;
-	private ArrayList<ChessPiece> takenPieces;
+	private ChessPieceSet chessPieceSet;
 
 	public Player(int userID, String name)
 	{
@@ -52,18 +51,18 @@ public class Player
 	public boolean join(Game game, Color color)
 	{
 		ArrayList pieces = (color == Color.WHITE ? Game.initialWhiteChessPieces(this) : Game.initialBlackChessPieces(this));
-		return join(game, color, pieces, null);
+		ChessPieceSet set = new ChessPieceSet(pieces);
+		return join(game, color, set);
 	}
 
-	public boolean join(Game game, Color color, ArrayList<ChessPiece> active, ArrayList<ChessPiece> taken)
+	public boolean join(Game game, Color color, ChessPieceSet pieceSet)
 	{
 		if (null == game.player1)
 		{
 			game.player1 = this;
 			this.game = game;
 			this.color = color;
-			this.activePieces = active;
-			this.takenPieces = taken;
+			this.chessPieceSet = pieceSet;
 			return true;
 		}
 
@@ -72,8 +71,7 @@ public class Player
 			game.player2 = this;
 			this.game = game;
 			this.color = color;
-			this.activePieces = active;
-			this.takenPieces = taken;
+			this.chessPieceSet = pieceSet;
 			return true;
 		}
 
@@ -116,22 +114,14 @@ public class Player
 		return game.player1;
 	}
 
-	public ArrayList<ChessPiece> getActivePieces()
+	public ChessPieceSet getChessPieceSet()
 	{
-		return activePieces;
+		return chessPieceSet;
 	}
 
-	public ArrayList<ChessPiece> getTakenPieces()
+	protected boolean takePiece(ChessPiece piece)
 	{
-		return takenPieces;
-	}
-
-	protected void takePiece(ChessPiece piece)
-	{
-		if (activePieces.remove(piece))
-		{
-			takenPieces.add(piece);
-		}
+		return chessPieceSet.take(piece);
 	}
 
 	public String toString()

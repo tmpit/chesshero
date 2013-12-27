@@ -138,7 +138,7 @@ public class Game
 			color = color.Opposite;
 		}
 
-		ArrayList<ChessPiece> player1Pieces = player1.getActivePieces();
+		ArrayList<ChessPiece> player1Pieces = player1.getChessPieceSet().getActivePieces();
 
 		for (ChessPiece piece : player1Pieces)
 		{
@@ -147,7 +147,7 @@ public class Game
 			field.setChessPiece(piece);
 		}
 
-		ArrayList<ChessPiece> player2Pieces = player2.getActivePieces();
+		ArrayList<ChessPiece> player2Pieces = player2.getChessPieceSet().getActivePieces();
 
 		for (ChessPiece piece : player2Pieces)
 		{
