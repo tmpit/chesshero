@@ -167,8 +167,8 @@ public class GameController
 		}
 		else
 		{	// Check whether the move would make the king in check
-			King theKing = executor.getChessPieceSet().getKing();
-			Position kingPosition = theKing.getPosition();
+			King myKing = executor.getChessPieceSet().getKing();
+			Position kingPosition = myKing.getPosition();
 
 			boolean horORVer = kingPosition.isHorizontalOrVerticalTo(from);
 			boolean diagonal = false;
@@ -187,7 +187,7 @@ public class GameController
 					{	// The new position of the chess piece we are moving clears a path to the king
 						ChessPiece interceptor = firstChessPieceInDirection(from, direction); // The chess piece the path to the king is cleared to
 
-						if (!interceptor.getOwner().equals(executor) &&
+						if (interceptor != null && !interceptor.getOwner().equals(executor) &&
 								(interceptor instanceof Queen || (horORVer && interceptor instanceof Rook) || (diagonal && interceptor instanceof Bishop)))
 						{	// The chess piece is will make the king in check
 							SLog.write("the king will be in check by " + interceptor + " at position: " + interceptor.getPosition());
