@@ -30,7 +30,7 @@ public class Knight extends ChessPiece
 	}
 
 	@Override
-	public boolean isMoveValid(Position pos)
+	public boolean isMoveValid(Position pos, boolean take)
 	{
 		int myX = position.getX();
 		int myY = position.getY();

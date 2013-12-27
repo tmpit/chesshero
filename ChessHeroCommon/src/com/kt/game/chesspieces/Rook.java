@@ -37,7 +37,7 @@ public class Rook extends ChessPiece
 	}
 
 	@Override
-	public boolean isMoveValid(Position pos)
+	public boolean isMoveValid(Position pos, boolean take)
 	{
 		return position.isHorizontalOrVerticalTo(pos);
 	}

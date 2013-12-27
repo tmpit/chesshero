@@ -50,5 +50,5 @@ public abstract class ChessPiece
 		return movementSet;
 	}
 
-	public abstract boolean isMoveValid(Position pos);
+	public abstract boolean isMoveValid(Position pos, boolean take);
 }

@@ -38,7 +38,7 @@ public class Pawn extends ChessPiece
 	}
 
 	@Override
-	public boolean isMoveValid(Position pos)
+	public boolean isMoveValid(Position pos, boolean take)
 	{
 		int vertical = pos.getY() - position.getY();
 		int horizontal = Math.abs(pos.getX() - position.getX());
@@ -46,6 +46,11 @@ public class Pawn extends ChessPiece
 		if (Color.BLACK == color)
 		{	// Black is positioned at the top, flip the sign
 			vertical *= -1;
+		}
+
+		if (take)
+		{
+			return 1 == horizontal && 1 == vertical;
 		}
 
 		return (0 == horizontal && 2 == vertical) || (1 == vertical && (0 == horizontal || 1 == horizontal));

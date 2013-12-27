@@ -82,7 +82,7 @@ public class GameController
 			return Result.NOT_YOUR_CHESSPIECE;
 		}
 
-		if (!movedPiece.isMoveValid(to))
+		if (!movedPiece.isMoveValid(to, false))
 		{	// This chess piece does move in that fashion
 			SLog.write("the chess piece does not move in that fashion");
 			return Result.INVALID_MOVE;
@@ -132,7 +132,7 @@ public class GameController
 					continue;
 				}
 
-				if (piece.isMoveValid(to) && !isPathIntercepted(piece.getPosition(), to))
+				if (piece.isMoveValid(to, true) && !isPathIntercepted(piece.getPosition(), to))
 				{	// The king will be in check if the move is executed
 					SLog.write("the king will be in check by: " + piece + " at position: " + piece.getPosition());
 					return Result.WRONG_MOVE;
@@ -218,8 +218,8 @@ public class GameController
 				ChessPiece piece = iterator.next();
 				SLog.write("threat: " + piece + " at position: " + piece.getPosition());
 
-				if (piece == toPiece || !piece.isMoveValid(myKingPosition) || isPathIntercepted(piece.getPosition(), myKingPosition))
-				{	// Remove if the piece is to be taken or if it can no longer take the king
+				if (piece == toPiece || !piece.isMoveValid(myKingPosition, true) || isPathIntercepted(piece.getPosition(), myKingPosition))
+				{	// The piece is no longer a threat if it is to be taken or if it can no longer take the king
 					SLog.write(piece + " no longer threatens the king");
 					iterator.remove();
 				}
@@ -252,7 +252,7 @@ public class GameController
 		// Check whether this move would make the opponent's king in check
 		Position opponentKingPosition = opponent.getChessPieceSet().getKing().getPosition();
 
-		if (movedPiece.isMoveValid(opponentKingPosition) && !isPathIntercepted(to, opponentKingPosition))
+		if (movedPiece.isMoveValid(opponentKingPosition, true) && !isPathIntercepted(to, opponentKingPosition))
 		{	// The opponent's king is in check by the chess piece we just moved
 			SLog.write("opponent's king is in check by: " + movedPiece + " at position: " + to);
 			game.inCheck = opponent;
@@ -262,7 +262,7 @@ public class GameController
 		ChessPiece discovery = firstChessPieceInDirection(opponentKingPosition, from);
 
 		if (discovery != null && discovery.getOwner().equals(executor) &&
-				discovery.isMoveValid(opponentKingPosition) && !isPathIntercepted(discovery.getPosition(), opponentKingPosition))
+				discovery.isMoveValid(opponentKingPosition, true) && !isPathIntercepted(discovery.getPosition(), opponentKingPosition))
 		{	// The opponent's king is in check by a chess piece discovered by the move
 			SLog.write("opponent's king is in check by discovery by: " + discovery + " at position: " + discovery.getPosition());
 			game.inCheck = opponent;

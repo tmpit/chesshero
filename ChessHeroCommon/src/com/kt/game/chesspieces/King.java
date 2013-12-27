@@ -38,7 +38,7 @@ public class King extends ChessPiece
 	}
 
 	@Override
-	public boolean isMoveValid(Position pos)
+	public boolean isMoveValid(Position pos, boolean take)
 	{
 		return Math.abs(position.getX() - pos.getX()) < 2 && Math.abs(position.getY() - pos.getY()) < 2; // No more than one step in any direction
 	}
