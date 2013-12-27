@@ -215,8 +215,17 @@ public class GameController
 		Position opponentKingPosition = opponent.getChessPieceSet().getKing().getPosition();
 
 		if (movedPiece.isMoveValid(opponentKingPosition) && !isPathIntercepted(to, opponentKingPosition))
-		{	// The opponent's king is in check
+		{	// The opponent's king is in check by the chess piece we just moved
 			game.inCheck = opponent;
+			game.checkedBy.add(movedPiece);
+		}
+
+		ChessPiece discovery = firstChessPieceInDirection(opponentKingPosition, from);
+
+		if (discovery != null && discovery.getOwner().equals(executor) && discovery.isMoveValid(opponentKingPosition))
+		{	// The opponent's king is in check by a chess piece discovered by the move
+			game.inCheck = opponent;
+			game.checkedBy.add(discovery);
 		}
 
 		return Result.OK;

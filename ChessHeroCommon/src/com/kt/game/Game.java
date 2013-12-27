@@ -74,7 +74,10 @@ public class Game
 	protected GameController controller;
 
 	protected Player turn = null;
+
 	protected Player inCheck = null;
+	protected ArrayList<ChessPiece> checkedBy = new ArrayList<ChessPiece>(2);
+
 	protected Player winner = null;
 
 	public Game(int gameID, String name)
