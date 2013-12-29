@@ -207,6 +207,7 @@ public class GameController
 			ArrayList<ChessPiece> checkedBy = game.checkedBy;
 			Position myKingPosition = executor.getChessPieceSet().getKing().getPosition();
 			SLog.write("king is in check");
+
 			for (Iterator<ChessPiece> iterator = checkedBy.iterator(); iterator.hasNext();)
 			{
 				ChessPiece piece = iterator.next();
@@ -246,7 +247,8 @@ public class GameController
 		// Check whether this move would make the opponent's king in check
 		Position opponentKingPosition = opponent.getChessPieceSet().getKing().getPosition();
 
-		if (movedPiece.isMoveValid(opponentKingPosition, true) && !isPathIntercepted(to, opponentKingPosition))
+		// If the moved piece is a knight, we do not need to check whether the path is clear
+		if (movedPiece.isMoveValid(opponentKingPosition, true) && (movedPiece instanceof Knight || !isPathIntercepted(to, opponentKingPosition)))
 		{	// The opponent's king is in check by the chess piece we just moved
 			SLog.write("opponent's king is in check by: " + movedPiece + " at position: " + to);
 			game.inCheck = opponent;
@@ -255,7 +257,8 @@ public class GameController
 
 		ChessPiece discovery = firstChessPieceInDirection(opponentKingPosition, from);
 
-		if (discovery != null && discovery.getOwner().equals(executor) &&
+		// Ignore knights - they cannot be a threat if they are positioned horizontally, vertically or diagonally relative to the king
+		if (discovery != null && discovery.getOwner().equals(executor) && !(discovery instanceof Knight) &&
 				discovery.isMoveValid(opponentKingPosition, true) && !isPathIntercepted(discovery.getPosition(), opponentKingPosition))
 		{	// The opponent's king is in check by a chess piece discovered by the move
 			SLog.write("opponent's king is in check by discovery by: " + discovery + " at position: " + discovery.getPosition());
@@ -274,7 +277,7 @@ public class GameController
 
 	// Returns the first chess piece in a direction starting from a position
 	// Search starts at 'from' + 'direction'
-	// Search ends when the end of the board is reached
+	// Search ends when a chess piece is found or the end of the board is reached
 	private ChessPiece firstChessPieceInDirection(Position from, Position direction)
 	{
 		return firstChessPieceInDirection(from, direction, null);
@@ -282,7 +285,7 @@ public class GameController
 
 	// Returns the first chess piece in a direction starting from a position
 	// Search starts at 'from' + 'direction'
-	// Search ends when 'end' is reached (if specified) or when the end of the board is reached, thus the 'end' position is not checked for a chess piece
+	// Search ends when a chess piece is found, 'end' is reached (if specified) or when the end of the board is reached, the 'end' position is not checked for a chess piece
 	private ChessPiece firstChessPieceInDirection(Position from, Position direction, Position end)
 	{
 		Position cursor = from.clone();
