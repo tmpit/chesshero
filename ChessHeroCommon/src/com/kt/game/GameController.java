@@ -126,7 +126,7 @@ public class GameController
 					continue;
 				}
 
-				if (piece.isMoveValid(to, true) && !isPathIntercepted(piece.getPosition(), to))
+				if (piece.isMoveValid(to, true) && (piece instanceof Knight || !isPathIntercepted(piece.getPosition(), to)))
 				{	// The king will be in check if the move is executed
 					SLog.write("the king will be in check by: " + piece + " at position: " + piece.getPosition());
 					return Result.WRONG_MOVE;
