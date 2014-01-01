@@ -81,22 +81,35 @@ public class GameController
 		{
 			int moveLen = move.length();
 
-			if (moveLen != 4 && moveLen != 5)
+			if (moveLen > 3)
 			{
-				return Result.INVALID_MOVE_FORMAT;
-			}
+				from = Position.positionFromBoardPosition(move.substring(0, 2));
 
-			from = Position.positionFromBoardPosition(move.substring(0, 2));
-			to = Position.positionFromBoardPosition(move.substring(2, 4));
-
-			if (5 == moveLen)
-			{
-				promotion = move.charAt(4);
-
-				if (promotion != 'q' && promotion != 'r' && promotion != 'b' && promotion != 'n')
+				if (null == from)
 				{
 					return Result.INVALID_MOVE_FORMAT;
 				}
+
+				to = Position.positionFromBoardPosition(move.substring(2, 4));
+
+				if (null == to)
+				{
+					return Result.INVALID_MOVE_FORMAT;
+				}
+
+				if (5 == moveLen)
+				{
+					promotion = move.charAt(4);
+
+					if (promotion != 'q' && promotion != 'r' && promotion != 'b' && promotion != 'n')
+					{
+						return Result.INVALID_MOVE_FORMAT;
+					}
+				}
+			}
+			else
+			{
+				return Result.INVALID_MOVE_FORMAT;
 			}
 		}
 
