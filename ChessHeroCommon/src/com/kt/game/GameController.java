@@ -5,6 +5,8 @@ import com.kt.game.chesspieces.*;
 import com.kt.utils.SLog;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 
 /**
@@ -117,46 +119,11 @@ public class GameController
 
 		if (movedPiece instanceof King)
 		{	// Check whether the move would make the king in check
-			ArrayList<ChessPiece> opponentActivePieces = executor.getOpponent().getChessPieceSet().getActivePieces();
+			ChessPiece threat = positionThreat(to, executor.getOpponent().getChessPieceSet().getActivePieces());
 
-			for (ChessPiece piece : opponentActivePieces)
+			if (threat != null)
 			{
-				if (piece instanceof Pawn)
-				{	// No need to check all pawns, skip them here, we do a simpler check after the loop
-					continue;
-				}
-
-				if (piece.isMoveValid(to, true) && (piece instanceof Knight || !isPathIntercepted(piece.getPosition(), to)))
-				{	// The king will be in check if the move is executed
-					SLog.write("the king will be in check by: " + piece + " at position: " + piece.getPosition());
-					return Result.WRONG_MOVE;
-				}
-			}
-
-			// Check if the king would be in check by pawns at the destination position
-			Position left, right;
-
-			if (Color.WHITE == executor.getColor())
-			{
-				left = to.plus(MovementSet.UP_LEFT);
-				right = to.plus(MovementSet.UP_RIGHT);
-			}
-			else
-			{
-				left = to.plus(MovementSet.DOWN_LEFT);
-				right = to.plus(MovementSet.DOWN_RIGHT);
-			}
-
-			ChessPiece adjacent;
-
-			if (left.isWithinBoard() && (adjacent = board[left.x][left.y].getChessPiece()) != null && adjacent instanceof Pawn)
-			{	// There is a pawn to the left
-				SLog.write("the king will be in check by a pawn :" + adjacent + " at position: " + adjacent.getPosition());
-				return Result.WRONG_MOVE;
-			}
-			if (right.isWithinBoard() && (adjacent = board[right.x][right.y].getChessPiece()) != null && adjacent instanceof Pawn)
-			{	// There is a pawn to the right
-				SLog.write("the king will be in check by a pawn :" + adjacent + " at position: " + adjacent.getPosition());
+				SLog.write("the king will be in check by: " + threat + " at position: " + threat.getPosition());
 				return Result.WRONG_MOVE;
 			}
 		}
@@ -266,6 +233,77 @@ public class GameController
 			game.checkedBy.add(discovery);
 		}
 
+		// Check whether this is a checkmate
+		checkmate:
+		if (game.inCheck != null)
+		{
+			ArrayList<ChessPiece> myChessPieces = executor.getChessPieceSet().getActivePieces();
+			ArrayList<ChessPiece> checkedBy = game.checkedBy;
+
+			// Check if the king can escape
+			HashSet<Position> possibleEscapes = new HashSet<Position>(Arrays.asList(new Position[] {
+					MovementSet.UP, MovementSet.UP_LEFT, MovementSet.LEFT, MovementSet.DOWN_LEFT,
+					MovementSet.DOWN, MovementSet.DOWN_RIGHT, MovementSet.RIGHT, MovementSet.UP_RIGHT
+			}));
+
+			// Attempt to rule out some of the possible escape positions
+			for (ChessPiece threat : checkedBy)
+			{
+				boolean queen = false;
+				boolean rook = false;
+				Position threatPosition = threat.getPosition();
+
+				if (threat instanceof Bishop || (rook = threat instanceof Rook) || (queen = threat instanceof Queen))
+				{
+					Position direction = MovementSet.directionFromPositions(threatPosition, opponentKingPosition);
+					possibleEscapes.remove(direction); // Remove direction away from the threat
+					possibleEscapes.remove(direction.negated()); // Remove direction to the threat
+
+					if (rook || queen)
+					{	// Check if the rook/queen is adjacent to the king to possibly eliminate a lot of escape directions
+						Position offset = threatPosition.minus(opponentKingPosition);
+
+						if (Math.abs(offset.x) < 2 && Math.abs(offset.y) < 2)
+						{	// Rook/queen is adjacent to the king - eliminate all places where the king cannot go
+							for (Iterator<Position> iterator = possibleEscapes.iterator(); iterator.hasNext();)
+							{
+								Position pos = iterator.next();
+								if (pos.isHorizontalOrVerticalTo(threatPosition) || (queen && pos.isDiagonalTo(threatPosition)))
+								{
+									iterator.remove();
+								}
+							}
+						}
+					}
+				}
+				else if (threat instanceof Knight)
+				{	// When a knight is checking the king, there is always one more place around the king that the knight can go to - remove it as a possible escape
+					Position offset = opponentKingPosition.minus(threatPosition);
+					possibleEscapes.remove(offset.swappedAbsolute());
+				}
+			}
+
+			for (Position escape : possibleEscapes)
+			{
+				Position tryPos = opponentKingPosition.plus(escape);
+
+				if (!tryPos.isWithinBoard())
+				{
+					continue;
+				}
+
+				if (board[tryPos.x][tryPos.y].getChessPiece() != null)
+				{	// Cannot go there - a chess piece is occupying the spot
+					continue;
+				}
+
+				if (null == positionThreat(tryPos, myChessPieces))
+				{
+					break checkmate;
+				}
+			}
+		}
+
 		return Result.OK;
 	}
 
@@ -311,5 +349,51 @@ public class GameController
 		while (null == piece);
 
 		return piece;
+	}
+
+	// Returns the first chess piece out of the list that threatens the specified position
+	private ChessPiece positionThreat(Position pos, ArrayList<ChessPiece> pieces)
+	{
+		for (ChessPiece piece : pieces)
+		{
+			if (piece instanceof Pawn)
+			{	// No need to check all pawns, skip them here, we do a simpler check after the loop
+				continue;
+			}
+
+			if (piece.isMoveValid(pos, true) && (piece instanceof Knight || !isPathIntercepted(piece.getPosition(), pos)))
+			{	// Position is threatened by this chess piece
+				return piece;
+			}
+		}
+
+		// Check if the position is threatened by pawns
+		Position left, right;
+		Color threatColor = pieces.get(0).getColor();
+
+		if (Color.BLACK == threatColor)
+		{	// Black is positioned at the top
+			left = pos.plus(MovementSet.UP_LEFT);
+			right = pos.plus(MovementSet.UP_RIGHT);
+		}
+		else
+		{	// White is positioned at the bottom
+			left = pos.plus(MovementSet.DOWN_LEFT);
+			right = pos.plus(MovementSet.DOWN_RIGHT);
+		}
+
+		BoardField board[][] = game.getBoard();
+		ChessPiece adjacent;
+
+		if (left.isWithinBoard() && (adjacent = board[left.x][left.y].getChessPiece()) != null && adjacent instanceof Pawn)
+		{	// There is a pawn to the left
+			return adjacent;
+		}
+		if (right.isWithinBoard() && (adjacent = board[right.x][right.y].getChessPiece()) != null && adjacent instanceof Pawn)
+		{	// There is a pawn to the right
+			return adjacent;
+		}
+
+		return null;
 	}
 }
