@@ -108,6 +108,11 @@ public class Position implements Cloneable
 		return new Position(y, x);
 	}
 
+	public Position negated()
+	{
+		return new Position(-x, -y);
+	}
+
 	public boolean isHorizontalOrVerticalTo(Position pos)
 	{
 		return x == pos.x || y == pos.y;
