@@ -68,7 +68,6 @@ public class GameController
 		}
 
 		BoardField board[][] = game.getBoard();
-
 		BoardField fromField = board[from.x][from.y];
 		ChessPiece movedPiece = fromField.getChessPiece(); // The chess piece that is being moved
 
@@ -88,75 +87,11 @@ public class GameController
 		ChessPiece toPiece = toField.getChessPiece(); // The chess piece that is at the destination position
 		Player pieceOwner = toPiece.getOwner(); // The owner of the chess piece at the destination position
 
-		if (toPiece != null && pieceOwner.equals(executor))
-		{	// Cannot take your own chess piece
-			SLog.write("attempting to take your own chess piece");
-			return Result.INVALID_MOVE;
-		}
+		int moveResult = executionResult(executor, movedPiece, from, to);
 
-		if (!movedPiece.isMoveValid(to, (toPiece != null)))
-		{	// This chess piece does move in that fashion
-			SLog.write("the chess piece does not move in that fashion");
-			return Result.INVALID_MOVE;
-		}
-
-		if (movedPiece instanceof Pawn && null == toPiece)
-		{	// Additional checks for the pawn are needed only when it is moving forward, otherwise the isMoveValid method covers everything else
-			int vertical = Math.abs(to.y - from.y);
-			int horizontal = to.x - from.y;
-
-			if (2 == vertical && (((Pawn)movedPiece).hasMoved() || isPathIntercepted(from, to)))
-			{	// Attempting to move the pawn 2 positions forward twice or attempting to go over another chess piece
-				SLog.write("attempting to move the pawn 2 positions forward twice or attempting to go over another chess piece with the pawn");
-				return Result.INVALID_MOVE;
-			}
-		}
-		else if ((movedPiece instanceof Queen || movedPiece instanceof Bishop || movedPiece instanceof Rook) && isPathIntercepted(from, to))
-		{	// The path is not clear
-			SLog.write("this chess piece cannot go over another one");
-			return Result.INVALID_MOVE;
-		}
-
-		if (movedPiece instanceof King)
-		{	// Check whether the move would make the king in check
-			ChessPiece threat = positionThreat(to, executor.getOpponent().getChessPieceSet().getActivePieces());
-
-			if (threat != null)
-			{
-				SLog.write("the king will be in check by: " + threat + " at position: " + threat.getPosition());
-				return Result.WRONG_MOVE;
-			}
-		}
-		else
-		{	// Check whether the move would make the king in check
-			Position myKingPosition = executor.getChessPieceSet().getKing().getPosition();
-
-			boolean horORVer = myKingPosition.isHorizontalOrVerticalTo(from);
-			boolean diagonal = false;
-
-			if (horORVer || (diagonal = myKingPosition.isDiagonalTo(from)))
-			{	// The chess piece we are moving is positioned horizontally, vertically or diagonally relative to the king
-				// Check if there is something between it and the king
-				Position direction = MovementSet.directionFromPositions(myKingPosition, from); // The direction from the king to the old position of the piece we are moving
-				SLog.write("chess piece is at " + direction + " direction relative to the king");
-				if (null == firstChessPieceInDirection(myKingPosition, direction, from))
-				{	// There is nothing between the king and the chess piece we are moving
-					// Check if the new position of the chess piece clears a path to the king
-					Position nextDirection = MovementSet.directionFromPositions(myKingPosition, to); // The direction from the king to the new position of the piece we are moving
-					SLog.write("chess piece would be at " + nextDirection + " direction relative to the king");
-					if (!direction.equals(nextDirection))
-					{	// The new position of the chess piece we are moving clears a path to the king
-						ChessPiece interceptor = firstChessPieceInDirection(from, direction); // The chess piece the path to the king is cleared to
-
-						if (interceptor != null && !interceptor.getOwner().equals(executor) &&
-								(interceptor instanceof Queen || (horORVer && interceptor instanceof Rook) || (diagonal && interceptor instanceof Bishop)))
-						{	// The chess piece is will make the king in check
-							SLog.write("the king will be in check by " + interceptor + " at position: " + interceptor.getPosition());
-							return Result.WRONG_MOVE;
-						}
-					}
-				}
-			}
+		if (moveResult != Result.OK)
+		{
+			return moveResult;
 		}
 
 		// Change positions of chess pieces
@@ -166,13 +101,15 @@ public class GameController
 		fromField.setChessPiece(null);
 		toField.setChessPiece(movedPiece);
 
+		ChessPieceSet myPieceSet = executor.getChessPieceSet();
+
 		// Verify that the player's king is safe
 		Player inCheck = game.inCheck;
 
 		if (inCheck != null && inCheck.equals(executor))
 		{
 			ArrayList<ChessPiece> checkedBy = game.checkedBy;
-			Position myKingPosition = executor.getChessPieceSet().getKing().getPosition();
+			Position myKingPosition = myPieceSet.getKing().getPosition();
 			SLog.write("king is in check");
 
 			for (Iterator<ChessPiece> iterator = checkedBy.iterator(); iterator.hasNext();)
@@ -206,13 +143,15 @@ public class GameController
 			pieceOwner.takePiece(toPiece);
 		}
 
-		// Update whose turn it is
 		Player opponent = executor.getOpponent();
+		ChessPieceSet opponentPieceSet = opponent.getChessPieceSet();
+
+		// Update whose turn it is
 		game.turn = opponent;
 		SLog.write("player to play next turn: " + opponent);
 
 		// Check whether this move would make the opponent's king in check
-		Position opponentKingPosition = opponent.getChessPieceSet().getKing().getPosition();
+		Position opponentKingPosition = opponentPieceSet.getKing().getPosition();
 
 		// If the moved piece is a knight, we do not need to check whether the path is clear
 		if (movedPiece.isMoveValid(opponentKingPosition, true) && (movedPiece instanceof Knight || !isPathIntercepted(to, opponentKingPosition)))
@@ -237,7 +176,7 @@ public class GameController
 		checkmate:
 		if (game.inCheck != null)
 		{
-			ArrayList<ChessPiece> myChessPieces = executor.getChessPieceSet().getActivePieces();
+			ArrayList<ChessPiece> myChessPieces = myPieceSet.getActivePieces();
 			ArrayList<ChessPiece> checkedBy = game.checkedBy;
 
 			// Check if the king can escape
@@ -298,8 +237,116 @@ public class GameController
 				}
 
 				if (null == positionThreat(tryPos, myChessPieces))
+				{	// This is a position the king can move to to save himself
+					break checkmate;
+				}
+			}
+
+			// The king cannot move
+
+			if (2 == checkedBy.size())
+			{	// The only possible reply to a double check is a king move. Since the king cannot move, this is a checkmate
+				endGame(executor);
+			}
+
+			// Check if the chess piece that is threatening the king can be taken
+			ArrayList<ChessPiece> opponentChessPieces = opponentPieceSet.getActivePieces();
+			ChessPiece threat = checkedBy.get(0);
+			Position threatPosition = threat.getPosition();
+
+			for (ChessPiece hero : opponentChessPieces)
+			{
+				if (Result.OK == executionResult(opponent, hero, hero.getPosition(), threatPosition))
 				{
 					break checkmate;
+				}
+			}
+
+			// The chess piece that is threatening the king cannot be taken
+
+			// Check if the chess piece that is threatening the king can be intercepted
+		}
+
+		return Result.OK;
+	}
+
+	// Method validates the move by checking the following:
+	// - can the chess piece at all move to the destination position
+	// - can the chess piece take the other chess piece at the destination position
+	// - can the chess piece move without exposing the king to check
+	// - if the king is moved, would he be safe at the destination position
+	// Returns an error code if the move is invalid
+	// Returns Result.OK if the move is valid
+	private int executionResult(Player executor, ChessPiece movedPiece, Position from, Position to)
+	{
+		ChessPiece toPiece = game.getBoard()[to.x][to.y].getChessPiece(); // The chess piece that is at the destination position
+
+		if (toPiece != null && toPiece.getOwner().equals(executor))
+		{	// Cannot take your own chess piece
+			SLog.write("attempting to take your own chess piece");
+			return Result.INVALID_MOVE;
+		}
+
+		if (!movedPiece.isMoveValid(to, (toPiece != null)))
+		{	// This chess piece does move in that fashion
+			SLog.write("the chess piece does not move in that fashion");
+			return Result.INVALID_MOVE;
+		}
+
+		if (movedPiece instanceof Pawn && null == toPiece)
+		{	// Additional checks for the pawn are needed only when it is moving forward, otherwise the isMoveValid method covers everything else
+			int vertical = Math.abs(to.y - from.y);
+
+			if (2 == vertical && (((Pawn)movedPiece).hasMoved() || isPathIntercepted(from, to)))
+			{	// Attempting to move the pawn 2 positions forward twice or attempting to go over another chess piece
+				SLog.write("attempting to move the pawn 2 positions forward twice or attempting to go over another chess piece with the pawn");
+				return Result.INVALID_MOVE;
+			}
+		}
+		else if ((movedPiece instanceof Queen || movedPiece instanceof Bishop || movedPiece instanceof Rook) && isPathIntercepted(from, to))
+		{	// The path is not clear
+			SLog.write("this chess piece cannot go over another one");
+			return Result.INVALID_MOVE;
+		}
+
+		if (movedPiece instanceof King)
+		{	// Check whether the move would make the king in check
+			ChessPiece threat = positionThreat(to, executor.getOpponent().getChessPieceSet().getActivePieces());
+
+			if (threat != null)
+			{
+				SLog.write("the king will be in check by: " + threat + " at position: " + threat.getPosition());
+				return Result.WRONG_MOVE;
+			}
+		}
+		else
+		{	// Check whether the move would make the king in check
+			Position myKingPosition = executor.getChessPieceSet().getKing().getPosition();
+
+			boolean horORVer = myKingPosition.isHorizontalOrVerticalTo(from);
+			boolean diagonal = false;
+
+			if (horORVer || (diagonal = myKingPosition.isDiagonalTo(from)))
+			{	// The chess piece we are moving is positioned horizontally, vertically or diagonally relative to the king
+				// Check if there is something between it and the king
+				Position direction = MovementSet.directionFromPositions(myKingPosition, from); // The direction from the king to the old position of the piece we are moving
+				SLog.write("chess piece is at " + direction + " direction relative to the king");
+				if (null == firstChessPieceInDirection(myKingPosition, direction, from))
+				{	// There is nothing between the king and the chess piece we are moving
+					// Check if the new position of the chess piece clears a path to the king
+					Position nextDirection = MovementSet.directionFromPositions(myKingPosition, to); // The direction from the king to the new position of the piece we are moving
+					SLog.write("chess piece would be at " + nextDirection + " direction relative to the king");
+					if (!direction.equals(nextDirection))
+					{	// The new position of the chess piece we are moving clears a path to the king
+						ChessPiece interceptor = firstChessPieceInDirection(from, direction); // The chess piece the path to the king is cleared to
+
+						if (interceptor != null && !interceptor.getOwner().equals(executor) &&
+								(interceptor instanceof Queen || (horORVer && interceptor instanceof Rook) || (diagonal && interceptor instanceof Bishop)))
+						{	// The chess piece is will make the king in check
+							SLog.write("the king will be in check by " + interceptor + " at position: " + interceptor.getPosition());
+							return Result.WRONG_MOVE;
+						}
+					}
 				}
 			}
 		}
