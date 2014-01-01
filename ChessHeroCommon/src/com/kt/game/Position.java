@@ -50,6 +50,8 @@ public class Position implements Cloneable
 		return String.format("%c%c", (char)('a' + x), (char)('1' + y));
 	}
 
+	public static Position ZERO = new Position(0, 0);
+
 	protected int x;
 	protected int y;
 

@@ -28,9 +28,9 @@ public class Result
     public static final int EXIT_NA = 114;              // Exit game / Exit is not applicable (e.g. game has not started yet)
 	public static final int MOVE_NA = 115;				// Move / Move is not applicable (e.g. game has not started yet)
 
-	public static final int INVALID_MOVE_FORMAT = 200;	// Move / from or to parameters are not valid chessboard coordinates
+	public static final int INVALID_MOVE_FORMAT = 200;	// Move / Invalid notation used - refer to http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
 	public static final int NOT_YOUR_TURN = 201;		// Move / it is not your turn to make a move
-	public static final int NO_CHESSPIECE = 202;		// Move / from parameter is not the location of a chess piece
+	public static final int NO_CHESSPIECE = 202;		// Move / no chess piece specified
 	public static final int NOT_YOUR_CHESSPIECE = 203;	// Move / attempting to move a chess piece that is not your own
 	public static final int INVALID_MOVE = 204;			// Move / the chess piece you are trying to move cannot move to the specified position
 	public static final int WRONG_MOVE = 205;			// Move / the king is in check and this move would not save him or the king would be in check if he or some other chess piece moved to the specified position

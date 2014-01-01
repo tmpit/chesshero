@@ -955,17 +955,15 @@ public class ClientConnection extends Thread
 			return;
 		}
 
-		String fromStr = (String)request.get("from");
-		String toStr = (String)request.get("to");
+		String move = (String)request.get("move");
 
-		if (null == fromStr || null == toStr)
+		if (null == move)
 		{
 			writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
 			return;
 		}
 
 		boolean gameNotStarted = false;
-		boolean invalidPosition = false;
 		int result = 0;
 		boolean gameFinished = false;
 		Player winner = null;
@@ -975,30 +973,24 @@ public class ClientConnection extends Thread
 		{
 			if (!(gameNotStarted = game.getState() != Game.STATE_STARTED))
 			{
-				Position from = Position.positionFromBoardPosition(fromStr);
-				Position to = Position.positionFromBoardPosition(toStr);
+				GameController controller = game.getController();
 
-				if (!(invalidPosition = null == from || null == to))
+				result = controller.execute(player, move);
+				gameFinished = Game.STATE_FINISHED == game.getState();
+				winner = game.getWinner();
+
+				int gameID = game.getID();
+				int myUserID = player.getUserID();
+				int opponentUserID = player.getOpponent().getUserID();
+
+				opponentConnection = getConnection(gameID, opponentUserID);
+
+				if (gameFinished)
 				{
-					GameController controller = game.getController();
+					finalizeGame(game);
 
-					result = controller.execute(player, from, to);
-					gameFinished = Game.STATE_FINISHED == game.getState();
-					winner = game.getWinner();
-
-					int gameID = game.getID();
-					int myUserID = player.getUserID();
-					int opponentUserID = player.getOpponent().getUserID();
-
-					opponentConnection = getConnection(gameID, opponentUserID);
-
-					if (gameFinished)
-					{
-						finalizeGame(game);
-
-						popConnection(gameID, player.getUserID());
-						popConnection(gameID, opponentUserID);
-					}
+					popConnection(gameID, player.getUserID());
+					popConnection(gameID, opponentUserID);
 				}
 			}
 		}
@@ -1006,12 +998,6 @@ public class ClientConnection extends Thread
 		if (gameNotStarted)
 		{
 			writeMessage(aResponseWithResult(Result.MOVE_NA));
-			return;
-		}
-
-		if (invalidPosition)
-		{
-			writeMessage(aResponseWithResult(Result.INVALID_MOVE_FORMAT));
 			return;
 		}
 
@@ -1025,8 +1011,7 @@ public class ClientConnection extends Thread
 		if (opponentConnection != null)
 		{
 			HashMap msg = aPushWithEvent(Push.GAME_MOVE);
-			msg.put("from", fromStr);
-			msg.put("to", toStr);
+			msg.put("move", move);
 
 			opponentConnection.writeMessage(msg);
 		}

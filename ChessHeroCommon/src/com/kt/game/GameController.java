@@ -4,10 +4,7 @@ import com.kt.api.Result;
 import com.kt.game.chesspieces.*;
 import com.kt.utils.SLog;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Created by Toshko on 12/23/13.
@@ -53,10 +50,8 @@ public class GameController
 		game.winner = winner;
 	}
 
-	public int execute(Player executor, Position from, Position to)
+	public int execute(Player executor, String move)
 	{
-		SLog.write("Executing move...");
-
 		if (game.getState() != Game.STATE_STARTED)
 		{	// Game has not started yet
 			return Result.NOT_PLAYING;
@@ -66,6 +61,46 @@ public class GameController
 		{	// Attempting to make two consecutive moves
 			return Result.NOT_YOUR_TURN;
 		}
+
+		SLog.write("Decoding move: " + move);
+
+		Position from, to = from = Position.ZERO;
+		boolean kingsideCastle = false, queensideCastle = false;
+		char promotion = '\0';
+
+		move = move.toLowerCase();
+		if (move.equals("0-0"))
+		{
+			kingsideCastle = true;
+		}
+		else if (move.equals("0-0-0"))
+		{
+			queensideCastle = true;
+		}
+		else
+		{
+			int moveLen = move.length();
+
+			if (moveLen != 4 && moveLen != 5)
+			{
+				return Result.INVALID_MOVE_FORMAT;
+			}
+
+			from = Position.positionFromBoardPosition(move.substring(0, 2));
+			to = Position.positionFromBoardPosition(move.substring(2, 4));
+
+			if (5 == moveLen)
+			{
+				promotion = move.charAt(4);
+
+				if (promotion != 'q' && promotion != 'r' && promotion != 'b' && promotion != 'n')
+				{
+					return Result.INVALID_MOVE_FORMAT;
+				}
+			}
+		}
+
+		SLog.write("Executing move: from " + from + " to " + to + " kc: " + kingsideCastle + " qc: " + queensideCastle + " prom: " + promotion);
 
 		BoardField board[][] = game.getBoard();
 		BoardField fromField = board[from.x][from.y];
@@ -85,7 +120,6 @@ public class GameController
 
 		BoardField toField = board[to.x][to.y];
 		ChessPiece toPiece = toField.getChessPiece(); // The chess piece that is at the destination position
-		Player pieceOwner = toPiece.getOwner(); // The owner of the chess piece at the destination position
 
 		int moveResult = validateMove(executor, movedPiece, from, to);
 
@@ -140,7 +174,7 @@ public class GameController
 		if (toPiece != null)
 		{	// Take the opponent's piece
 			SLog.write("taking piece: " + toPiece + " at position: " + to);
-			pieceOwner.takePiece(toPiece);
+			toPiece.getOwner().takePiece(toPiece);
 		}
 
 		Player opponent = executor.getOpponent();
@@ -310,7 +344,7 @@ public class GameController
 			}
 			while (true);
 
-			// TODO: check whether a rookade or en passant can save the king
+			// TODO: check whether castling or an en passant can save the king
 		}
 
 		return Result.OK;

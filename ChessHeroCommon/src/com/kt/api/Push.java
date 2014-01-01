@@ -38,7 +38,7 @@ public class Push
 	// Game move
 	// Description: This event is sent to the opponent of a player after that player performs moves a chess piece
 	// Parameters:
-	// - [from:STR] - the starting position of the chess piece
-	// - [to:STR] - the destination position of the chess piece
+	// - [move:STR] - the move as per the Pure coordinate notation: http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
+	// Castling notation used: 0-0 for kingside castling and 0-0-0 for queenside castling
 	public static final int GAME_MOVE = 3;
 }
