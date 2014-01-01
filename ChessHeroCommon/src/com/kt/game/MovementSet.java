@@ -38,7 +38,17 @@ public class MovementSet
 	{
 		int dx = to.x - from.x;
 		int dy = to.y - from.y;
-		return new Position(dx / Math.abs(dx), dy / Math.abs(dy));
+
+		if (dx != 0)
+		{
+			dx /= Math.abs(dx);
+		}
+		if (dy != 0)
+		{
+			dy /= Math.abs(dy);
+		}
+
+		return new Position(dx, dy);
 	}
 
 	private Collection<Position> set;
