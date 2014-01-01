@@ -322,7 +322,7 @@ public class GameController
 					continue;
 				}
 
-				if (null == positionThreat(tryPos, myChessPieces))
+				if (null == positionAttacker(tryPos, myChessPieces))
 				{	// This is a position the king can move to to save himself
 					SLog.write("the king can escape to position: " + tryPos);
 					break checkmate;
@@ -438,7 +438,7 @@ public class GameController
 
 		if (movedPiece instanceof King)
 		{	// Check whether the move would make the king in check
-			ChessPiece threat = positionThreat(to, executor.getOpponent().getChessPieceSet().getActivePieces());
+			ChessPiece threat = positionAttacker(to, executor.getOpponent().getChessPieceSet().getActivePieces());
 
 			if (threat != null)
 			{
@@ -527,8 +527,8 @@ public class GameController
 		return piece;
 	}
 
-	// Returns the first chess piece out of the list that threatens the specified position
-	private ChessPiece positionThreat(Position pos, ArrayList<ChessPiece> pieces)
+	// Returns the first chess piece out of the list that attacks the specified position
+	private ChessPiece positionAttacker(Position pos, ArrayList<ChessPiece> pieces)
 	{
 		for (ChessPiece piece : pieces)
 		{
