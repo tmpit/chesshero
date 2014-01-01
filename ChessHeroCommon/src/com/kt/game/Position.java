@@ -96,6 +96,18 @@ public class Position implements Cloneable
 		y -= pos.y;
 	}
 
+	// Returns a new object with swapped x and y absolute values retaining the sign of the old components
+	// e.g. -2, 1 becomes -1, 2 etc.
+	public Position swappedAbsolute()
+	{
+		if ((x ^ y) >= 0)
+		{	// x and y have different signs - reverse signs of the components of the new object
+			return new Position(-y, -x);
+		}
+
+		return new Position(y, x);
+	}
+
 	public boolean isHorizontalOrVerticalTo(Position pos)
 	{
 		return x == pos.x || y == pos.y;
