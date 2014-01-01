@@ -63,4 +63,9 @@ public class ChessPieceSet
 
 		return false;
 	}
+
+	public void add(ChessPiece piece)
+	{
+		activePieces.add(piece);
+	}
 }

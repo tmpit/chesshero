@@ -123,6 +123,11 @@ public class Player
 		return chessPieceSet.take(piece);
 	}
 
+	protected void addPiece(ChessPiece piece)
+	{
+		chessPieceSet.add(piece);
+	}
+
 	public String toString()
 	{
 		return "<Player :: userid: " + userID + ", name: " + name + ", color: " + (color == Color.WHITE ? "white" : "black") + ">";

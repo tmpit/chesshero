@@ -190,6 +190,40 @@ public class GameController
 			toPiece.getOwner().takePiece(toPiece);
 		}
 
+		// Check whether pawn promotion is applicable
+		if (movedPiece instanceof Pawn && ((Color.WHITE == movedPiece.getColor() && Game.BOARD_SIDE - 1 == to.y) || (Color.BLACK == movedPiece.getColor() && 0 == to.y)))
+		{	// The pawn reaches its maximum rank
+			if ('\0' == promotion)
+			{	// No promotion specified
+				return Result.MISSING_PROMOTION;
+			}
+
+			ChessPiece promoted = null;
+
+			switch (promotion)
+			{
+				case 'q':
+					promoted = new Queen(to, executor, executor.getColor());
+					break;
+
+				case 'r':
+					promoted = new Rook(to, executor, executor.getColor());
+					break;
+
+				case 'b':
+					promoted = new Bishop(to, executor, executor.getColor());
+					break;
+
+				case 'n':
+					promoted = new Knight(to, executor, executor.getColor());
+					break;
+			}
+
+			executor.takePiece(movedPiece);
+			executor.addPiece(promoted);
+			toField.setChessPiece(promoted);
+		}
+
 		Player opponent = executor.getOpponent();
 		ChessPieceSet opponentPieceSet = opponent.getChessPieceSet();
 
