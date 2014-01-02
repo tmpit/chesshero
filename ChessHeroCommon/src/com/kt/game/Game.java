@@ -75,6 +75,8 @@ public class Game
 
 	protected Player turn = null;
 
+	protected Pawn lastDoubleMove = null;
+
 	protected Player inCheck = null;
 	protected ArrayList<ChessPiece> checkedBy = new ArrayList<ChessPiece>(2);
 

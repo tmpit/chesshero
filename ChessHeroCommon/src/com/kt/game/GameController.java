@@ -11,6 +11,8 @@ import java.util.*;
  */
 public class GameController
 {
+	private static final char DEFAULT_PROMOTION = 'n';
+
 	private Game game;
 
 	public GameController(Game game)
@@ -66,9 +68,10 @@ public class GameController
 
 		Position from, to = from = Position.ZERO;
 		boolean kingsideCastle = false, queensideCastle = false;
-		char promotion = '\0';
+		char promotion = DEFAULT_PROMOTION;
 
 		move = move.toLowerCase();
+
 		if (move.equals("0-0"))
 		{
 			kingsideCastle = true;
@@ -97,14 +100,14 @@ public class GameController
 					return Result.INVALID_MOVE_FORMAT;
 				}
 
-				if (5 == moveLen)
+				if (moveLen > 4)
 				{
 					promotion = move.charAt(4);
+				}
 
-					if (promotion != 'q' && promotion != 'r' && promotion != 'b' && promotion != 'n')
-					{
-						return Result.INVALID_MOVE_FORMAT;
-					}
+				if (moveLen > 5)
+				{
+					return Result.INVALID_MOVE_FORMAT;
 				}
 			}
 			else
@@ -134,12 +137,15 @@ public class GameController
 		BoardField toField = board[to.x][to.y];
 		ChessPiece toPiece = toField.getChessPiece(); // The chess piece that is at the destination position
 
-		int moveResult = validateMove(executor, movedPiece, from, to);
+		MoveContext context = new MoveContext();
+		int moveResult = validateMove(executor, movedPiece, from, to, context);
 
 		if (moveResult != Result.OK)
 		{
 			return moveResult;
 		}
+
+		ChessPiece take = context.take;
 
 		// Change positions of chess pieces
 		// We do that before verification that the player's king is safe as it will be a lot faster and easier to do that check after positions have been updated
@@ -150,7 +156,7 @@ public class GameController
 
 		ChessPieceSet myPieceSet = executor.getChessPieceSet();
 
-		// Verify that the player's king is safe
+		// Verify that the player's king would be safe after the move
 		Player inCheck = game.inCheck;
 
 		if (inCheck != null && inCheck.equals(executor))
@@ -164,7 +170,7 @@ public class GameController
 				ChessPiece piece = iterator.next();
 				SLog.write("attacker: " + piece + " at position: " + piece.getPosition());
 
-				if (piece == toPiece || !piece.isMoveValid(myKingPosition, true) || isPathIntercepted(piece.getPosition(), myKingPosition))
+				if (piece == take || !piece.isMoveValid(myKingPosition, true) || isPathIntercepted(piece.getPosition(), myKingPosition))
 				{	// The piece is no longer a threat if it is to be taken or if it can no longer take the king
 					SLog.write(piece + " no longer threatens the king");
 					iterator.remove();
@@ -184,20 +190,22 @@ public class GameController
 			game.inCheck = null;
 		}
 
-		if (toPiece != null)
+		if (take != null)
 		{	// Take the opponent's piece
-			SLog.write("taking piece: " + toPiece + " at position: " + to);
-			toPiece.getOwner().takePiece(toPiece);
+			SLog.write("taking piece: " + take + " at position: " + to);
+			take.getOwner().takePiece(take);
+
+			Position piecePosition = take.getPosition();
+
+			if (!piecePosition.equals(to))
+			{	// En passant
+				board[piecePosition.x][piecePosition.y].setChessPiece(null);
+			}
 		}
 
 		// Check whether pawn promotion is applicable
 		if (movedPiece instanceof Pawn && ((Color.WHITE == movedPiece.getColor() && Game.BOARD_SIDE - 1 == to.y) || (Color.BLACK == movedPiece.getColor() && 0 == to.y)))
 		{	// The pawn reaches its maximum rank
-			if ('\0' == promotion)
-			{	// No promotion specified
-				return Result.MISSING_PROMOTION;
-			}
-
 			ChessPiece promoted = null;
 
 			switch (promotion)
@@ -217,6 +225,10 @@ public class GameController
 				case 'n':
 					promoted = new Knight(to, executor, executor.getColor());
 					break;
+
+				default:
+					promoted = new Knight(to, executor, executor.getColor());
+					break;
 			}
 
 			executor.takePiece(movedPiece);
@@ -230,6 +242,9 @@ public class GameController
 		// Update whose turn it is
 		game.turn = opponent;
 		SLog.write("player to play next turn: " + opponent);
+
+		// Update general game state
+		game.lastDoubleMove = context.doubleMove;
 
 		// Check whether this move would make the opponent's king in check
 		Position opponentKingPosition = opponentPieceSet.getKing().getPosition();
@@ -347,7 +362,7 @@ public class GameController
 
 			for (ChessPiece hero : opponentChessPieces)
 			{
-				if (Result.OK == validateMove(opponent, hero, hero.getPosition(), attackerPosition))
+				if (Result.OK == validateMove(opponent, hero, hero.getPosition(), attackerPosition, null))
 				{	// The attacker can be taken
 					SLog.write("the attacker can be taken by: " + hero + " at position: " + hero.getPosition());
 					break checkmate;
@@ -382,7 +397,7 @@ public class GameController
 
 				for (ChessPiece hero : opponentChessPieces)
 				{
-					if (Result.OK == validateMove(opponent, hero, hero.getPosition(), cursor))
+					if (Result.OK == validateMove(opponent, hero, hero.getPosition(), cursor, null))
 					{	// The attacker can be intercepted
 						SLog.write("attacker can be intercepted by: " + hero + " at position: " + hero.getPosition());
 						break checkmate;
@@ -404,9 +419,11 @@ public class GameController
 	// - if the king is moved, would he be safe at the destination position
 	// Returns a Result error code if the move is invalid
 	// Returns Result.OK if the move is valid
-	private int validateMove(Player executor, ChessPiece movedPiece, Position from, Position to)
+	private int validateMove(Player executor, ChessPiece movedPiece, Position from, Position to, MoveContext ctx)
 	{
 		ChessPiece toPiece = game.getBoard()[to.x][to.y].getChessPiece(); // The chess piece that is at the destination position
+		ChessPiece take = toPiece;
+		Pawn doubleMove = null;
 
 		if (toPiece != null && toPiece.getOwner().equals(executor))
 		{	// Cannot take your own chess piece
@@ -414,7 +431,29 @@ public class GameController
 			return Result.INVALID_MOVE;
 		}
 
-		if (!movedPiece.isMoveValid(to, (toPiece != null)))
+		// Check for a possible en passant
+		if (movedPiece instanceof Pawn && null == toPiece && movedPiece.isMoveValid(to, true))
+		{
+			Pawn lastDoubleMove = game.lastDoubleMove;
+
+			if (null == lastDoubleMove || executor.equals(lastDoubleMove.getOwner()))
+			{	// Attempting to move diagonally to an empty space and en passant does not apply
+				SLog.write("attempting invalid en passant");
+				return Result.INVALID_MOVE;
+			}
+
+			// The position of the pawn that this pawn should take en passant
+			Position runnerPosition = (Color.WHITE == movedPiece.getColor() ? to.plus(MovementSet.DOWN) : to.plus(MovementSet.UP));
+
+			if (!runnerPosition.equals(lastDoubleMove.getPosition()))
+			{	// The runner position does not match the position of the last runner - en passant does not apply
+				SLog.write("attempting invalid en passant");
+				return Result.INVALID_MOVE;
+			}
+
+			take = lastDoubleMove;
+		}
+		else if (!movedPiece.isMoveValid(to, (toPiece != null)))
 		{	// This chess piece does move in that fashion
 			SLog.write("the chess piece does not move in that fashion");
 			return Result.INVALID_MOVE;
@@ -424,10 +463,15 @@ public class GameController
 		{	// Additional checks for the pawn are needed only when it is moving forward, otherwise the isMoveValid method covers everything else
 			int vertical = Math.abs(to.y - from.y);
 
-			if (2 == vertical && (((Pawn)movedPiece).hasMoved() || isPathIntercepted(from, to)))
-			{	// Attempting to move the pawn 2 positions forward twice or attempting to go over another chess piece
-				SLog.write("attempting to move the pawn 2 positions forward twice or attempting to go over another chess piece with the pawn");
-				return Result.INVALID_MOVE;
+			if (2 == vertical)
+			{
+				if (((Pawn)movedPiece).hasMoved() || isPathIntercepted(from, to))
+				{	// Attempting to move the pawn 2 positions forward twice or attempting to go over another chess piece
+					SLog.write("attempting to move the pawn 2 positions forward twice or attempting to go over another chess piece with the pawn");
+					return Result.INVALID_MOVE;
+				}
+
+				doubleMove = (Pawn)movedPiece;
 			}
 		}
 		else if ((movedPiece instanceof Queen || movedPiece instanceof Bishop || movedPiece instanceof Rook) && isPathIntercepted(from, to))
@@ -478,6 +522,12 @@ public class GameController
 					}
 				}
 			}
+		}
+
+		if (ctx != null)
+		{
+			ctx.take = take;
+			ctx.doubleMove = doubleMove;
 		}
 
 		return Result.OK;
@@ -571,5 +621,11 @@ public class GameController
 		}
 
 		return null;
+	}
+
+	private class MoveContext
+	{
+		public ChessPiece take = null;
+		public Pawn doubleMove = null;
 	}
 }
