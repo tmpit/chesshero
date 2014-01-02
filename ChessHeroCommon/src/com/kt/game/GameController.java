@@ -73,7 +73,7 @@ public class GameController
 		move = move.toLowerCase();
 		int moveLen = move.length();
 
-		if (moveLen < 4 || moveLen > 5)
+		if (moveLen != 4 && moveLen != 5)
 		{
 			return Result.INVALID_MOVE_FORMAT;
 		}
@@ -223,6 +223,13 @@ public class GameController
 			executor.takePiece(movedPiece);
 			executor.addPiece(promoted);
 			toField.setChessPiece(promoted);
+		}
+
+		// Apply castling
+		if (context.castle != null)
+		{
+			Position castlePos = context.castlePosition;
+			board[castlePos.x][castlePos.y].setChessPiece(context.castle);
 		}
 
 		Player opponent = executor.getOpponent();
@@ -411,7 +418,8 @@ public class GameController
 		ChessPiece toPiece = board[to.x][to.y].getChessPiece(); // The chess piece that is at the destination position
 		ChessPiece take = toPiece;
 		Pawn doubleMove = null;
-		boolean castling = false;
+		Rook castle = null;
+		Position castlePosition = null;
 
 		if (toPiece != null && toPiece.getOwner().equals(executor))
 		{	// Cannot take your own chess piece
@@ -490,7 +498,8 @@ public class GameController
 				return Result.INVALID_MOVE;
 			}
 
-			castling = true;
+			castle = (Rook)rookMaybe;
+			castlePosition = passThroughPosition;
 		}
 		else if (!movedPiece.isMoveValid(to, (toPiece != null)))
 		{	// This chess piece does move in that fashion
@@ -567,7 +576,8 @@ public class GameController
 		{
 			ctx.take = take;
 			ctx.doubleMove = doubleMove;
-			ctx.castling = castling;
+			ctx.castle = castle;
+			ctx.castlePosition = castlePosition;
 		}
 
 		return Result.OK;
@@ -617,6 +627,7 @@ public class GameController
 	}
 
 	// Returns the first chess piece out of the list that attacks the specified position
+	// Important: bare in mind that before actually executing a move, this method might not return accurate results
 	private ChessPiece positionAttacker(Position pos, ArrayList<ChessPiece> pieces)
 	{
 		for (ChessPiece piece : pieces)
@@ -664,7 +675,10 @@ public class GameController
 	private class MoveContext
 	{
 		public ChessPiece take = null;
+
 		public Pawn doubleMove = null;
-		public boolean castling = false;
+
+		public Rook castle = null;
+		public Position castlePosition = null;
 	}
 }
