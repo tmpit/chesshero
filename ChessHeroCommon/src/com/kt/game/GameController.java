@@ -12,10 +12,12 @@ import java.util.*;
 public class GameController
 {
 	private Game game;
+	private BoardField board[][];
 
 	public GameController(Game game)
 	{
 		this.game = game;
+		this.board = game.getBoard();
 		game.controller = this;
 	}
 
@@ -65,63 +67,43 @@ public class GameController
 		SLog.write("Decoding move: " + move);
 
 		Position from, to = from = Position.ZERO;
-		boolean kingsideCastle = false, queensideCastle = false;
 		char promotion = '\0';
-
-		ChessPieceSet myPieceSet = executor.getChessPieceSet();
 
 		// Move should be in the Pure coordinate notation: http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
 		move = move.toLowerCase();
+		int moveLen = move.length();
 
-		if (move.equals("0-0"))
+		if (moveLen < 4 || moveLen > 5)
 		{
-			kingsideCastle = true;
-			from = myPieceSet.getKing().getPosition();
-			to = from.plus(new Position(2, 0));
+			return Result.INVALID_MOVE_FORMAT;
 		}
-		else if (move.equals("0-0-0"))
-		{
-			queensideCastle = true;
-			from = myPieceSet.getKing().getPosition();
-			to = from.plus(new Position(-2, 0));
-		}
-		else
-		{
-			int moveLen = move.length();
 
-			if (moveLen < 4 || moveLen > 5)
+		from = Position.positionFromBoardPosition(move.substring(0, 2));
+
+		if (null == from)
+		{
+			return Result.INVALID_MOVE_FORMAT;
+		}
+
+		to = Position.positionFromBoardPosition(move.substring(2, 4));
+
+		if (null == to)
+		{
+			return Result.INVALID_MOVE_FORMAT;
+		}
+
+		if (5 == moveLen)
+		{
+			promotion = move.charAt(4);
+
+			if (promotion != 'q' && promotion != 'r' && promotion != 'b' && promotion != 'n')
 			{
 				return Result.INVALID_MOVE_FORMAT;
 			}
-
-			from = Position.positionFromBoardPosition(move.substring(0, 2));
-
-			if (null == from)
-			{
-				return Result.INVALID_MOVE_FORMAT;
-			}
-
-			to = Position.positionFromBoardPosition(move.substring(2, 4));
-
-			if (null == to)
-			{
-				return Result.INVALID_MOVE_FORMAT;
-			}
-
-			if (5 == moveLen)
-			{
-				promotion = move.charAt(4);
-
-				if (promotion != 'q' && promotion != 'r' && promotion != 'b' && promotion != 'n')
-				{
-					return Result.INVALID_MOVE_FORMAT;
-				}
-			}
 		}
 
-		SLog.write("Executing move: from " + from + " to " + to + " kc: " + kingsideCastle + " qc: " + queensideCastle + " prom: " + promotion);
+		SLog.write("Executing move: from " + from + " to " + to + " promotion " + promotion);
 
-		BoardField board[][] = game.getBoard();
 		BoardField fromField = board[from.x][from.y];
 		ChessPiece movedPiece = fromField.getChessPiece(); // The chess piece that is being moved
 
@@ -184,16 +166,18 @@ public class GameController
 		fromField.setChessPiece(null);
 		toField.setChessPiece(movedPiece);
 
+		ChessPieceSet myPieceSet = executor.getChessPieceSet();
+
 		// Verify that the executor's king would be safe after the move
 		Player inCheck = game.inCheck;
 
 		if (inCheck != null && inCheck.equals(executor))
 		{
-			ArrayList<ChessPiece> checkedBy = game.checkedBy;
+			ArrayList<ChessPiece> attackers = game.attackers;
 			Position myKingPosition = myPieceSet.getKing().getPosition();
 			SLog.write("king is in check");
 
-			for (Iterator<ChessPiece> iterator = checkedBy.iterator(); iterator.hasNext();)
+			for (Iterator<ChessPiece> iterator = attackers.iterator(); iterator.hasNext();)
 			{
 				ChessPiece piece = iterator.next();
 				SLog.write("attacker: " + piece + " at position: " + piece.getPosition());
@@ -205,7 +189,7 @@ public class GameController
 				}
 			}
 
-			if (checkedBy.size() != 0)
+			if (attackers.size() != 0)
 			{	// The king is still in check - revert positions back to how they were before this move was executed
 				movedPiece.setPosition(from);
 				fromField.setChessPiece(movedPiece);
@@ -249,7 +233,7 @@ public class GameController
 		SLog.write("player to play next turn: " + opponent);
 
 		// Update general game state
-		game.lastDoubleMove = context.doubleMove;
+		game.lastPawnRunner = context.doubleMove;
 
 		// Check whether this move would make the opponent's king in check
 		Position opponentKingPosition = opponentPieceSet.getKing().getPosition();
@@ -259,7 +243,7 @@ public class GameController
 		{	// The opponent's king is in check by the chess piece we just moved
 			SLog.write("opponent's king is in check by: " + movedPiece + " at position: " + to);
 			game.inCheck = opponent;
-			game.checkedBy.add(movedPiece);
+			game.attackers.add(movedPiece);
 		}
 
 		ChessPiece discovery = firstChessPieceInDirection(opponentKingPosition, from);
@@ -270,7 +254,7 @@ public class GameController
 		{	// The opponent's king is in check by a chess piece discovered by the move
 			SLog.write("opponent's king is in check by discovery by: " + discovery + " at position: " + discovery.getPosition());
 			game.inCheck = opponent;
-			game.checkedBy.add(discovery);
+			game.attackers.add(discovery);
 		}
 
 		// Check whether this is a checkmate
@@ -279,7 +263,7 @@ public class GameController
 		{
 			SLog.write("Checking for checkmate...\nchecking whether the king can escape");
 			ArrayList<ChessPiece> myChessPieces = myPieceSet.getActivePieces();
-			ArrayList<ChessPiece> checkedBy = game.checkedBy;
+			ArrayList<ChessPiece> attackers = game.attackers;
 
 			// Check if the king can escape
 			HashSet<Position> possibleEscapes = new HashSet<Position>(Arrays.asList(new Position[] {
@@ -288,7 +272,7 @@ public class GameController
 			}));
 
 			// Attempt to rule out some of the possible escape positions
-			for (ChessPiece attacker : checkedBy)
+			for (ChessPiece attacker : attackers)
 			{
 				boolean queen = false;
 				boolean rook = false;
@@ -352,7 +336,7 @@ public class GameController
 			// The king cannot move
 			SLog.write("the king cannot move");
 
-			if (2 == checkedBy.size())
+			if (2 == attackers.size())
 			{	// The only possible reply to a double check is a king move. Since the king cannot move, this is a checkmate
 				SLog.write("double checking the king while he cannot move - checkmate!");
 				endGame(executor);
@@ -362,7 +346,7 @@ public class GameController
 			// Check if the attacker can be taken
 			SLog.write("checking whether the attacker can be taken");
 			ArrayList<ChessPiece> opponentChessPieces = opponentPieceSet.getActivePieces();
-			ChessPiece attacker = checkedBy.get(0);
+			ChessPiece attacker = attackers.get(0);
 			Position attackerPosition = attacker.getPosition();
 
 			for (ChessPiece hero : opponentChessPieces)
@@ -424,9 +408,10 @@ public class GameController
 	// Returns Result.OK if the move is valid
 	private int validateMove(Player executor, ChessPiece movedPiece, Position from, Position to, MoveContext ctx)
 	{
-		ChessPiece toPiece = game.getBoard()[to.x][to.y].getChessPiece(); // The chess piece that is at the destination position
+		ChessPiece toPiece = board[to.x][to.y].getChessPiece(); // The chess piece that is at the destination position
 		ChessPiece take = toPiece;
 		Pawn doubleMove = null;
+		boolean castling = false;
 
 		if (toPiece != null && toPiece.getOwner().equals(executor))
 		{	// Cannot take your own chess piece
@@ -434,27 +419,78 @@ public class GameController
 			return Result.INVALID_MOVE;
 		}
 
-		// Check for a possible en passant
-		if (movedPiece instanceof Pawn && null == toPiece && movedPiece.isMoveValid(to, true))
+		// Validate the movement of the chess piece
+		if (movedPiece instanceof Pawn && null == toPiece && movedPiece.isMoveValid(to, true)) // Check for en passant
 		{
-			Pawn lastDoubleMove = game.lastDoubleMove;
+			Pawn lastPawnRunner = game.lastPawnRunner;
 
-			if (null == lastDoubleMove || executor.equals(lastDoubleMove.getOwner()))
+			if (null == lastPawnRunner || executor.equals(lastPawnRunner.getOwner()))
 			{	// Attempting to move diagonally to an empty space and en passant does not apply
-				SLog.write("attempting invalid en passant");
+				SLog.write("attempting invalid en passant - no runner or runner's owner is executor");
 				return Result.INVALID_MOVE;
 			}
 
 			// The position of the pawn that this pawn should take en passant
 			Position runnerPosition = (Color.WHITE == movedPiece.getColor() ? to.plus(MovementSet.DOWN) : to.plus(MovementSet.UP));
 
-			if (!runnerPosition.equals(lastDoubleMove.getPosition()))
+			if (!runnerPosition.equals(lastPawnRunner.getPosition()))
 			{	// The runner position does not match the position of the last runner - en passant does not apply
-				SLog.write("attempting invalid en passant");
+				SLog.write("attempting invalid en passant - no runner to intercept");
 				return Result.INVALID_MOVE;
 			}
 
-			take = lastDoubleMove;
+			take = lastPawnRunner;
+		}
+		else if (movedPiece instanceof King && null == toPiece && !movedPiece.isMoveValid(to, false)) // Check for castling
+		{
+			int vertical = to.x - from.x;
+
+			if (from.y != to.y || (vertical != 2 && vertical != -2))
+			{	// This is not an attempt for castling and the move is not valid
+				SLog.write("the king does not move in that fashion");
+				return Result.INVALID_MOVE;
+			}
+
+			if (((King)movedPiece).hasMoved())
+			{	// The king has moved - cannot perform castling
+				SLog.write("attempting invalid castling - the king has moved");
+				return Result.INVALID_MOVE;
+			}
+
+			int x = (vertical > 0 ? Game.BOARD_SIDE - 1 : 0);
+			int y = (Color.WHITE == executor.getColor() ? 0 : Game.BOARD_SIDE - 1);
+
+			ChessPiece rookMaybe = board[x][y].getChessPiece();
+
+			if (null == rookMaybe || !(rookMaybe instanceof Rook) || ((Rook)rookMaybe).hasMoved())
+			{	// No rook, not rook or rook has already moved
+				SLog.write("attempting invalid castling - no rook, not rook or rook has moved");
+				return Result.INVALID_MOVE;
+			}
+
+			if (game.inCheck != null && executor.equals(game.inCheck))
+			{	// The player's king is in check
+				SLog.write("attempting invalid castling - player in check");
+				return Result.INVALID_MOVE;
+			}
+
+			if (isPathIntercepted(from, new Position(x, y)))
+			{	// The path from the king to the rook is not clear
+				SLog.write("attempting invalid castling - path not clear");
+				return Result.INVALID_MOVE;
+			}
+
+			// Check whether the king would pass through a field that is attacked by an enemy piece
+			Position passThroughPosition = new Position(from.x + (2 == vertical ? 1 : -1), y); // One step towards the rook
+			ChessPiece attacker = positionAttacker(passThroughPosition, executor.getOpponent().getChessPieceSet().getActivePieces());
+
+			if (attacker != null)
+			{	// The king is passing through a filed that is attacked by an enemy piece
+				SLog.write("attempting invalid castling - king passing through " + passThroughPosition + " which is attacked by " + attacker + " at position " + attacker.getPosition());
+				return Result.INVALID_MOVE;
+			}
+
+			castling = true;
 		}
 		else if (!movedPiece.isMoveValid(to, (toPiece != null)))
 		{	// This chess piece does move in that fashion
@@ -531,6 +567,7 @@ public class GameController
 		{
 			ctx.take = take;
 			ctx.doubleMove = doubleMove;
+			ctx.castling = castling;
 		}
 
 		return Result.OK;
@@ -557,7 +594,6 @@ public class GameController
 	{
 		Position cursor = from.clone();
 		ChessPiece piece = null;
-		BoardField board[][] = game.getBoard();
 
 		do
 		{
@@ -611,7 +647,6 @@ public class GameController
 			right = pos.plus(MovementSet.DOWN_RIGHT);
 		}
 
-		BoardField board[][] = game.getBoard();
 		ChessPiece adjacent;
 
 		if (left.isWithinBoard() && (adjacent = board[left.x][left.y].getChessPiece()) != null && adjacent instanceof Pawn)
@@ -630,5 +665,6 @@ public class GameController
 	{
 		public ChessPiece take = null;
 		public Pawn doubleMove = null;
+		public boolean castling = false;
 	}
 }

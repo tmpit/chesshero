@@ -75,10 +75,10 @@ public class Game
 
 	protected Player turn = null;
 
-	protected Pawn lastDoubleMove = null;
+	protected Pawn lastPawnRunner = null;
 
 	protected Player inCheck = null;
-	protected ArrayList<ChessPiece> checkedBy = new ArrayList<ChessPiece>(2);
+	protected ArrayList<ChessPiece> attackers = new ArrayList<ChessPiece>(2);
 
 	protected Player winner = null;
 

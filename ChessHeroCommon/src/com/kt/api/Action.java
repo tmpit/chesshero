@@ -84,7 +84,5 @@ public class Action
 	// Description: Move a chess piece
 	// Parameters:
 	// - [move:STR] - the move as per the Pure coordinate notation: http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
-	// Castling notation used: 0-0 for kingside castling and 0-0-0 for queenside castling
-	// If promotion is not specified, the pawn will be promoted to a knight
 	public static final int MOVE = 8;
 }
