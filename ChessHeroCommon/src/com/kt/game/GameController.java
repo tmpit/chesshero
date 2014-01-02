@@ -11,8 +11,6 @@ import java.util.*;
  */
 public class GameController
 {
-	private static final char DEFAULT_PROMOTION = 'n';
-
 	private Game game;
 
 	public GameController(Game game)
@@ -68,51 +66,56 @@ public class GameController
 
 		Position from, to = from = Position.ZERO;
 		boolean kingsideCastle = false, queensideCastle = false;
-		char promotion = DEFAULT_PROMOTION;
+		char promotion = '\0';
 
+		ChessPieceSet myPieceSet = executor.getChessPieceSet();
+
+		// Move should be in the Pure coordinate notation: http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
 		move = move.toLowerCase();
 
 		if (move.equals("0-0"))
 		{
 			kingsideCastle = true;
+			from = myPieceSet.getKing().getPosition();
+			to = from.plus(new Position(2, 0));
 		}
 		else if (move.equals("0-0-0"))
 		{
 			queensideCastle = true;
+			from = myPieceSet.getKing().getPosition();
+			to = from.plus(new Position(-2, 0));
 		}
 		else
 		{
 			int moveLen = move.length();
 
-			if (moveLen > 3)
-			{
-				from = Position.positionFromBoardPosition(move.substring(0, 2));
-
-				if (null == from)
-				{
-					return Result.INVALID_MOVE_FORMAT;
-				}
-
-				to = Position.positionFromBoardPosition(move.substring(2, 4));
-
-				if (null == to)
-				{
-					return Result.INVALID_MOVE_FORMAT;
-				}
-
-				if (moveLen > 4)
-				{
-					promotion = move.charAt(4);
-				}
-
-				if (moveLen > 5)
-				{
-					return Result.INVALID_MOVE_FORMAT;
-				}
-			}
-			else
+			if (moveLen < 4 || moveLen > 5)
 			{
 				return Result.INVALID_MOVE_FORMAT;
+			}
+
+			from = Position.positionFromBoardPosition(move.substring(0, 2));
+
+			if (null == from)
+			{
+				return Result.INVALID_MOVE_FORMAT;
+			}
+
+			to = Position.positionFromBoardPosition(move.substring(2, 4));
+
+			if (null == to)
+			{
+				return Result.INVALID_MOVE_FORMAT;
+			}
+
+			if (5 == moveLen)
+			{
+				promotion = move.charAt(4);
+
+				if (promotion != 'q' && promotion != 'r' && promotion != 'b' && promotion != 'n')
+				{
+					return Result.INVALID_MOVE_FORMAT;
+				}
 			}
 		}
 
@@ -146,6 +149,33 @@ public class GameController
 		}
 
 		ChessPiece take = context.take;
+		ChessPiece promoted = null;
+
+		// Check whether pawn promotion is applicable
+		if (movedPiece instanceof Pawn && ((Color.WHITE == movedPiece.getColor() && Game.BOARD_SIDE - 1 == to.y) || (Color.BLACK == movedPiece.getColor() && 0 == to.y)))
+		{	// The pawn reaches its maximum rank
+			switch (promotion)
+			{
+				case 'q':
+					promoted = new Queen(to, executor, executor.getColor());
+					break;
+
+				case 'r':
+					promoted = new Rook(to, executor, executor.getColor());
+					break;
+
+				case 'b':
+					promoted = new Bishop(to, executor, executor.getColor());
+					break;
+
+				case 'n':
+					promoted = new Knight(to, executor, executor.getColor());
+					break;
+
+				default:
+					return Result.INVALID_MOVE_FORMAT;
+			}
+		}
 
 		// Change positions of chess pieces
 		// We do that before verification that the player's king is safe as it will be a lot faster and easier to do that check after positions have been updated
@@ -154,9 +184,7 @@ public class GameController
 		fromField.setChessPiece(null);
 		toField.setChessPiece(movedPiece);
 
-		ChessPieceSet myPieceSet = executor.getChessPieceSet();
-
-		// Verify that the player's king would be safe after the move
+		// Verify that the executor's king would be safe after the move
 		Player inCheck = game.inCheck;
 
 		if (inCheck != null && inCheck.equals(executor))
@@ -190,8 +218,9 @@ public class GameController
 			game.inCheck = null;
 		}
 
+		// Take opponents piece
 		if (take != null)
-		{	// Take the opponent's piece
+		{
 			SLog.write("taking piece: " + take + " at position: " + to);
 			take.getOwner().takePiece(take);
 
@@ -203,34 +232,10 @@ public class GameController
 			}
 		}
 
-		// Check whether pawn promotion is applicable
-		if (movedPiece instanceof Pawn && ((Color.WHITE == movedPiece.getColor() && Game.BOARD_SIDE - 1 == to.y) || (Color.BLACK == movedPiece.getColor() && 0 == to.y)))
-		{	// The pawn reaches its maximum rank
-			ChessPiece promoted = null;
-
-			switch (promotion)
-			{
-				case 'q':
-					promoted = new Queen(to, executor, executor.getColor());
-					break;
-
-				case 'r':
-					promoted = new Rook(to, executor, executor.getColor());
-					break;
-
-				case 'b':
-					promoted = new Bishop(to, executor, executor.getColor());
-					break;
-
-				case 'n':
-					promoted = new Knight(to, executor, executor.getColor());
-					break;
-
-				default:
-					promoted = new Knight(to, executor, executor.getColor());
-					break;
-			}
-
+		// Apply promotion
+		if (promoted != null)
+		{
+			SLog.write("promoting " + movedPiece + " at position " + from + " to " + promoted);
 			executor.takePiece(movedPiece);
 			executor.addPiece(promoted);
 			toField.setChessPiece(promoted);
@@ -405,8 +410,6 @@ public class GameController
 				}
 			}
 			while (true);
-
-			// TODO: check whether castling or an en passant can save the king
 		}
 
 		return Result.OK;
