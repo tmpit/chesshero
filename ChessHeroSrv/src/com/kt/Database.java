@@ -454,4 +454,23 @@ class Database
 			closeResources(stmt, null);
 		}
 	}
+
+	public void insertMove(int gameID, int userID, String move) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("INSERT INTO moves (gid, uid, move) VALUES (?, ?, ?)");
+			stmt.setInt(1, gameID);
+			stmt.setInt(2, userID);
+			stmt.setString(3, move);
+
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
 }

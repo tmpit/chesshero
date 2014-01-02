@@ -1008,6 +1008,21 @@ public class ClientConnection extends Thread
 			return;
 		}
 
+		try
+		{
+			db.connect();
+			db.insertMove(game.getID(), player.getUserID(), move);
+		}
+		catch (SQLException ignore)
+		{
+			SLog.write("Exception raised while inserting move: " + ignore);
+			ignore.printStackTrace();
+		}
+		finally
+		{
+			db.disconnect();
+		}
+
 		if (opponentConnection != null)
 		{
 			HashMap msg = aPushWithEvent(Push.GAME_MOVE);
