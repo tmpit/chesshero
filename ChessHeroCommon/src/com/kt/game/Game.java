@@ -61,7 +61,7 @@ public class Game
 
 		if (bottom)
 		{
-//			pieces.add(new Pawn(new Position(0, 1), owner, color));
+			pieces.add(new Pawn(new Position(0, 6), owner, color));
 //			pieces.add(new Pawn(new Position(1, 1), owner, color));
 //			pieces.add(new Pawn(new Position(2, 1), owner, color));
 //			pieces.add(new Pawn(new Position(3, 1), owner, color));
@@ -88,8 +88,8 @@ public class Game
 //			pieces.add(new Pawn(new Position(5, 6), owner, color));
 //			pieces.add(new Pawn(new Position(6, 6), owner, color));
 //			pieces.add(new Pawn(new Position(7, 6), owner, color));
-			pieces.add(new Rook(new Position(0, 7), owner, color));
-			pieces.add(new Rook(new Position(7, 7), owner, color));
+//			pieces.add(new Rook(new Position(0, 7), owner, color));
+//			pieces.add(new Rook(new Position(7, 7), owner, color));
 //			pieces.add(new Knight(new Position(1, 7), owner, color));
 //			pieces.add(new Knight(new Position(6, 7), owner, color));
 //			pieces.add(new Bishop(new Position(2, 7), owner, color));

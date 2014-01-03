@@ -157,7 +157,7 @@ public class GameController
 					break;
 
 				default:
-					return Result.INVALID_MOVE_FORMAT;
+					return Result.MISSING_PROMOTION;
 			}
 		}
 
@@ -225,6 +225,9 @@ public class GameController
 			executor.takePiece(movedPiece);
 			executor.addPiece(promoted);
 			toField.setChessPiece(promoted);
+
+			// Update variable so all checks from here work with the promoted piece
+			movedPiece = promoted;
 		}
 
 		Rook castle = context.castle;
@@ -526,7 +529,7 @@ public class GameController
 			return Result.INVALID_MOVE;
 		}
 
-		if (movedPiece instanceof Pawn && null == toPiece)
+		if (movedPiece instanceof Pawn && null == take)
 		{	// Additional checks for the pawn are needed only when it is moving forward, otherwise the isMoveValid method covers everything else
 			int vertical = Math.abs(to.y - from.y);
 
