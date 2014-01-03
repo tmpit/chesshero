@@ -31,7 +31,7 @@ public class Main
 	private static String joinColor;
 	private static int joinID;
 	private static ArrayList<HashMap> availableGames;
-	private static String[] lastMovePair;
+	private static String lastMove;
 
 	private static Player me;
 	private static Player notMe;
@@ -134,7 +134,7 @@ public class Main
 			}
 			else if (args[0].equals("move"))
 			{
-				move(args[1], args[2]);
+				move(args[1]);
 			}
             else
             {
@@ -270,7 +270,7 @@ public class Main
 					break;
 
 				case Action.MOVE:
-					theGame.getController().execute(me, Position.positionFromBoardPosition(lastMovePair[0]), Position.positionFromBoardPosition(lastMovePair[1]));
+					theGame.getController().execute(me, lastMove);
 					printBoard();
 					break;
 
@@ -296,9 +296,8 @@ public class Main
 					break;
 
 				case Push.GAME_MOVE:
-					Position from = Position.positionFromBoardPosition((String)msg.get("from"));
-					Position to = Position.positionFromBoardPosition((String)msg.get("to"));
-					theGame.getController().execute(notMe, from, to);
+					String move = (String)msg.get("move");
+					theGame.getController().execute(notMe, move);
 					printBoard();
 					break;
 
@@ -412,15 +411,14 @@ public class Main
 		listen(1);
 	}
 
-	public static void move(String from, String to) throws IOException
+	public static void move(String move) throws IOException
 	{
 		lastAction = Action.MOVE;
-		lastMovePair = new String[]{from, to};
+		lastMove = move;
 
 		HashMap req = new HashMap();
 		req.put("action", Action.MOVE);
-		req.put("from", from);
-		req.put("to", to);
+		req.put("move", move);
 		writer.write(req);
 
 		listen(1);
