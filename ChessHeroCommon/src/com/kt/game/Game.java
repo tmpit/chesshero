@@ -230,7 +230,7 @@ public class Game
 			description += String.format(" %c ", (char)('a' + i));
 		}
 
-		description += "\n   ------------------------\n";
+		description += "\n  +------------------------+\n";
 
 		for (int i = BOARD_SIDE - 1; i >= 0; i--)
 		{
@@ -244,7 +244,7 @@ public class Game
 			description += "| " + (i + 1) + '\n';
 		}
 
-		description += "   ------------------------\n   ";
+		description += "  +------------------------+\n   ";
 
 		for (int i = 0; i < BOARD_SIDE; i++)
 		{
