@@ -102,7 +102,7 @@ public class Position implements Cloneable
 	// e.g. {-2, 1} becomes {-1, 2}, but {2, 1} becomes {1, 2}
 	public Position swappedAbsolute()
 	{
-		if ((x ^ y) >= 0)
+		if ((x ^ y) < 0)
 		{	// x and y have different signs - reverse signs of the components of the new object
 			return new Position(-y, -x);
 		}
