@@ -33,7 +33,7 @@ public class Result
 	public static final int NO_CHESSPIECE = 202;		// Move / no chess piece specified
 	public static final int NOT_YOUR_CHESSPIECE = 203;	// Move / attempting to move a chess piece that is not your own
 	public static final int INVALID_MOVE = 204;			// Move / the chess piece you are trying to move cannot move to the specified position
-	public static final int WRONG_MOVE = 205;			// Move / the king is in check and this move would not save him or the king would be in check if he or some other chess piece moved to the specified position
+	public static final int WRONG_MOVE = 205;			// Move / the king is in check and this move would not save him or the king would be in check if this move is executed
 	public static final int MISSING_PROMOTION = 206;	// Move / you are moving a pawn to its highest rank but you have not specified promotion
 
     public static final int INVALID_REQUEST = 400;      // Any request / Invalid request format has been sent and the request couldn't be parsed

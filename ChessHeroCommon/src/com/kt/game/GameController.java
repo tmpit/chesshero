@@ -407,6 +407,11 @@ public class GameController
 
 				for (ChessPiece hero : opponentChessPieces)
 				{
+					if (hero instanceof King)
+					{	// The king cannot intercept
+						continue;
+					}
+
 					if (Result.OK == validateMove(opponent, hero, hero.getPosition(), cursor, null))
 					{	// The attacker can be intercepted
 						SLog.write("attacker can be intercepted by: " + hero + " at position: " + hero.getPosition());

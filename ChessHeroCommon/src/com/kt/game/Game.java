@@ -23,12 +23,12 @@ public class Game
 
 	public static ChessPieceSet initialWhiteChessPieces(Player owner)
 	{
-		return aSetOfChessPieces2(owner, Color.WHITE, true);
+		return aSetOfChessPieces(owner, Color.WHITE, true);
 	}
 
 	public static ChessPieceSet initialBlackChessPieces(Player owner)
 	{
-		return aSetOfChessPieces2(owner, Color.BLACK, false);
+		return aSetOfChessPieces(owner, Color.BLACK, false);
 	}
 
 	private static ChessPieceSet aSetOfChessPieces(Player owner, Color color, boolean bottom)
@@ -55,46 +55,46 @@ public class Game
 		return new ChessPieceSet(pieces);
 	}
 
-	private static ChessPieceSet aSetOfChessPieces2(Player owner, Color color, boolean bottom)
+	private static ChessPieceSet test_aSetOfChessPieces(Player owner, Color color, boolean bottom)
 	{
 		ArrayList<ChessPiece> pieces = new ArrayList<ChessPiece>(16);
 
 		if (bottom)
 		{
-			pieces.add(new Pawn(new Position(0, 1), owner, color));
-			pieces.add(new Pawn(new Position(1, 1), owner, color));
-			pieces.add(new Pawn(new Position(2, 1), owner, color));
-			pieces.add(new Pawn(new Position(3, 1), owner, color));
-			pieces.add(new Pawn(new Position(4, 1), owner, color));
-			pieces.add(new Pawn(new Position(5, 1), owner, color));
-			pieces.add(new Pawn(new Position(6, 2), owner, color));//y+
-			pieces.add(new Pawn(new Position(7, 1), owner, color));
-			pieces.add(new Rook(new Position(0, 0), owner, color));
-			pieces.add(new Rook(new Position(7, 0), owner, color));
-			pieces.add(new Knight(new Position(1, 0), owner, color));
-			pieces.add(new Knight(new Position(5, 2), owner, color));//x- y++
-			pieces.add(new Bishop(new Position(2, 0), owner, color));
-			pieces.add(new Bishop(new Position(6, 1), owner, color));//x+ y+
-			pieces.add(new Queen(new Position(3, 0), owner, color));
+//			pieces.add(new Pawn(new Position(0, 1), owner, color));
+//			pieces.add(new Pawn(new Position(1, 1), owner, color));
+//			pieces.add(new Pawn(new Position(2, 1), owner, color));
+//			pieces.add(new Pawn(new Position(3, 1), owner, color));
+//			pieces.add(new Pawn(new Position(4, 1), owner, color));
+//			pieces.add(new Pawn(new Position(5, 1), owner, color));
+//			pieces.add(new Pawn(new Position(6, 1), owner, color));
+//			pieces.add(new Pawn(new Position(7, 1), owner, color));
+//			pieces.add(new Rook(new Position(0, 0), owner, color));
+//			pieces.add(new Rook(new Position(7, 0), owner, color));
+//			pieces.add(new Knight(new Position(1, 0), owner, color));
+//			pieces.add(new Knight(new Position(6, 0), owner, color));
+//			pieces.add(new Bishop(new Position(2, 0), owner, color));
+//			pieces.add(new Bishop(new Position(5, 0), owner, color));
+//			pieces.add(new Queen(new Position(3, 0), owner, color));
 			pieces.add(new King(new Position(4, 0), owner, color));
 		}
 		else
 		{
-			pieces.add(new Pawn(new Position(0, 6), owner, color));
-			pieces.add(new Pawn(new Position(1, 6), owner, color));
-			pieces.add(new Pawn(new Position(2, 6), owner, color));
-			pieces.add(new Pawn(new Position(3, 6), owner, color));
-			pieces.add(new Pawn(new Position(4, 6), owner, color));
-			pieces.add(new Pawn(new Position(5, 6), owner, color));
-			pieces.add(new Pawn(new Position(6, 6), owner, color));
-			pieces.add(new Pawn(new Position(7, 6), owner, color));
+//			pieces.add(new Pawn(new Position(0, 6), owner, color));
+//			pieces.add(new Pawn(new Position(1, 6), owner, color));
+//			pieces.add(new Pawn(new Position(2, 6), owner, color));
+//			pieces.add(new Pawn(new Position(3, 6), owner, color));
+//			pieces.add(new Pawn(new Position(4, 6), owner, color));
+//			pieces.add(new Pawn(new Position(5, 6), owner, color));
+//			pieces.add(new Pawn(new Position(6, 6), owner, color));
+//			pieces.add(new Pawn(new Position(7, 6), owner, color));
 			pieces.add(new Rook(new Position(0, 7), owner, color));
 			pieces.add(new Rook(new Position(7, 7), owner, color));
-			pieces.add(new Knight(new Position(1, 7), owner, color));
-			pieces.add(new Knight(new Position(6, 7), owner, color));
-			pieces.add(new Bishop(new Position(2, 7), owner, color));
-			pieces.add(new Bishop(new Position(5, 7), owner, color));
-			pieces.add(new Queen(new Position(3, 7), owner, color));
+//			pieces.add(new Knight(new Position(1, 7), owner, color));
+//			pieces.add(new Knight(new Position(6, 7), owner, color));
+//			pieces.add(new Bishop(new Position(2, 7), owner, color));
+//			pieces.add(new Bishop(new Position(5, 7), owner, color));
+//			pieces.add(new Queen(new Position(3, 7), owner, color));
 			pieces.add(new King(new Position(4, 7), owner, color));
 		}
 
