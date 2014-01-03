@@ -93,7 +93,7 @@ public class Main
             }
             else if (args[0].equals("listen"))
             {
-                listen(Integer.parseInt(args[1]));
+                listen((args.length == 2 ? Integer.parseInt(args[1]) : 1));
             }
             else if (args[0].equals("login"))
             {
