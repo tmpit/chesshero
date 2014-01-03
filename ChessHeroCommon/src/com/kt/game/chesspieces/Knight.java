@@ -36,22 +36,22 @@ public class Knight extends ChessPiece
 		int myY = position.getY();
 		int x = pos.getX();
 		int y = pos.getY();
-		pos.subtract(position); // Subtract current position to get relative offset
+		Position offset = pos.minus(position); // Subtract current position to get relative offset
 
 		if (x > myX && y > myY)
 		{
-			return pos.equals(MovementSet.RIGHT2_UP) || pos.equals(MovementSet.UP2_RIGHT);
+			return offset.equals(MovementSet.RIGHT2_UP) || offset.equals(MovementSet.UP2_RIGHT);
 		}
 		if (x < myX && y < myY)
 		{
-			return pos.equals(MovementSet.LEFT2_DOWN) || pos.equals(MovementSet.DOWN2_LEFT);
+			return offset.equals(MovementSet.LEFT2_DOWN) || offset.equals(MovementSet.DOWN2_LEFT);
 		}
 		if (x > myX && y < myY)
 		{
-			return pos.equals(MovementSet.RIGHT2_DOWN) || pos.equals(MovementSet.DOWN2_RIGHT);
+			return offset.equals(MovementSet.RIGHT2_DOWN) || offset.equals(MovementSet.DOWN2_RIGHT);
 		}
 
-		return pos.equals(MovementSet.UP2_LEFT) || pos.equals(MovementSet.LEFT2_UP);
+		return offset.equals(MovementSet.UP2_LEFT) || offset.equals(MovementSet.LEFT2_UP);
 	}
 
 	@Override

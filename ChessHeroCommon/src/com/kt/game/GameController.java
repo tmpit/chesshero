@@ -102,7 +102,7 @@ public class GameController
 			}
 		}
 
-		SLog.write("Executing move: from " + from + " to " + to + " promotion " + promotion);
+		SLog.write("Executing move: from " + from + " to " + to + (promotion != '\0' ? " promotion " + promotion : ""));
 
 		BoardField fromField = board[from.x][from.y];
 		ChessPiece movedPiece = fromField.getChessPiece(); // The chess piece that is being moved
@@ -129,6 +129,8 @@ public class GameController
 		{
 			return moveResult;
 		}
+
+		SLog.write("move context: " + context);
 
 		ChessPiece take = context.take;
 		ChessPiece promoted = null;
@@ -225,11 +227,17 @@ public class GameController
 			toField.setChessPiece(promoted);
 		}
 
+		Rook castle = context.castle;
+
 		// Apply castling
-		if (context.castle != null)
+		if (castle != null)
 		{
+			Position oldPos = castle.getPosition();
 			Position castlePos = context.castlePosition;
-			board[castlePos.x][castlePos.y].setChessPiece(context.castle);
+			SLog.write("castling - moving rook from " + oldPos + " to " + castlePos);
+			castle.setPosition(castlePos);
+			board[castlePos.x][castlePos.y].setChessPiece(castle);
+			board[oldPos.x][oldPos.y].setChessPiece(null);
 		}
 
 		Player opponent = executor.getOpponent();
@@ -660,11 +668,11 @@ public class GameController
 
 		ChessPiece adjacent;
 
-		if (left.isWithinBoard() && (adjacent = board[left.x][left.y].getChessPiece()) != null && adjacent instanceof Pawn)
+		if (left.isWithinBoard() && (adjacent = board[left.x][left.y].getChessPiece()) != null && threatColor == adjacent.getColor() && adjacent instanceof Pawn)
 		{	// There is a pawn to the left
 			return adjacent;
 		}
-		if (right.isWithinBoard() && (adjacent = board[right.x][right.y].getChessPiece()) != null && adjacent instanceof Pawn)
+		if (right.isWithinBoard() && (adjacent = board[right.x][right.y].getChessPiece()) != null && threatColor == adjacent.getColor() && adjacent instanceof Pawn)
 		{	// There is a pawn to the right
 			return adjacent;
 		}
@@ -680,5 +688,11 @@ public class GameController
 
 		public Rook castle = null;
 		public Position castlePosition = null;
+
+		@Override
+		public String toString()
+		{
+			return "<MoveContext :: take: " + take + ", doubleMove: " + doubleMove + ", castle: " + castle + ", castlePosition: " + castlePosition + ">";
+		}
 	}
 }
