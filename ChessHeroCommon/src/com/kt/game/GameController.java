@@ -309,7 +309,9 @@ public class GameController
 						{	// Rook/queen is adjacent to the king - eliminate all places where the king cannot go
 							for (Iterator<Position> iterator = possibleEscapes.iterator(); iterator.hasNext();)
 							{
-								Position pos = iterator.next();
+								Position dir = iterator.next();
+								Position pos = opponentKingPosition.plus(dir);
+
 								if (pos.isHorizontalOrVerticalTo(attackerPosition) || (queen && pos.isDiagonalTo(attackerPosition)))
 								{
 									iterator.remove();
@@ -321,9 +323,11 @@ public class GameController
 				}
 				else if (attacker instanceof Knight)
 				{	// When a knight is checking the king, there is always one more place around the king that the knight can go to - remove it as a possible escape
-					Position possible = opponentKingPosition.minus(attackerPosition).swappedAbsolute();
-					possibleEscapes.remove(possible);
-					SLog.write("ruling out direction: " + possible);
+					Position attackerMove = opponentKingPosition.minus(attackerPosition).swappedAbsolute();
+					Position attackPosition = attackerPosition.plus(attackerMove);
+					Position direction = attackPosition.minus(opponentKingPosition);
+					possibleEscapes.remove(direction);
+					SLog.write("ruling out direction: " + direction);
 				}
 			}
 
