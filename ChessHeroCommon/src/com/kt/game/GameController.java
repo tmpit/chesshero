@@ -184,7 +184,7 @@ public class GameController
 				ChessPiece piece = iterator.next();
 				SLog.write("attacker: " + piece + " at position: " + piece.getPosition());
 
-				if (piece == take || !piece.isMoveValid(myKingPosition, true) || isPathIntercepted(piece.getPosition(), myKingPosition))
+				if (piece == take || !piece.isMoveValid(myKingPosition, true) || (!(piece instanceof Knight) && isPathIntercepted(piece.getPosition(), myKingPosition)))
 				{	// The piece is no longer a threat if it is to be taken or if it can no longer take the king
 					SLog.write(piece + " no longer threatens the king");
 					iterator.remove();
