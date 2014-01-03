@@ -315,7 +315,7 @@ public class GameController
 								if (pos.isHorizontalOrVerticalTo(attackerPosition) || (queen && pos.isDiagonalTo(attackerPosition)))
 								{
 									iterator.remove();
-									SLog.write("ruling out direction: " + pos);
+									SLog.write("ruling out direction: " + dir);
 								}
 							}
 						}
@@ -330,6 +330,8 @@ public class GameController
 					SLog.write("ruling out direction: " + direction);
 				}
 			}
+
+			SLog.write("possible escapes after ruling out: " + possibleEscapes);
 
 			for (Position escape : possibleEscapes)
 			{

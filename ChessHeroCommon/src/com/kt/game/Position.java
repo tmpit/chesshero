@@ -76,6 +76,23 @@ public class Position implements Cloneable
 		return (pos.x == x && pos.y == y);
 	}
 
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj instanceof Position)
+		{
+			return equals((Position)obj);
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode()
+	{	// Unique enough for the purposes of the class
+		return (x * 10) + y;
+	}
+
 	public Position plus(Position pos)
 	{
 		return new Position(x + pos.x, y + pos.y);
