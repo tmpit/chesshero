@@ -124,6 +124,7 @@ public class Game
 	protected Pawn lastPawnRunner = null;
 
 	protected Player inCheck = null;
+
 	protected ArrayList<ChessPiece> attackers = new ArrayList<ChessPiece>(2);
 
 	protected Player winner = null;
@@ -172,6 +173,11 @@ public class Game
 	public Player getWinner()
 	{
 		return winner;
+	}
+
+	public ArrayList<ChessPiece> getAttackers()
+	{
+		return attackers;
 	}
 
 	protected void initializeBoard()

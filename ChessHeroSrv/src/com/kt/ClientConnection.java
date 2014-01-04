@@ -5,6 +5,7 @@ import com.kt.api.Push;
 import com.kt.chesco.CHESCOReader;
 import com.kt.chesco.CHESCOWriter;
 import com.kt.game.*;
+import com.kt.game.chesspieces.ChessPiece;
 import com.kt.utils.ChessHeroException;
 import com.kt.api.Result;
 import com.kt.utils.SLog;
@@ -966,6 +967,7 @@ public class ClientConnection extends Thread
 		boolean gameNotStarted = false;
 		int result = 0;
 		boolean gameFinished = false;
+		ArrayList<ChessPiece> attackers = null;
 		Player winner = null;
 		ClientConnection opponentConnection = null;
 
@@ -976,21 +978,25 @@ public class ClientConnection extends Thread
 				GameController controller = game.getController();
 
 				result = controller.execute(player, move);
-				gameFinished = Game.STATE_FINISHED == game.getState();
-				winner = game.getWinner();
 
-				int gameID = game.getID();
-				int myUserID = player.getUserID();
-				int opponentUserID = player.getOpponent().getUserID();
-
-				opponentConnection = getConnection(gameID, opponentUserID);
-
-				if (gameFinished)
+				if (Result.OK == result)
 				{
-					finalizeGame(game);
+					attackers = game.getAttackers();
+					gameFinished = Game.STATE_FINISHED == game.getState();
+					winner = game.getWinner();
 
-					popConnection(gameID, player.getUserID());
-					popConnection(gameID, opponentUserID);
+					int gameID = game.getID();
+					int opponentUserID = player.getOpponent().getUserID();
+
+					opponentConnection = getConnection(gameID, opponentUserID);
+
+					if (gameFinished)
+					{
+						finalizeGame(game);
+
+						popConnection(gameID, player.getUserID());
+						popConnection(gameID, opponentUserID);
+					}
 				}
 			}
 		}
@@ -1027,6 +1033,18 @@ public class ClientConnection extends Thread
 		{
 			HashMap msg = aPushWithEvent(Push.GAME_MOVE);
 			msg.put("move", move);
+
+			if (attackers != null)
+			{
+				ArrayList<String> positions = new ArrayList<String>(attackers.size());
+
+				for (ChessPiece attacker : attackers)
+				{
+					positions.add(Position.boardPositionFromPosition(attacker.getPosition()));
+				}
+
+				msg.put("attackers", positions);
+			}
 
 			opponentConnection.writeMessage(msg);
 		}

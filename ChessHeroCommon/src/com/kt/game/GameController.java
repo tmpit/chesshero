@@ -487,6 +487,12 @@ public class GameController
 				return Result.INVALID_MOVE;
 			}
 
+			if (game.inCheck != null && executor.equals(game.inCheck))
+			{	// The player's king is in check
+				SLog.write("attempting invalid castling - player in check");
+				return Result.INVALID_MOVE;
+			}
+
 			int x = (vertical > 0 ? Game.BOARD_SIDE - 1 : 0);
 			int y = (Color.WHITE == executor.getColor() ? 0 : Game.BOARD_SIDE - 1);
 
@@ -495,12 +501,6 @@ public class GameController
 			if (null == rookMaybe || !(rookMaybe instanceof Rook) || ((Rook)rookMaybe).hasMoved())
 			{	// No rook, not rook or rook has already moved
 				SLog.write("attempting invalid castling - no rook, not rook or rook has moved");
-				return Result.INVALID_MOVE;
-			}
-
-			if (game.inCheck != null && executor.equals(game.inCheck))
-			{	// The player's king is in check
-				SLog.write("attempting invalid castling - player in check");
 				return Result.INVALID_MOVE;
 			}
 

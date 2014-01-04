@@ -39,5 +39,6 @@ public class Push
 	// Description: This event is sent to the opponent of a player after that player performs moves a chess piece
 	// Parameters:
 	// - [move:STR] - the move as per the Pure coordinate notation: http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
+	// - [attackers:ARR] - each element in the array is a [STR] representing the position of a chess piece attacking your king
 	public static final int GAME_MOVE = 3;
 }
