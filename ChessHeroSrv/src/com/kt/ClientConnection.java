@@ -663,7 +663,7 @@ public class ClientConnection extends Thread
             db.disconnect();
         }
     }
-	// TODO: notify players of time control
+	
     private void handleCancelGame(HashMap<String, Object> request) throws ChessHeroException
     {
         Game game = player.getGame();
