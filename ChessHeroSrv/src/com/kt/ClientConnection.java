@@ -94,11 +94,15 @@ public class ClientConnection extends Thread
 
     private boolean running = true;
     private Socket sock = null;
+
     private CHESCOReader reader = null;
     private CHESCOWriter writer = null;
+
     private Database db = null;
 
     private Player player = null;
+
+	private int readTimeout = READ_TIMEOUT;
 
     ClientConnection(Socket sock) throws IOException
     {
@@ -144,14 +148,7 @@ public class ClientConnection extends Thread
 
                 if (Game.STATE_PENDING == game.getState())
                 {
-					try
-					{
-						cancelGame(game);
-					}
-					catch (ChessHeroException ignore)
-					{
-					}
-
+					cancelGame(game);
 					popConnection(gameID, player.getUserID());
                 }
                 else if (Game.STATE_STARTED == game.getState())
@@ -162,15 +159,7 @@ public class ClientConnection extends Thread
 
 					// End the game with the opponent as the winner
 					game.getController().endGame(opponent);
-
-					try
-					{
-						finalizeGame(game);
-					}
-					catch (ChessHeroException ignore)
-					{
-					}
-
+					finalizeGame(game);
 					popConnection(gameID, player.getUserID());
 					opponentConnection = popConnection(gameID, opponentUserID);
 
@@ -192,58 +181,60 @@ public class ClientConnection extends Thread
 
     private void listen()
     {
-        try
-        {
-            // Set timeout for the first message, if someone connected, he must say something
-            sock.setSoTimeout(READ_TIMEOUT);
+		while (running)
+		{
+			try
+			{
+				sock.setSoTimeout(readTimeout);
 
-            while (running)
-            {
-                // Read request
-                Object request = reader.read();
+				// Read request
+				Object request = reader.read();
 
-                SLog.write("Request received: " + request);
+				SLog.write("Request received: " + request);
 
-                if (!(request instanceof Map))
-                {   // Map is the only type of object the server allows for sending requests
-                    SLog.write("Request is not in MAP format, ignoring!");
-                    continue;
-                }
+				if (!(request instanceof Map))
+				{   // Map is the only type of object the server allows for sending requests
+					SLog.write("Request is not in MAP format, ignoring!");
+					continue;
+				}
 
-                handleRequest((HashMap<String, Object>)request);
-
-                // Remove timeout after first message
-                sock.setSoTimeout(0);
-            }
-        }
-        catch (InputMismatchException e)
-        {
-            SLog.write("Message not conforming to CHESCO");
-            writeMessage(aResponseWithResult(Result.INVALID_REQUEST));
-        }
-        catch (SocketTimeoutException e)
-        {
-            SLog.write("Read timed out");
-        }
-        catch (EOFException e)
-        {
-            SLog.write("Client closed connection: " + e);
-        }
-        catch (IOException e)
-        {
-            SLog.write("Error reading: " + e);
-        }
-        catch (ChessHeroException e)
-        {
-            int code = e.getCode();
-            SLog.write("Chess hero exception: " + code);
-            writeMessage(aResponseWithResult(code));
-        }
-        catch (Exception e)
-        {
-            SLog.write("Surprise exception: " + e);
-			e.printStackTrace();
-        }
+				handleRequest((HashMap<String, Object>)request);
+			}
+			catch (InputMismatchException e)
+			{
+				SLog.write("Message not conforming to CHESCO");
+				writeMessage(aResponseWithResult(Result.INVALID_REQUEST));
+				running = false;
+			}
+			catch (SocketTimeoutException e)
+			{
+				SLog.write("Read timed out");
+				handleTimeout();
+			}
+			catch (EOFException e)
+			{
+				SLog.write("Client closed connection: " + e);
+				running = false;
+			}
+			catch (IOException e)
+			{
+				SLog.write("Error reading: " + e);
+				running = false;
+			}
+			catch (ChessHeroException e)
+			{
+				int code = e.getCode();
+				SLog.write("Chess hero exception: " + code);
+				writeMessage(aResponseWithResult(code));
+				running = false;
+			}
+			catch (Exception e)
+			{
+				SLog.write("Surprise exception: " + e);
+				e.printStackTrace();
+				running = false;
+			}
+		}
     }
 
     private HashMap<String, Object> aResponseWithResult(int result)
@@ -261,40 +252,35 @@ public class ClientConnection extends Thread
         return map;
     }
 
-	private void cancelGame(Game game) throws ChessHeroException
+	private void cancelGame(Game game)
 	{
+		int gID = game.getID();
+
+		removeGame(gID);
+		player.leave();
+
 		try
 		{
-			int uID = player.getUserID();
-			int gID = game.getID();
-
 			db.connect();
 			db.startTransaction();
 
 			db.deleteGame(gID);
-			db.removePlayer(gID, uID);
+			db.removePlayer(gID, player.getUserID());
 
 			db.commit();
-
-			removeGame(gID);
-			player.leave();
 		}
 		catch (SQLException e)
 		{
-			SLog.write("Exception raised while cancelling game: " + e);
+			SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYER: " + player);
 			e.printStackTrace();
 
 			try
 			{
 				db.rollback();
 			}
-			catch(SQLException wut)
+			catch(SQLException ignore)
 			{
-				SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYER: " + player);
-				wut.printStackTrace();
 			}
-
-			throw new ChessHeroException(Result.INTERNAL_ERROR);
 		}
 		finally
 		{
@@ -302,20 +288,25 @@ public class ClientConnection extends Thread
 		}
 	}
 
-	private void finalizeGame(Game game) throws ChessHeroException
+	private void finalizeGame(Game game)
 	{
+		int gameID = game.getID();
+
+		Player winner = game.getWinner();
+		Player loser = winner.getOpponent();
+
+		winner.leave();
+		loser.leave();
+
+		removeGame(gameID);
+
 		try
 		{
 			db.connect();
 			db.startTransaction();
 
-			int gameID = game.getID();
-
 			db.deleteGame(gameID);
 			db.removePlayersForGame(gameID);
-
-			Player winner = game.getWinner();
-			Player loser = winner.getOpponent();
 
 			if (null == winner)
 			{	// Draw
@@ -327,25 +318,18 @@ public class ClientConnection extends Thread
 			}
 
 			db.commit();
-
-			winner.leave();
-			loser.leave();
-
-			removeGame(gameID);
 		}
 		catch (SQLException e)
 		{
-			SLog.write("Exception raised while exiting game: " + e);
+			SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYERS: " + player + ", " + player.getOpponent());
 			e.printStackTrace();
 
 			try
 			{
 				db.rollback();
 			}
-			catch (SQLException wut)
+			catch (SQLException ignore)
 			{
-				SLog.write("MANUAL CLEANUP REQUIRED FOR GAME WITH ID: " + game.getID() + " AND PLAYERS: " + player + ", " + player.getOpponent());
-				wut.printStackTrace();
 			}
 		}
 		finally
@@ -368,6 +352,16 @@ public class ClientConnection extends Thread
             running = false;
         }
     }
+
+	private void handleTimeout()
+	{
+		Game game = null;
+
+		if (null == player)
+		{	// Login / Register timeout
+			running = false;
+		}
+	}
 
     private void handleRequest(HashMap<String, Object> request) throws ChessHeroException
     {
@@ -490,6 +484,7 @@ public class ClientConnection extends Thread
             }
 
             player = new Player(userID, name);
+			readTimeout = 0;
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("username", name);
@@ -549,6 +544,7 @@ public class ClientConnection extends Thread
             }
 
             player = new Player (userID, name);
+			readTimeout = 0;
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("username", name);
@@ -667,7 +663,7 @@ public class ClientConnection extends Thread
             db.disconnect();
         }
     }
-
+	// TODO: notify players of time control
     private void handleCancelGame(HashMap<String, Object> request) throws ChessHeroException
     {
         Game game = player.getGame();
@@ -699,8 +695,8 @@ public class ClientConnection extends Thread
 
                 if (!(invalidGameID = game.getID() != gID))
                 {
-                    cancelGame(game);
 					popConnection(gID, player.getUserID());
+                    cancelGame(game);
                 }
             }
         }
@@ -913,10 +909,11 @@ public class ClientConnection extends Thread
 				// End the game with the opponent as the winner
 				game.getController().endGame(opponent);
 
-				finalizeGame(game);
-
 				popConnection(gameID, player.getUserID());
 				opponentConnection = popConnection(gameID, opponentUserID);
+				readTimeout = 0;
+
+				finalizeGame(game);
 			}
         }
 
@@ -983,7 +980,6 @@ public class ClientConnection extends Thread
 				{
 					attackers = game.getAttackers();
 					gameFinished = Game.STATE_FINISHED == game.getState();
-					winner = game.getWinner();
 
 					int gameID = game.getID();
 					int opponentUserID = player.getOpponent().getUserID();
@@ -992,10 +988,12 @@ public class ClientConnection extends Thread
 
 					if (gameFinished)
 					{
-						finalizeGame(game);
+						winner = game.getWinner();
 
 						popConnection(gameID, player.getUserID());
 						popConnection(gameID, opponentUserID);
+
+						finalizeGame(game);
 					}
 				}
 			}
