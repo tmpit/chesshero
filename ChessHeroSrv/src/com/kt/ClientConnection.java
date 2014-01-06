@@ -165,7 +165,7 @@ public class ClientConnection extends Thread
 
 					if (opponentConnection != null)
 					{
-						HashMap push = aPushWithEvent(Push.GAME_ENDED);
+						HashMap push = aPushWithEvent(Push.GAME_END);
 						push.put("winner", opponentUserID);
 						push.put("opponentdisconnected", true);
 
@@ -663,7 +663,7 @@ public class ClientConnection extends Thread
             db.disconnect();
         }
     }
-	
+
     private void handleCancelGame(HashMap<String, Object> request) throws ChessHeroException
     {
         Game game = player.getGame();
@@ -867,7 +867,7 @@ public class ClientConnection extends Thread
 		ClientConnection opponentConnection = getConnection(gameID, opponentUserID);
 		if (opponentConnection != null)
 		{
-			HashMap msg = aPushWithEvent(Push.GAME_STARTED);
+			HashMap msg = aPushWithEvent(Push.GAME_START);
 			msg.put("opponentname", player.getName());
 			msg.put("opponentid", player.getUserID());
 
@@ -935,7 +935,7 @@ public class ClientConnection extends Thread
 
 		if (opponentConnection != null)
 		{
-			HashMap msg = aPushWithEvent(Push.GAME_ENDED);
+			HashMap msg = aPushWithEvent(Push.GAME_END);
 			msg.put("winner", opponentUserID);
 			msg.put("opponentexited", true);
 
@@ -1052,7 +1052,7 @@ public class ClientConnection extends Thread
 			return;
 		}
 
-		HashMap endMsg = aPushWithEvent(Push.GAME_ENDED);
+		HashMap endMsg = aPushWithEvent(Push.GAME_END);
 
 		if (winner != null)
 		{	// winner will be null when game is draw

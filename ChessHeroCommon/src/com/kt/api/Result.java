@@ -22,7 +22,7 @@ public class Result
     public static final int INVALID_GAME_NAME = 108;    // Create game / The game name is invalid (e.g. too short/long etc)
     public static final int NOT_PLAYING = 109;          // Cancel game, Exit game / You cannot cancel/exit a game because you are not in a game
     public static final int CANCEL_NA = 110;            // Cancel game / Cancel is not applicable (e.g. you are already paired with a player)
-    public static final int INVALID_GAME_ID = 111;      // Cancel game, Join game / Invalid game id provided
+    public static final int INVALID_GAME_ID = 111;      // Cancel game, Join game, Save game / Invalid game id provided
     public static final int GAME_OCCUPIED = 112;        // Join game / Game cannot be joined because two players are already playing it
     public static final int DUPLICATE_PLAYER = 113;     // Join game / Game cannot be joined because the same user has created the game
     public static final int EXIT_NA = 114;              // Exit game / Exit is not applicable (e.g. game has not started yet)
@@ -35,6 +35,9 @@ public class Result
 	public static final int INVALID_MOVE = 204;			// Move / the chess piece you are trying to move cannot move to the specified position
 	public static final int WRONG_MOVE = 205;			// Move / the king is in check and this move would not save him or the king would be in check if this move is executed
 	public static final int MISSING_PROMOTION = 206;	// Move / you are moving a pawn to its highest rank but you have not specified promotion
+
+	public static final int ACTION_DISABLED_ATM = 300;	// Any request / At the moment this action has been disabled for you. Currently this can only happen when
+														// you are in game, your opponent prompts you to save the game and you do not send a save game request to respond
 
     public static final int INVALID_REQUEST = 400;      // Any request / Invalid request format has been sent and the request couldn't be parsed
     public static final int MISSING_PARAMETERS = 401;   // Any request / Parameters are missing

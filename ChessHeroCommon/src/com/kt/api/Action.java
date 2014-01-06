@@ -80,9 +80,23 @@ public class Action
 	// - [winner:INT] - the user id of the winner, this is always the opponent
     public static final int EXIT_GAME = 7;
 
+	// Save game
+	// Description: Prompt your opponent to save the game. If they decline, the game will continue. If they accept, the game will be saved and both players
+	// will leave the game. The game can then be resumed only by the same two players.
+	// Important: this is a blocking request, meaning that you will not receive a response until the save game request is resolved.
+	// Any request that is sent during the block will be ignored by the server.
+	// Parameters:
+	// - [gameid:INT] - the id of the game to save
+	// - [save:BOOL] - optional, true if you want to save the game, false if not. If not present the default value is true.
+	// Obviously sending false is a no-op when prompting your opponent to save the game. However, when responding to your opponent's request,
+	// this is how you can decline it.
+	// Returns:
+	// - [saved:BOOL] - true if the game was saved, false if not
+	public static final int SAVE_GAME = 8;
+
 	// Execute move
 	// Description: Move a chess piece
 	// Parameters:
 	// - [move:STR] - the move as per the Pure coordinate notation: http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
-	public static final int MOVE = 8;
+	public static final int MOVE = 9;
 }

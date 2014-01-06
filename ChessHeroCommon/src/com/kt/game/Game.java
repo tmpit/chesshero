@@ -11,10 +11,11 @@ import java.util.Arrays;
  */
 public class Game
 {
-	public static final short STATE_INIT      = 0; // Just initialized, not yet in the list
-	public static final short STATE_PENDING   = 1; // Inside the list with created games
-	public static final short STATE_STARTED   = 2; // The game is being played
-	public static final short STATE_FINISHED  = 3; // The game has finished
+	public static final short STATE_INIT     	= 0; // Initialized
+	public static final short STATE_PENDING   	= 1; // Waiting for second player
+	public static final short STATE_STARTED   	= 2; // Game is being played
+	public static final short STATE_FINISHED	= 3; // Game has ended
+	public static final short STATE_PAUSED		= 4; // Game has been paused
 
 	public static final int MIN_NAME_LENGTH = 3;
 	public static final int MAX_NAME_LENGTH = 256;
