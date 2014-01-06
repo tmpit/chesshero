@@ -36,7 +36,7 @@ public class Result
 	public static final int WRONG_MOVE = 205;			// Move / the king is in check and this move would not save him or the king would be in check if this move is executed
 	public static final int MISSING_PROMOTION = 206;	// Move / you are moving a pawn to its highest rank but you have not specified promotion
 
-	public static final int ACTION_DISABLED_ATM = 300;	// Any request / At the moment this action has been disabled for you. Currently this can only happen when
+	public static final int ACTION_DISABLED = 300;		// Any request / This action has been temporarily disabled for you. Currently this can only happen when
 														// you are in game, your opponent prompts you to save the game and you do not send a save game request to respond
 
     public static final int INVALID_REQUEST = 400;      // Any request / Invalid request format has been sent and the request couldn't be parsed
