@@ -12,7 +12,7 @@ public class Game
 {
 	public static final short STATE_INIT     	= 0; // Initialized
 	public static final short STATE_PENDING   	= 1; // Waiting for second player
-	public static final short STATE_STARTED   	= 2; // Game is being played
+	public static final short STATE_ACTIVE = 2; // Game is being played
 	public static final short STATE_FINISHED	= 3; // Game has ended
 	public static final short STATE_PAUSED		= 4; // Game has been paused
 
@@ -170,6 +170,11 @@ public class Game
 		return player2;
 	}
 
+	public Player getTurn()
+	{
+		return turn;
+	}
+
 	public Player getWinner()
 	{
 		return winner;
@@ -224,7 +229,7 @@ public class Game
 	{
 		String base = "<Game :: id: " + id + ", name: " + name + ", players: " + player1 + " --- " + player2 + ">";
 
-		if (state != STATE_STARTED)
+		if (state != STATE_ACTIVE)
 		{
 			return base;
 		}

@@ -23,12 +23,12 @@ public class GameController
 
 	public void startGame()
 	{
-		if (Game.STATE_STARTED == game.getState())
+		if (Game.STATE_ACTIVE == game.getState())
 		{
 			return;
 		}
 
-		game.setState(Game.STATE_STARTED);
+		game.setState(Game.STATE_ACTIVE);
 		game.initializeBoard();
 
 		if (Color.WHITE == game.player1.getColor())
@@ -54,7 +54,7 @@ public class GameController
 
 	public int execute(Player executor, String move)
 	{
-		if (game.getState() != Game.STATE_STARTED)
+		if (game.getState() != Game.STATE_ACTIVE)
 		{	// Game has not started yet
 			return Result.NOT_PLAYING;
 		}

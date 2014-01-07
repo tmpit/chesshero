@@ -58,24 +58,24 @@ public class ClientConnection extends Thread
 		return conn;
 	}
 
-	public static synchronized void addGame(Game game)
+	private static synchronized void addGame(Game game)
 	{
 		games.put(game.getID(), game);
 	}
 
-	public static synchronized Game removeGame(int gameID)
+	private static synchronized Game removeGame(int gameID)
 	{
 		Game game = games.get(gameID);
 		games.remove(gameID);
 		return game;
 	}
 
-	public static synchronized Game getGame(int gameID)
+	private static synchronized Game getGame(int gameID)
 	{
 		return games.get(gameID);
 	}
 
-	public static String generateChatToken(int gameID, int userID, String gameName) throws NoSuchAlgorithmException
+	private static String generateChatToken(int gameID, int userID, String gameName) throws NoSuchAlgorithmException
 	{
 		String cat1 = gameName + gameID + userID;
 
@@ -94,6 +94,7 @@ public class ClientConnection extends Thread
 
     private boolean running = true;
     private Socket sock = null;
+	private int readTimeout = READ_TIMEOUT;
 
     private CHESCOReader reader = null;
     private CHESCOWriter writer = null;
@@ -102,7 +103,8 @@ public class ClientConnection extends Thread
 
     private Player player = null;
 
-	private int readTimeout = READ_TIMEOUT;
+	private boolean saveGamePrompted = false;
+	private boolean gameSaved;
 
     ClientConnection(Socket sock) throws IOException
     {
@@ -112,6 +114,26 @@ public class ClientConnection extends Thread
         reader = new CHESCOReader(sock.getInputStream());
         writer = new CHESCOWriter(sock.getOutputStream());
     }
+
+	private synchronized boolean isSaveGamePrompted()
+	{
+		return saveGamePrompted;
+	}
+
+	private synchronized void setSaveGamePrompted(boolean flag)
+	{
+		saveGamePrompted = flag;
+	}
+
+	private synchronized boolean isGameSaved()
+	{
+		return gameSaved;
+	}
+
+	private synchronized void setGameSaved(boolean flag)
+	{
+		gameSaved = flag;
+	}
 
     private void closeSocket()
     {
@@ -151,7 +173,7 @@ public class ClientConnection extends Thread
 					cancelGame(game);
 					popConnection(gameID, player.getUserID());
                 }
-                else if (Game.STATE_STARTED == game.getState())
+                else if (Game.STATE_ACTIVE == game.getState())
                 {
 					Player opponent = player.getOpponent();
 					int opponentUserID = opponent.getUserID();
@@ -187,23 +209,13 @@ public class ClientConnection extends Thread
 			{
 				sock.setSoTimeout(readTimeout);
 
-				// Read request
 				Object request = reader.read();
-
-				SLog.write("Request received: " + request);
-
-				if (!(request instanceof Map))
-				{   // Map is the only type of object the server allows for sending requests
-					SLog.write("Request is not in MAP format, ignoring!");
-					continue;
-				}
-
-				handleRequest((HashMap<String, Object>)request);
+				handleRequest(request);
 			}
 			catch (InputMismatchException e)
 			{
 				SLog.write("Message not conforming to CHESCO");
-				writeMessage(aResponseWithResult(Result.INVALID_REQUEST));
+				writeMessage(aResponseWithResult(Result.INVALID_REQUEST_FORMAT));
 				running = false;
 			}
 			catch (SocketTimeoutException e)
@@ -338,7 +350,7 @@ public class ClientConnection extends Thread
 		}
 	}
 
-    public synchronized void writeMessage(HashMap<String, Object> message)
+    private synchronized void writeMessage(HashMap<String, Object> message)
     {
         try
         {
@@ -363,10 +375,20 @@ public class ClientConnection extends Thread
 		}
 	}
 
-    private void handleRequest(HashMap<String, Object> request) throws ChessHeroException
+    private void handleRequest(Object aRequest) throws ChessHeroException
     {
+		SLog.write("Request received: " + aRequest);
+
         try
         {
+			if (!(aRequest instanceof Map))
+			{   // Map is the only type of object the server allows for sending requests
+				writeMessage(aResponseWithResult(Result.WRONG_REQUEST_FORMAT));
+				return;
+			}
+
+			HashMap<String, Object> request = (HashMap<String, Object>)aRequest;
+
             Integer action = (Integer)request.get("action");
 
             if (null == action)
@@ -380,6 +402,12 @@ public class ClientConnection extends Thread
                 SLog.write("Client attempting unauthorized action");
                 throw new ChessHeroException(Result.AUTH_REQUIRED);
             }
+
+			if (isSaveGamePrompted() && action != Action.SAVE_GAME)
+			{
+				writeMessage(aResponseWithResult(Result.ACTION_DISABLED));
+				return;
+			}
 
             switch (action.intValue())
             {
@@ -413,6 +441,10 @@ public class ClientConnection extends Thread
 
 				case Action.MOVE:
 					handleMove(request);
+					break;
+
+				case Action.SAVE_GAME:
+					handleSaveGame(request);
 					break;
 
                 default:
@@ -809,7 +841,7 @@ public class ClientConnection extends Thread
 						Color opponentColor = opponent.getColor();
 						Color myColor = opponentColor.Opposite;
 
-                        db.updateGameState(gameID, Game.STATE_STARTED);
+                        db.updateGameState(gameID, Game.STATE_ACTIVE);
                         db.insertPlayer(gameID, myUserID, myChatToken, (myColor == Color.WHITE ? "white" : "black"));
 
                         db.commit();
@@ -901,7 +933,7 @@ public class ClientConnection extends Thread
 
         synchronized (game)
         {
-            if (!(invalidGameID = game.getID() != gameID) && !(gameHasNotStarted = game.getState() != Game.STATE_STARTED))
+            if (!(invalidGameID = game.getID() != gameID) && !(gameHasNotStarted = game.getState() != Game.STATE_ACTIVE))
             {
 				Player opponent = player.getOpponent();
 				opponentUserID = opponent.getUserID();
@@ -970,7 +1002,7 @@ public class ClientConnection extends Thread
 
 		synchronized (game)
 		{
-			if (!(gameNotStarted = game.getState() != Game.STATE_STARTED))
+			if (!(gameNotStarted = game.getState() != Game.STATE_ACTIVE))
 			{
 				GameController controller = game.getController();
 
@@ -1065,5 +1097,129 @@ public class ClientConnection extends Thread
 		{
 			opponentConnection.writeMessage(endMsg);
 		}
+	}
+
+	private void handleSaveGame(HashMap<String, Object> request) throws ChessHeroException
+	{
+		Game game = player.getGame();
+
+		if (null == game)
+		{
+			writeMessage(aResponseWithResult(Result.NOT_PLAYING));
+			return;
+		}
+
+		Integer gameID = (Integer)request.get("gameid");
+
+		if (null == gameID)
+		{
+			writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
+			return;
+		}
+
+		Boolean save = (Boolean)request.get("save");
+
+		if (null == save)
+		{
+			save = true;
+		}
+
+		ClientConnection opponentConnection = null;
+		boolean invalidGameID = false;
+		boolean gameNotActive = false;
+		boolean waitForResponse = false;
+		boolean saved = false;
+
+		synchronized (game)
+		{
+			if (!(invalidGameID = game.getID() != gameID))
+			{
+				short state = game.getState();
+
+				if (Game.STATE_ACTIVE == state)
+				{
+					if (save)
+					{
+						opponentConnection = getConnection(gameID, player.getOpponent().getUserID());
+
+						if (null == opponentConnection)
+						{
+							throw new ChessHeroException(Result.INTERNAL_ERROR);
+						}
+
+						game.setState(Game.STATE_PAUSED);
+						opponentConnection.setSaveGamePrompted(true);
+
+						waitForResponse = true;
+					}
+				}
+				else if (Game.STATE_PAUSED == state)
+				{
+					game.setState(Game.STATE_ACTIVE);
+
+					if (save)
+					{
+						try
+						{
+							db.connect();
+							db.insertSavedGame(gameID, game.getTurn().getUserID(), game.toData());
+
+							setGameSaved(true);
+						}
+						catch (SQLException e)
+						{
+							SLog.write("Exception raised while saving game: " + e);
+							e.printStackTrace();
+
+							setGameSaved(false);
+							setSaveGamePrompted(false);
+
+							throw new ChessHeroException(Result.INTERNAL_ERROR);
+						}
+						finally
+						{
+							db.disconnect();
+						}
+					}
+					else
+					{
+						setGameSaved(false);
+					}
+
+					setSaveGamePrompted(false);
+					saved = isGameSaved();
+				}
+				else
+				{
+					gameNotActive = true;
+				}
+			}
+		}
+
+		if (gameNotActive)
+		{
+			writeMessage(aResponseWithResult(Result.SAVE_NA));
+			return;
+		}
+
+		if (invalidGameID)
+		{
+			writeMessage(aResponseWithResult(Result.INVALID_GAME_ID));
+			return;
+		}
+
+		if (waitForResponse)
+		{
+			while (opponentConnection.isSaveGamePrompted())
+			{
+				try { Thread.sleep(10);} catch (InterruptedException ignore) {}
+			}
+
+			saved = opponentConnection.isGameSaved();
+		}
+
+		HashMap msg = aResponseWithResult(Result.OK);
+		msg.put("saved", saved);
+		writeMessage(msg);
 	}
 }
