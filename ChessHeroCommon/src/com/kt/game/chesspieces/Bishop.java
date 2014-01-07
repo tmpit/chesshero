@@ -19,7 +19,7 @@ public class Bishop extends ChessPiece
 
 	public Bishop(Position position, Player owner, Color color)
 	{
-		super(position, owner, color, set);
+		super(Tag.BISHOP, position, owner, color, set);
 	}
 
 	@Override

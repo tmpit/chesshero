@@ -26,7 +26,7 @@ public class Knight extends ChessPiece
 
 	public Knight(Position position, Player owner, Color color)
 	{
-		super(position, owner, color, set);
+		super(Tag.KNIGHT, position, owner, color, set);
 	}
 
 	@Override

@@ -20,7 +20,7 @@ public class Queen extends ChessPiece
 
 	public Queen(Position position, Player owner, Color color)
 	{
-		super(position, owner, color, set);
+		super(Tag.QUEEN, position, owner, color, set);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.kt.game;
 
 import com.kt.game.chesspieces.*;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 /**
@@ -257,5 +258,36 @@ public class Game
 		}
 
 		return base + description;
+	}
+
+	public byte[] toData()
+	{
+		ArrayList<ChessPiece> player1Pieces = player1.getChessPieceSet().getActivePieces();
+		ArrayList<ChessPiece> player2Pieces = player2.getChessPieceSet().getActivePieces();
+
+		int maxSize = 64; // The maximum possible size of the serialized game
+		ByteBuffer buffer = ByteBuffer.allocate(maxSize);
+
+		for (ChessPiece piece : player1Pieces)
+		{
+			buffer.put(piece.toData());
+		}
+		for (ChessPiece piece : player2Pieces)
+		{
+			buffer.put(piece.toData());
+		}
+
+		byte bufferData[] = buffer.array();
+		int bufferOffset = buffer.arrayOffset();
+
+		if (bufferOffset == maxSize)
+		{
+			return bufferData;
+		}
+
+		byte trimmed[] = new byte[bufferOffset];
+		System.arraycopy(bufferData, 0, trimmed, 0, bufferOffset);
+
+		return trimmed;
 	}
 }

@@ -158,4 +158,9 @@ public class Position implements Cloneable
 	{
 		return "{" + x + ", " + y + "}";
 	}
+
+	public byte toData()
+	{
+		return (byte)((x << 4) | y);
+	}
 }
