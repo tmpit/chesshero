@@ -18,6 +18,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,41 +40,60 @@ public class ClientConnection extends Thread
     private static final String DEFAULT_PLAYER_COLOR = "white";
 
 	private static final HashMap<Integer, Game> games = new HashMap<Integer, Game>();
+	private static final Lock gamesMutex = new ReentrantLock(true);
+
 	private static final HashMap<String, ClientConnection> playerConnections = new HashMap<String, ClientConnection>();
+	private static final Lock connectionsMutex = new ReentrantLock(true);
 
-	private static synchronized void putConnection(int gameID, int userID, ClientConnection conn)
+	// Not using synchronized methods because those use non-fair ReentrantLocks
+	// Since these methods are frequently used by all threads, non-fair policy will certainly lead to thread starvation
+	private static void putConnection(int gameID, int userID, ClientConnection conn)
 	{
+		connectionsMutex.lock();
 		playerConnections.put(gameID + ":" + userID, conn);
+		connectionsMutex.unlock();
 	}
 
-	private static synchronized ClientConnection getConnection(int gameID, int userID)
+	private static ClientConnection getConnection(int gameID, int userID)
 	{
-		return playerConnections.get(gameID + ":" + userID);
-	}
-
-	private static synchronized ClientConnection popConnection(int gameID, int userID)
-	{
-		String key = gameID + ":" + userID;
-		ClientConnection conn = playerConnections.get(key);
-		playerConnections.remove(key);
+		connectionsMutex.lock();
+		ClientConnection conn = playerConnections.get(gameID + ":" + userID);
+		connectionsMutex.unlock();
 		return conn;
 	}
 
-	private static synchronized void addGame(Game game)
+	private static ClientConnection popConnection(int gameID, int userID)
 	{
-		games.put(game.getID(), game);
+		String key = gameID + ":" + userID;
+		connectionsMutex.lock();
+		ClientConnection conn = playerConnections.get(key);
+		playerConnections.remove(key);
+		connectionsMutex.unlock();
+		return conn;
 	}
 
-	private static synchronized Game removeGame(int gameID)
+	private static void addGame(Game game)
 	{
+		gamesMutex.lock();
+		games.put(game.getID(), game);
+		gamesMutex.unlock();
+	}
+
+	private static Game removeGame(int gameID)
+	{
+		gamesMutex.lock();
 		Game game = games.get(gameID);
 		games.remove(gameID);
+		gamesMutex.unlock();
 		return game;
 	}
 
-	private static synchronized Game getGame(int gameID)
+	private static Game getGame(int gameID)
 	{
-		return games.get(gameID);
+		gamesMutex.lock();
+		Game game = games.get(gameID);
+		gamesMutex.unlock();
+		return game;
 	}
 
 	private static String generateChatToken(int gameID, int userID, String gameName) throws NoSuchAlgorithmException
