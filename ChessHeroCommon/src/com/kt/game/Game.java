@@ -1,10 +1,8 @@
 package com.kt.game;
 
 import com.kt.game.chesspieces.*;
-import com.kt.utils.SLog;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Created by Toshko on 12/23/13.

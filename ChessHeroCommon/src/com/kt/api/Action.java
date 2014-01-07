@@ -81,8 +81,8 @@ public class Action
     public static final int EXIT_GAME = 7;
 
 	// Save game
-	// Description: Prompt your opponent to save the game. If they decline, the game will continue. If they accept, the game will be saved and both players
-	// will leave the game. The game can then be resumed only by the same two players.
+	// Description: Prompt your opponent to save the game. If they decline, the game will continue. If they accept, the game will be saved.
+	// It can then be resumed only by the same two players.
 	// Important: this is a blocking request, meaning that you will not receive a response until the save game request is resolved.
 	// Any request that is sent during the block will be ignored by the server.
 	// Parameters:
