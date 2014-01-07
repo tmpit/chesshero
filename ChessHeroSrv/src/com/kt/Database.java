@@ -473,4 +473,23 @@ class Database
 			closeResources(stmt, null);
 		}
 	}
+
+	public void insertSavedGame(int gameID, int moveUserID, byte gameData[]) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("INSERT INTO saved_games (gid, next, game) VALUES (?, ?, ?)");
+			stmt.setInt(1, gameID);
+			stmt.setInt(2, moveUserID);
+			stmt.setBytes(3, gameData);
+
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
 }
