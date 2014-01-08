@@ -37,6 +37,8 @@ public class ClientConnection extends Thread
     private static final int DEFAULT_FETCH_GAMES_LIMIT = 100;
 	private static final int MAX_FETCH_GAMES_LIMIT = 1000;
 
+	private static final String DEFAULT_FETCH_GAMES_TYPE = "pending";
+
     private static final String DEFAULT_PLAYER_COLOR = "white";
 
 	private static final HashMap<Integer, Game> games = new HashMap<Integer, Game>();
@@ -746,9 +748,14 @@ public class ClientConnection extends Thread
 
     private void handleFetchGames(HashMap<String, Object> request) throws ChessHeroException
     {
+		String type = (String)request.get("type");
         Integer offset = (Integer)request.get("offset");
         Integer limit = (Integer)request.get("limit");
 
+		if (null == type)
+		{
+			type = DEFAULT_FETCH_GAMES_TYPE;
+		}
         if (null == offset || offset < 0)
         {
             offset = DEFAULT_FETCH_GAMES_OFFSET;
@@ -762,7 +769,16 @@ public class ClientConnection extends Thread
         {
             db.connect();
 
-            ArrayList games = db.getGamesAndPlayerInfo(Game.STATE_PENDING, offset, limit);
+			ArrayList games = null;
+
+			if (type.equals("saved"))
+			{
+				games = db.getSavedGames(player.getUserID(), offset, limit);
+			}
+			else
+			{
+				games = db.getGamesAndPlayerInfo(Game.STATE_PENDING, offset, limit);
+			}
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("games", games);

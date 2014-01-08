@@ -61,9 +61,13 @@ public class Action
 	// - [limit:INT] - optional, the maximum number of entries after offset, default value is 100, maximum value is 1000
     // Returns:
 	// - [games:ARR] - each element in the array has:
+	//		For 'pending':
 	// 		- [gameid:INT] - the id of the game
 	// 	 	- [gamename:STR] - the name of the game
 	// 	 	- [playercolor:STR] - the color the creator of the game has picked, either "white" or "black"
+	//		For 'saved':
+	//		- [gameid:INT] - the id of the game
+	// 	 	- [gamename:STR] - the name of the game
     public static final int FETCH_GAMES = 5;
 
     // Join game
