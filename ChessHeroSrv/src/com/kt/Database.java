@@ -324,7 +324,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT games.gid, games.gname, players.color FROM games LEFT JOIN players USING(gid) WHERE games.state = ? LIMIT ?, ?");
+			stmt = conn.prepareStatement("SELECT games.gid, games.gname, players.color FROM games INNER JOIN players USING(gid) WHERE games.state = ? LIMIT ?, ?");
 			stmt.setShort(1, state);
 			stmt.setInt(2, offset);
 			stmt.setInt(3, limit);
@@ -530,6 +530,43 @@ class Database
 		finally
 		{
 			closeResources(stmt, null);
+		}
+	}
+
+	// Get saved games within offset and limit in which a user with the specified user id plays
+	// Each hashmap will contain the following:
+	// "gameid" => (int)
+	// "gamename" => (string)
+	public ArrayList<HashMap> getSavedGames(int userID, int offset, int limit) throws SQLException
+	{
+		PreparedStatement stmt = null;
+		ResultSet set = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("SELECT games.gid, games.gname FROM games INNER JOIN saved_games USING(gid) INNER JOIN players USING(gid) WHERE uid = ? LIMIT ?, ?");
+			stmt.setInt(1, userID);
+			stmt.setInt(2, offset);
+			stmt.setInt(3, limit);
+
+			set = stmt.executeQuery();
+
+			ArrayList<HashMap> games = new ArrayList<HashMap>();
+
+			while (set.next())
+			{
+				HashMap game = new HashMap();
+				game.put("gameid", set.getInt(1));
+				game.put("gamename", set.getString(2));
+
+				games.add(game);
+			}
+
+			return games;
+		}
+		finally
+		{
+			closeResources(stmt, set);
 		}
 	}
 }
