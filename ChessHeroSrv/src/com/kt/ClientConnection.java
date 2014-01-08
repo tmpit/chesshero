@@ -274,8 +274,11 @@ public class ClientConnection extends Thread
 			db.connect();
 			db.startTransaction();
 
+			int userID = player.getUserID();
+
 			db.deleteGame(gID);
-			db.removePlayer(gID, player.getUserID());
+			db.removePlayer(gID, userID);
+			db.removeChatEntry(gID, userID);
 
 			db.commit();
 		}
@@ -316,7 +319,7 @@ public class ClientConnection extends Thread
 			db.startTransaction();
 
 			db.deleteGame(gameID);
-			db.removePlayersForGame(gameID);
+			db.removeChatEntriesForGame(gameID);
 
 			if (null == winner)
 			{	// Draw
@@ -635,7 +638,8 @@ public class ClientConnection extends Thread
 
 			int userID = player.getUserID();
 			String chatToken = generateChatToken(gameID, userID, gameName);
-			db.insertPlayer(gameID, userID, chatToken, color);
+			db.insertPlayer(gameID, userID, color);
+			db.insertChatEntry(gameID, userID, chatToken);
 
 			db.commit();
 
@@ -834,7 +838,8 @@ public class ClientConnection extends Thread
 						Color myColor = opponentColor.Opposite;
 
                         db.updateGameState(gameID, Game.STATE_ACTIVE);
-                        db.insertPlayer(gameID, myUserID, myChatToken, (myColor == Color.WHITE ? "white" : "black"));
+                        db.insertPlayer(gameID, myUserID, (myColor == Color.WHITE ? "white" : "black"));
+						db.insertChatEntry(gameID, myUserID, myChatToken);
 
                         db.commit();
 

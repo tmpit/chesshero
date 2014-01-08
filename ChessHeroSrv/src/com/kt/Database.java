@@ -16,10 +16,10 @@ import java.util.HashMap;
  */
 class Database
 {
-    private static String DB_URL = "jdbc:mysql://localhost:3306/";
-    private static String DB_NAME = "chesshero";
-    private static String DB_USER = "chesshero_srv";
-    private static String DB_PASS = "banichkasyssirene";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/";
+    private static final String DB_NAME = "chesshero";
+    private static final String DB_USER = "chesshero_srv";
+    private static final String DB_PASS = "banichkasyssirene";
 
     private Connection conn = null;
 
@@ -170,7 +170,7 @@ class Database
 
             set = stmt.executeQuery();
 
-            while (set.next())
+            if (set.next())
             {
                 return set.getInt(1);
             }
@@ -195,7 +195,7 @@ class Database
 
             set = stmt.executeQuery();
 
-            while (set.next())
+            if (set.next())
             {
                 String passHash = set.getString(1);
                 int salt = set.getInt(2);
@@ -250,7 +250,7 @@ class Database
 
             set = stmt.executeQuery();
 
-            while (set.next())
+            if (set.next())
             {
                 return set.getInt(1);
             }
@@ -313,6 +313,10 @@ class Database
     }
 
 	// Get games of the specified state within offset and limit and returns player color along with game info
+	// Each hashmap will contain the following:
+	// "gameid" => (int)
+	// "gamename" => (string)
+	// "playercolor" => (string)
 	public ArrayList<HashMap> getGamesAndPlayerInfo(short state, int offset, int limit) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -364,17 +368,16 @@ class Database
         }
     }
 
-	public void insertPlayer(int gameID, int userID, String token, String color) throws SQLException
+	public void insertPlayer(int gameID, int userID, String color) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("INSERT INTO players (gid, uid, token, color) VALUES (?, ?, ?, ?)");
+			stmt = conn.prepareStatement("INSERT INTO players (gid, uid, color) VALUES (?, ?, ?)");
 			stmt.setInt(1, gameID);
 			stmt.setInt(2, userID);
-			stmt.setString(3, token);
-			stmt.setString(4, color);
+			stmt.setString(3, color);
 
 			stmt.executeUpdate();
 		}
@@ -402,13 +405,50 @@ class Database
 		}
 	}
 
-	public void removePlayersForGame(int gameID) throws SQLException
+	public void insertChatEntry(int gameID, int userID, String token) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("DELETE FROM players WHERE gid = ?");
+			stmt = conn.prepareStatement("INSERT INTO chat_auth (gid, uid, token) VALUES (?, ?, ?)");
+			stmt.setInt(1, gameID);
+			stmt.setInt(2, userID);
+			stmt.setString(3, token);
+
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
+
+	public void removeChatEntry(int gameID, int userID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("DELETE FROM chat_auth WHERE gid = ? AND uid = ?");
+			stmt.setInt(1, gameID);
+			stmt.setInt(2, userID);
+
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
+
+	public void removeChatEntriesForGame(int gameID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("DELETE FROM chat_auth WHERE gid = ?");
 			stmt.setInt(1, gameID);
 
 			stmt.executeUpdate();

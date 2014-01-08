@@ -53,6 +53,10 @@ public class Action
     // Fetch games
     // Description: Fetch all games waiting for a second player to join
     // Parameters:
+	// - [type:STR] - optional, it can be either one of these (without the quotes):
+	//		- 'pending' - fetch all pending games
+	//		- 'saved' - fetch all saved games in which the current user is one of the players
+	// If not present, 'pending' is the default
 	// - [offset:INT] - optional, the offset within the games list, default value is 0
 	// - [limit:INT] - optional, the maximum number of entries after offset, default value is 100, maximum value is 1000
     // Returns:
