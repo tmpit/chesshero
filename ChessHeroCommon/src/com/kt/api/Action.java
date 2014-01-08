@@ -81,17 +81,9 @@ public class Action
     public static final int EXIT_GAME = 7;
 
 	// Save game
-	// Description: Prompt your opponent to save the game. If they decline, the game will continue. If they accept, the game will be saved.
-	// It can then be resumed only by the same two players.
-	// Important: this is a blocking request, meaning that you will not receive a response until the save game request is resolved.
-	// Any request that is sent during the block will be ignored by the server.
+	// Description: Save the game. It can then be resumed only by the same two players
 	// Parameters:
 	// - [gameid:INT] - the id of the game to save
-	// - [save:BOOL] - optional, true if you want to save the game, false if not. If not present the default value is true.
-	// Obviously sending false is a no-op when prompting your opponent to save the game. However, when responding to your opponent's request,
-	// this is how you can decline it.
-	// Returns:
-	// - [saved:BOOL] - true if the game was saved, false if not
 	public static final int SAVE_GAME = 8;
 
 	// Execute move

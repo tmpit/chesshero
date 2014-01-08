@@ -44,7 +44,6 @@ public class Push
 	public static final int GAME_MOVE = 3;
 
 	// Game save
-	// Description: You receive this event when your opponent has prompted you to save the game. After you receive it, the only request the server will accept from you
-	// will be a save game request accepting or declining to save the game.
+	// Description: You receive this event when your opponent has saved the game
 	public static final int GAME_SAVE = 4;
 }

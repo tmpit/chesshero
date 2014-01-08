@@ -124,9 +124,6 @@ public class ClientConnection extends Thread
 
     private Player player = null;
 
-	private boolean saveGamePrompted = false;
-	private boolean gameSaved;
-
     ClientConnection(Socket sock) throws IOException
     {
         this.sock = sock;
@@ -135,26 +132,6 @@ public class ClientConnection extends Thread
         reader = new CHESCOReader(sock.getInputStream());
         writer = new CHESCOWriter(sock.getOutputStream());
     }
-
-	private synchronized boolean isSaveGamePrompted()
-	{
-		return saveGamePrompted;
-	}
-
-	private synchronized void setSaveGamePrompted(boolean flag)
-	{
-		saveGamePrompted = flag;
-	}
-
-	private synchronized boolean isGameSaved()
-	{
-		return gameSaved;
-	}
-
-	private synchronized void setGameSaved(boolean flag)
-	{
-		gameSaved = flag;
-	}
 
     private void closeSocket()
     {
@@ -423,12 +400,6 @@ public class ClientConnection extends Thread
                 SLog.write("Client attempting unauthorized action");
                 throw new ChessHeroException(Result.AUTH_REQUIRED);
             }
-
-			if (isSaveGamePrompted() && action != Action.SAVE_GAME)
-			{
-				writeMessage(aResponseWithResult(Result.ACTION_DISABLED));
-				return;
-			}
 
             switch (action.intValue())
             {
@@ -1138,81 +1109,31 @@ public class ClientConnection extends Thread
 			return;
 		}
 
-		Boolean save = (Boolean)request.get("save");
-
-		if (null == save)
-		{
-			save = true;
-		}
-
 		ClientConnection opponentConnection = null;
-		boolean invalidGameID = false;
 		boolean gameNotActive = false;
-		boolean waitForResponse = false;
-		boolean saved = false;
+		boolean invalidGameID = false;
 
 		synchronized (game)
 		{
-			if (!(invalidGameID = game.getID() != gameID))
+			if (!(invalidGameID = game.getID() != gameID) && !(invalidGameID = game.getState() != Game.STATE_ACTIVE))
 			{
-				short state = game.getState();
-
-				if (Game.STATE_ACTIVE == state)
+				try
 				{
-					if (save)
-					{
-						opponentConnection = getConnection(gameID, player.getOpponent().getUserID());
+					db.connect();
+					db.insertGameSave(gameID, game.getTurn().getUserID(), game.toData());
 
-						if (null == opponentConnection)
-						{
-							throw new ChessHeroException(Result.INTERNAL_ERROR);
-						}
-
-						game.setState(Game.STATE_PAUSED);
-						opponentConnection.setSaveGamePrompted(true);
-
-						waitForResponse = true;
-					}
+					opponentConnection = getConnection(gameID, player.getOpponent().getUserID());
 				}
-				else if (Game.STATE_PAUSED == state)
+				catch (SQLException e)
 				{
-					game.setState(Game.STATE_ACTIVE);
+					SLog.write("Exception raised while saving game: " + e);
+					e.printStackTrace();
 
-					if (save)
-					{
-						try
-						{
-							db.connect();
-							db.insertSavedGame(gameID, game.getTurn().getUserID(), game.toData());
-
-							setGameSaved(true);
-						}
-						catch (SQLException e)
-						{
-							SLog.write("Exception raised while saving game: " + e);
-							e.printStackTrace();
-
-							setGameSaved(false);
-							setSaveGamePrompted(false);
-
-							throw new ChessHeroException(Result.INTERNAL_ERROR);
-						}
-						finally
-						{
-							db.disconnect();
-						}
-					}
-					else
-					{
-						setGameSaved(false);
-					}
-
-					setSaveGamePrompted(false);
-					saved = isGameSaved();
+					throw new ChessHeroException(Result.INTERNAL_ERROR);
 				}
-				else
+				finally
 				{
-					gameNotActive = true;
+					db.disconnect();
 				}
 			}
 		}
@@ -1229,18 +1150,13 @@ public class ClientConnection extends Thread
 			return;
 		}
 
-		if (waitForResponse)
-		{
-			while (opponentConnection.isSaveGamePrompted())
-			{
-				try { Thread.sleep(10);} catch (InterruptedException ignore) {}
-			}
+		writeMessage(aResponseWithResult(Result.OK));
 
-			saved = opponentConnection.isGameSaved();
+		if (null == opponentConnection)
+		{
+			return;
 		}
 
-		HashMap msg = aResponseWithResult(Result.OK);
-		msg.put("saved", saved);
-		writeMessage(msg);
+		opponentConnection.writeMessage(aPushWithEvent(Push.GAME_SAVE));
 	}
 }

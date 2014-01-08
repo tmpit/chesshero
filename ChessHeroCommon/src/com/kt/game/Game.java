@@ -12,9 +12,8 @@ public class Game
 {
 	public static final short STATE_INIT     	= 0; // Initialized
 	public static final short STATE_PENDING   	= 1; // Waiting for second player
-	public static final short STATE_ACTIVE = 2; // Game is being played
+	public static final short STATE_ACTIVE 		= 2; // Game is being played
 	public static final short STATE_FINISHED	= 3; // Game has ended
-	public static final short STATE_PAUSED		= 4; // Game has been paused
 
 	public static final int MIN_NAME_LENGTH = 3;
 	public static final int MAX_NAME_LENGTH = 256;

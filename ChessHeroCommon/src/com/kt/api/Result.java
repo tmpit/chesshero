@@ -40,10 +40,6 @@ public class Result
 	public static final int MISSING_PROMOTION = 206;			// Move / you are moving a pawn to its highest rank but you have not specified promotion
 
 
-	public static final int ACTION_DISABLED = 300;				// Any request / This action has been temporarily disabled for you. Currently this can only happen when
-																// you are in game, your opponent prompts you to save the game and you do not send a save game request to respond
-
-
     public static final int INVALID_REQUEST_FORMAT = 400;		// Any request / The request couldn't be parsed
 	public static final int WRONG_REQUEST_FORMAT = 401;			// Any request / The server only recognizes requests wrapped in MAP format
     public static final int MISSING_PARAMETERS = 402;   		// Any request / Parameters are missing

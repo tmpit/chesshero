@@ -474,7 +474,7 @@ class Database
 		}
 	}
 
-	public void insertSavedGame(int gameID, int moveUserID, byte gameData[]) throws SQLException
+	public void insertGameSave(int gameID, int moveUserID, byte gameData[]) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
