@@ -535,7 +535,7 @@ class Database
 		}
 	}
 
-	public void removeSavedGame(int gameID) throws SQLException
+	public boolean removeSavedGame(int gameID) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
@@ -544,7 +544,7 @@ class Database
 			stmt = conn.prepareStatement("DELETE FROM saved_games WHERE gid = ?");
 			stmt.setInt(1, gameID);
 
-			stmt.executeUpdate();
+			return stmt.executeUpdate() != 0;
 		}
 		finally
 		{

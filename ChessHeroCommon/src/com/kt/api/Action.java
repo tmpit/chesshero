@@ -89,14 +89,20 @@ public class Action
     public static final int EXIT_GAME = 7;
 
 	// Save game
-	// Description: Save the game. It can then be resumed only by the same two players
+	// Description: Save the game. It can then be resumed only by the same two players. Only one save per game can be stored - each one overwrites the previous
 	// Parameters:
 	// - [gameid:INT] - the id of the game to save
 	public static final int SAVE_GAME = 8;
+
+	// Delete saved game
+	// Description: Delete a game that was previously saved
+	// Parameters:
+	// - [gameid:INT] - the id the saved game to delete
+	public static final int DELETE_SAVED_GAME = 9;
 
 	// Execute move
 	// Description: Move a chess piece
 	// Parameters:
 	// - [move:STR] - the move as per the Pure coordinate notation: http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
-	public static final int MOVE = 9;
+	public static final int MOVE = 10;
 }

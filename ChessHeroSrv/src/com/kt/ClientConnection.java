@@ -436,12 +436,16 @@ public class ClientConnection extends Thread
                     handleExitGame(request);
                     break;
 
-				case Action.MOVE:
-					handleMove(request);
-					break;
-
 				case Action.SAVE_GAME:
 					handleSaveGame(request);
+					break;
+
+				case Action.DELETE_SAVED_GAME:
+					handleDeleteSavedGame(request);
+					break;
+
+				case Action.MOVE:
+					handleMove(request);
 					break;
 
                 default:
@@ -1179,5 +1183,44 @@ public class ClientConnection extends Thread
 		}
 
 		opponentConnection.writeMessage(aPushWithEvent(Push.GAME_SAVE));
+	}
+
+	private void handleDeleteSavedGame(HashMap<String, Object> request) throws ChessHeroException
+	{
+		Integer gameID = (Integer)request.get("gameid");
+
+		if (null == gameID)
+		{
+			writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
+			return;
+		}
+
+		boolean success;
+
+		try
+		{
+			db.connect();
+			success = db.removeSavedGame(gameID);
+		}
+		catch (SQLException e)
+		{
+			SLog.write("Exception raised while deleting saved game: " + e);
+			e.printStackTrace();
+
+			throw new ChessHeroException(Result.INTERNAL_ERROR);
+		}
+		finally
+		{
+			db.disconnect();
+		}
+
+		if (success)
+		{
+			writeMessage(aResponseWithResult(Result.OK));
+		}
+		else
+		{
+			writeMessage(aResponseWithResult(Result.INVALID_GAME_ID));
+		}
 	}
 }
