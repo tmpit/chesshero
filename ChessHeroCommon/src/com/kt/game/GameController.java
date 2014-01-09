@@ -41,7 +41,7 @@ public class GameController
 		}
 	}
 
-	public void endGame(Player winner)
+	public void endGame(Player winner, boolean checkmate)
 	{
 		if (Game.STATE_FINISHED == game.getState())
 		{
@@ -50,6 +50,7 @@ public class GameController
 
 		game.setState(Game.STATE_FINISHED);
 		game.winner = winner;
+		game.checkmate = checkmate;
 	}
 
 	public int execute(Player executor, String move)
@@ -363,7 +364,7 @@ public class GameController
 			if (2 == attackers.size())
 			{	// The only possible reply to a double check is a king move. Since the king cannot move, this is a checkmate
 				SLog.write("double checking the king while he cannot move - checkmate!");
-				endGame(executor);
+				endGame(executor, true);
 				break checkmate;
 			}
 
@@ -390,7 +391,7 @@ public class GameController
 			if (attacker instanceof Knight || attacker instanceof Pawn)
 			{	// Knight or pawn cannot be intercepted - this is a checkmate
 				SLog.write("attacker is :" + attacker + ", it cannot be intercepted - checkmate!");
-				endGame(executor);
+				endGame(executor, true);
 				break checkmate;
 			}
 
@@ -404,7 +405,7 @@ public class GameController
 				if (board[cursor.x][cursor.y].getChessPiece() != null)
 				{	// cursor has reached the attacker which means that nothing can intercept it - this is a checkmate
 					SLog.write("attacker cannot be intercepted - checkmate!");
-					endGame(executor);
+					endGame(executor, true);
 					break;
 				}
 

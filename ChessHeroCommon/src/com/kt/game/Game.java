@@ -127,6 +127,9 @@ public class Game
 	protected ArrayList<ChessPiece> attackers = new ArrayList<ChessPiece>(2);
 
 	protected Player winner = null;
+	protected boolean checkmate = false;
+
+	public boolean saved = false;
 
 	public Game(int gameID, String name)
 	{
@@ -177,6 +180,11 @@ public class Game
 	public Player getWinner()
 	{
 		return winner;
+	}
+
+	public boolean isCheckmate()
+	{
+		return checkmate;
 	}
 
 	public ArrayList<ChessPiece> getAttackers()

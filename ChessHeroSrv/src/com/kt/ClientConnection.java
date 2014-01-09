@@ -180,7 +180,7 @@ public class ClientConnection extends Thread
 					ClientConnection opponentConnection = null;
 
 					// End the game with the opponent as the winner
-					game.getController().endGame(opponent);
+					game.getController().endGame(opponent, false);
 					finalizeGame(game);
 					popConnection(gameID, player.getUserID());
 					opponentConnection = popConnection(gameID, opponentUserID);
@@ -952,7 +952,7 @@ public class ClientConnection extends Thread
 				opponentUserID = opponent.getUserID();
 
 				// End the game with the opponent as the winner
-				game.getController().endGame(opponent);
+				game.getController().endGame(opponent, false);
 
 				popConnection(gameID, player.getUserID());
 				opponentConnection = popConnection(gameID, opponentUserID);
