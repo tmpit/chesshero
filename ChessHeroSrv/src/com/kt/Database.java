@@ -476,16 +476,17 @@ class Database
 		}
 	}
 
-	public void insertResult(int gameID, int winnerUserID, int loserUserID) throws SQLException
+	public void insertResult(int gameID, int winnerUserID, int loserUserID, boolean checkmate) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("INSERT INTO results (gid, winner, loser) VALUES (?, ?, ?)");
+			stmt = conn.prepareStatement("INSERT INTO results (gid, winner, loser, checkmate) VALUES (?, ?, ?, ?)");
 			stmt.setInt(1, gameID);
 			stmt.setInt(2, winnerUserID);
 			stmt.setInt(3, loserUserID);
+			stmt.setBoolean(4, checkmate);
 
 			stmt.executeUpdate();
 		}

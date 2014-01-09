@@ -329,7 +329,7 @@ public class ClientConnection extends Thread
 			}
 			else
 			{
-				db.insertResult(gameID, winner.getUserID(), loser.getUserID());
+				db.insertResult(gameID, winner.getUserID(), loser.getUserID(), game.isCheckmate());
 			}
 
 			db.commit();
