@@ -114,15 +114,20 @@ public class Main
             else if (args[0].equals("fetchgames"))
             {
                 int offset = -1, limit = -1;
-                if (args.length > 1)
-                {
-                    offset = Integer.parseInt(args[1]);
-                }
+				String type = null;
+				if (args.length > 1)
+				{
+					type = args[1];
+				}
                 if (args.length > 2)
                 {
-                    limit = Integer.parseInt(args[2]);
+                    offset = Integer.parseInt(args[2]);
                 }
-                fetchGames(offset, limit);
+                if (args.length > 3)
+                {
+                    limit = Integer.parseInt(args[3]);
+                }
+                fetchGames(type, offset, limit);
             }
             else if (args[0].equals("joingame"))
             {
@@ -135,6 +140,10 @@ public class Main
 			else if (args[0].equals("move"))
 			{
 				move(args[1]);
+			}
+			else if (args[0].equals("savegame"))
+			{
+				saveGame(Integer.parseInt(args[1]));
 			}
             else
             {
@@ -156,7 +165,7 @@ public class Main
 		{
 			connect();
 			login("toshko", "parola");
-			fetchGames(-1, -1);
+			fetchGames(null, -1, -1);
 		}
     }
 
@@ -274,6 +283,9 @@ public class Main
 					printBoard();
 					break;
 
+				case Action.SAVE_GAME:
+					break;
+
 				default:
 					SLog.write("unrecognized action");
 					break;
@@ -283,14 +295,14 @@ public class Main
 		{
 			switch((Integer)msg.get("event"))
 			{
-				case Push.GAME_STARTED:
+				case Push.GAME_START:
 					notMe = new Player((Integer)msg.get("opponentid"), (String)msg.get("opponentname"));
 					notMe.join(theGame, me.getColor().Opposite);
 					new GameController(theGame).startGame();
 					printBoard();
 					break;
 
-				case Push.GAME_ENDED:
+				case Push.GAME_END:
 					notMe = null;
 					theGame = null;
 					break;
@@ -299,6 +311,9 @@ public class Main
 					String move = (String)msg.get("move");
 					theGame.getController().execute(notMe, move);
 					printBoard();
+					break;
+
+				case Push.GAME_SAVE:
 					break;
 
 				default:
@@ -367,12 +382,16 @@ public class Main
         listen(1);
     }
 
-    public static void fetchGames(int offset, int limit) throws IOException
+    public static void fetchGames(String type, int offset, int limit) throws IOException
     {
 		lastAction = Action.FETCH_GAMES;
 
         HashMap req = new HashMap();
         req.put("action", Action.FETCH_GAMES);
+		if (type != null)
+		{
+			req.put("type", type);
+		}
         if (offset != -1)
         {
             req.put("offset", offset);
@@ -419,6 +438,18 @@ public class Main
 		HashMap req = new HashMap();
 		req.put("action", Action.MOVE);
 		req.put("move", move);
+		writer.write(req);
+
+		listen(1);
+	}
+
+	public static void saveGame(int gameID) throws IOException
+	{
+		lastAction = Action.SAVE_GAME;
+
+		HashMap req = new HashMap();
+		req.put("action", Action.SAVE_GAME);
+		req.put("gameid", gameID);
 		writer.write(req);
 
 		listen(1);
