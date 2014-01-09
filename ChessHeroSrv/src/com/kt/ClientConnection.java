@@ -1141,7 +1141,7 @@ public class ClientConnection extends Thread
 				try
 				{
 					db.connect();
-					db.insertGameSave(gameID, game.getTurn().getUserID(), game.toData());
+					db.insertGameSave(gameID, game.getName(), game.getTurn().getUserID(), game.toData());
 
 					opponentConnection = getConnection(gameID, player.getOpponent().getUserID());
 				}

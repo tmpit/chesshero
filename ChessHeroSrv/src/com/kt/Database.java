@@ -514,16 +514,34 @@ class Database
 		}
 	}
 
-	public void insertGameSave(int gameID, int moveUserID, byte gameData[]) throws SQLException
+	public void insertGameSave(int gameID, String name, int moveUserID, byte gameData[]) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("INSERT INTO saved_games (gid, next, game) VALUES (?, ?, ?)");
+			stmt = conn.prepareStatement("INSERT OR UPDATE INTO saved_games (gid, gname, next, game) VALUES (?, ?, ?, ?)");
 			stmt.setInt(1, gameID);
-			stmt.setInt(2, moveUserID);
-			stmt.setBytes(3, gameData);
+			stmt.setString(2, name);
+			stmt.setInt(3, moveUserID);
+			stmt.setBytes(4, gameData);
+
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
+
+	public void removeSavedGame(int gameID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("DELETE FROM saved_games WHERE gid = ?");
+			stmt.setInt(1, gameID);
 
 			stmt.executeUpdate();
 		}
@@ -544,7 +562,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT games.gid, games.gname FROM games INNER JOIN saved_games USING(gid) INNER JOIN players USING(gid) WHERE uid = ? LIMIT ?, ?");
+			stmt = conn.prepareStatement("SELECT sg.gid, sg.gname FROM saved_games as sg INNER JOIN players USING(gid) WHERE uid = ? LIMIT ?, ?");
 			stmt.setInt(1, userID);
 			stmt.setInt(2, offset);
 			stmt.setInt(3, limit);

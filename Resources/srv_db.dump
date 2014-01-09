@@ -51,7 +51,7 @@ CREATE TABLE `games` (
   `gname` varchar(256) NOT NULL,
   `state` smallint(6) NOT NULL,
   PRIMARY KEY (`gid`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,6 +106,7 @@ DROP TABLE IF EXISTS `saved_games`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `saved_games` (
   `gid` int(10) unsigned NOT NULL,
+  `gname` varchar(256) NOT NULL,
   `next` int(10) unsigned NOT NULL,
   `game` varbinary(64) NOT NULL,
   PRIMARY KEY (`gid`)
@@ -137,4 +138,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-01-08 20:53:39
+-- Dump completed on 2014-01-09 22:59:23

@@ -129,8 +129,6 @@ public class Game
 	protected Player winner = null;
 	protected boolean checkmate = false;
 
-	public boolean saved = false;
-
 	public Game(int gameID, String name)
 	{
 		this.name = name;
