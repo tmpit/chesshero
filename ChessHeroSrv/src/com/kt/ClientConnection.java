@@ -100,10 +100,10 @@ public class ClientConnection extends Thread
 
 	private static String generateChatToken(int gameID, int userID, String gameName) throws NoSuchAlgorithmException
 	{
-		String cat1 = gameName + gameID + userID;
+		String base = gameName + gameID + userID;
 
 		MessageDigest digest = MessageDigest.getInstance("SHA-1");
-		byte tokenData[] = digest.digest(cat1.getBytes());
+		byte tokenData[] = digest.digest(base.getBytes());
 
 		Formatter formatter = new Formatter();
 
@@ -202,23 +202,30 @@ public class ClientConnection extends Thread
             synchronized (game)
             {
 				int gameID = game.getID();
+				short state = game.getState();
 
-                if (Game.STATE_PENDING == game.getState())
+                if (Game.STATE_PENDING == state)
                 {
 					cancelGame(game);
 					popConnection(gameID, player.getUserID());
                 }
-                else if (Game.STATE_ACTIVE == game.getState())
+                else if (Game.STATE_ACTIVE == state || Game.STATE_PAUSED == state)
                 {
 					Player opponent = player.getOpponent();
 					int opponentUserID = opponent.getUserID();
-					ClientConnection opponentConnection = null;
+
+					popConnection(gameID, player.getUserID());
+					ClientConnection opponentConnection = popConnection(gameID, opponentUserID);
+
+					if (Game.STATE_PAUSED == state && opponentConnection != null)
+					{
+						opponentConnection.setSaveRequestAccepted(false);
+						opponentConnection.setSaveRequestUnresolved(false);
+					}
 
 					// End the game with the opponent as the winner
 					game.getController().endGame(opponent, false);
 					finalizeGame(game);
-					popConnection(gameID, player.getUserID());
-					opponentConnection = popConnection(gameID, opponentUserID);
 
 					if (opponentConnection != null)
 					{
@@ -256,7 +263,7 @@ public class ClientConnection extends Thread
 			catch (SocketTimeoutException e)
 			{
 				SLog.write("Read timed out");
-				handleTimeout();
+				running = false;
 			}
 			catch (EOFException e)
 			{
@@ -388,7 +395,7 @@ public class ClientConnection extends Thread
 		}
 	}
 
-    private synchronized void writeMessage(HashMap<String, Object> message)
+    private synchronized void writeMessage(HashMap message)
     {
         try
         {
@@ -402,16 +409,6 @@ public class ClientConnection extends Thread
             running = false;
         }
     }
-
-	private void handleTimeout()
-	{
-		Game game = null;
-
-		if (null == player)
-		{	// Login / Register timeout
-			running = false;
-		}
-	}
 
     private void handleRequest(Object aRequest) throws ChessHeroException
     {
@@ -440,6 +437,12 @@ public class ClientConnection extends Thread
                 SLog.write("Client attempting unauthorized action");
                 throw new ChessHeroException(Result.AUTH_REQUIRED);
             }
+
+			if (isSaveRequestUnresolved() && action != Action.SAVE_GAME)
+			{
+				writeMessage(aResponseWithResult(Result.ACTION_DISABLED));
+				return;
+			}
 
             switch (action.intValue())
             {
@@ -1129,12 +1132,12 @@ public class ClientConnection extends Thread
 		{
 			return;
 		}
-// TODO: chesco needs to support null
+
 		HashMap endMsg = aPushWithEvent(Push.GAME_END);
 
 		if (winner != null)
 		{	// winner will be null when game is draw
-			endMsg.put("winner", winner.getUserID());
+			endMsg.put("winner", winner.getUserID()); // TODO: chesco needs to support null
 		}
 
 		writeMessage(endMsg);
@@ -1299,7 +1302,7 @@ public class ClientConnection extends Thread
 		}
 
 		boolean success;
-
+		// TODO: check if the player is a player in the game they are trying to delete
 		try
 		{
 			db.connect();
