@@ -849,13 +849,11 @@ public class ClientConnection extends Thread
                 {
                     try
                     {
-                        myChatToken = generateChatToken(gameID, myUserID, gameName);
-
                         db.connect();
                         db.startTransaction();
 
-						Color opponentColor = opponent.getColor();
-						Color myColor = opponentColor.Opposite;
+						Color myColor = opponent.getColor().Opposite;
+						myChatToken = generateChatToken(gameID, myUserID, gameName);
 
                         db.updateGameState(gameID, Game.STATE_ACTIVE);
                         db.insertPlayer(gameID, myUserID, (myColor == Color.WHITE ? "white" : "black"));
@@ -905,18 +903,14 @@ public class ClientConnection extends Thread
             return;
         }
 
-		int opponentUserID = opponent.getUserID();
-
         HashMap myMsg = aResponseWithResult(Result.OK);
-        myMsg.put("opponentname", opponent.getName());
-        myMsg.put("opponentid", opponentUserID);
 		myMsg.put("chattoken", myChatToken);
         writeMessage(myMsg);
 
-		ClientConnection opponentConnection = getConnection(gameID, opponentUserID);
+		ClientConnection opponentConnection = getConnection(gameID, opponent.getUserID());
 		if (opponentConnection != null)
 		{
-			HashMap msg = aPushWithEvent(Push.GAME_START);
+			HashMap msg = aPushWithEvent(Push.GAME_JOIN);
 			msg.put("opponentname", player.getName());
 			msg.put("opponentid", player.getUserID());
 

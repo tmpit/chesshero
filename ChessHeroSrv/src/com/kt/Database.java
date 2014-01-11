@@ -316,7 +316,9 @@ class Database
 	// Each hashmap will contain the following:
 	// "gameid" => (int)
 	// "gamename" => (string)
-	// "playercolor" => (string)
+	// "userid" => (int)
+	// "username" => (string)
+	// "usercolor" => (string)
 	public ArrayList<HashMap> getGamesAndPlayerInfo(short state, int offset, int limit) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -324,7 +326,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT games.gid, games.gname, players.color FROM games INNER JOIN players USING(gid) WHERE games.state = ? LIMIT ?, ?");
+			stmt = conn.prepareStatement("SELECT gid, gname, uid, name, color FROM games INNER JOIN players USING(gid) INNER JOIN users ON(players.uid = users.id) WHERE STATE = ? LIMIT ?, ?");
 			stmt.setShort(1, state);
 			stmt.setInt(2, offset);
 			stmt.setInt(3, limit);
@@ -337,7 +339,9 @@ class Database
 				HashMap game = new HashMap();
 				game.put("gameid", set.getInt(1));
 				game.put("gamename", set.getString(2));
-				game.put("playercolor", set.getString(3));
+				game.put("userid", set.getInt(3));
+				game.put("username", set.getString(4));
+				game.put("usercolor", set.getString(5));
 
 				games.add(game);
 			}

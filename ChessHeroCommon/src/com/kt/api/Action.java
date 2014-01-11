@@ -64,7 +64,9 @@ public class Action
 	//		For 'pending':
 	// 		- [gameid:INT] - the id of the game
 	// 	 	- [gamename:STR] - the name of the game
-	// 	 	- [playercolor:STR] - the color the creator of the game has picked, either "white" or "black"
+	//		- [userid:INT] - the id of the creator of the game
+	//		- [username:STR] - the name of the creator of the game
+	// 	 	- [usercolor:STR] - the color the creator of the game has picked, either "white" or "black"
 	//		For 'saved':
 	//		- [gameid:INT] - the id of the game
 	// 	 	- [gamename:STR] - the name of the game

@@ -18,7 +18,7 @@ public class Push
 	// Parameters:
 	// - [opponentname:STR] - the username of the opponent
 	// - [opponentid:INT] - the user id of the opponent
-	public static final int GAME_START = 1;
+	public static final int GAME_JOIN = 1;
 
 	// Game ended
 	// Description: This event is sent to the two players in the event of a game ending.
@@ -44,6 +44,6 @@ public class Push
 	public static final int GAME_MOVE = 3;
 
 	// Game save
-	// Description: You receive this event when your opponent has saved the game
+	// Description: You receive this event when your opponent saves the game
 	public static final int GAME_SAVE = 4;
 }
