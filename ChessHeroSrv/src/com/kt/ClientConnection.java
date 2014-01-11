@@ -18,6 +18,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -126,8 +127,8 @@ public class ClientConnection extends Thread
 
     private Player player = null;
 
-	private Boolean saveRequestUnresolved = false;
-	private Boolean saveRequestAccepted = false;
+	private AtomicBoolean saveRequestUnresolved = new AtomicBoolean(false);
+	private AtomicBoolean saveRequestAccepted = new AtomicBoolean(false);
 
     ClientConnection(Socket sock) throws IOException
     {
@@ -137,38 +138,6 @@ public class ClientConnection extends Thread
         reader = new CHESCOReader(sock.getInputStream());
         writer = new CHESCOWriter(sock.getOutputStream());
     }
-
-	private boolean isSaveRequestUnresolved()
-	{
-		synchronized(saveRequestUnresolved)
-		{
-			return saveRequestUnresolved;
-		}
-	}
-
-	private void setSaveRequestUnresolved(boolean flag)
-	{
-		synchronized (saveRequestUnresolved)
-		{
-			saveRequestUnresolved = flag;
-		}
-	}
-
-	private boolean isSaveRequestAccepted()
-	{
-		synchronized (saveRequestAccepted)
-		{
-			return saveRequestAccepted;
-		}
-	}
-
-	private void setSaveRequestAccepted(boolean flag)
-	{
-		synchronized (saveRequestAccepted)
-		{
-			saveRequestAccepted = flag;
-		}
-	}
 
     private void closeSocket()
     {
@@ -219,8 +188,8 @@ public class ClientConnection extends Thread
 
 					if (Game.STATE_PAUSED == state && opponentConnection != null)
 					{
-						opponentConnection.setSaveRequestAccepted(false);
-						opponentConnection.setSaveRequestUnresolved(false);
+						opponentConnection.saveRequestAccepted.set(false);
+						opponentConnection.saveRequestUnresolved.set(false);
 					}
 
 					// End the game with the opponent as the winner
@@ -438,7 +407,7 @@ public class ClientConnection extends Thread
                 throw new ChessHeroException(Result.AUTH_REQUIRED);
             }
 
-			if (isSaveRequestUnresolved() && action != Action.SAVE_GAME)
+			if (saveRequestUnresolved.get() && action != Action.SAVE_GAME)
 			{
 				writeMessage(aResponseWithResult(Result.ACTION_DISABLED));
 				return;
@@ -1196,7 +1165,7 @@ public class ClientConnection extends Thread
 						}
 
 						game.setState(Game.STATE_PAUSED);
-						opponentConnection.setSaveRequestUnresolved(true);
+						opponentConnection.saveRequestUnresolved.set(true);
 						prompt = true;
 					}
 				}
@@ -1226,8 +1195,8 @@ public class ClientConnection extends Thread
 
 							// Revert
 							game.setState(Game.STATE_ACTIVE);
-							setSaveRequestAccepted(false);
-							setSaveRequestUnresolved(false);
+							saveRequestAccepted.set(false);
+							saveRequestUnresolved.set(false);
 
 							throw new ChessHeroException(Result.INTERNAL_ERROR);
 						}
@@ -1241,8 +1210,8 @@ public class ClientConnection extends Thread
 						game.setState(Game.STATE_ACTIVE);
 					}
 
-					setSaveRequestAccepted(save);
-					setSaveRequestUnresolved(false);
+					saveRequestAccepted.set(save);
+					saveRequestUnresolved.set(false);
 				}
 				else
 				{
@@ -1269,16 +1238,16 @@ public class ClientConnection extends Thread
 		{
 			opponentConnection.writeMessage(aPushWithEvent(Push.GAME_SAVE));
 
-			while (opponentConnection.isSaveRequestUnresolved())
+			while (opponentConnection.saveRequestUnresolved.get())
 			{
 				try { Thread.sleep(2); } catch (InterruptedException ignore) {}
 			}
 
-			saved = opponentConnection.isSaveRequestAccepted();
+			saved = opponentConnection.saveRequestAccepted.get();
 		}
 		else
 		{
-			saved = isSaveRequestAccepted();
+			saved = saveRequestAccepted.get();
 		}
 
 		HashMap response = aResponseWithResult(Result.OK);
