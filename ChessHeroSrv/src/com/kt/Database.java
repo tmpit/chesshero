@@ -525,7 +525,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("INSERT OR UPDATE INTO saved_games (gid, gname, next, game) VALUES (?, ?, ?, ?)");
+			stmt = conn.prepareStatement("REPLACE INTO saved_games (gid, gname, next, game) VALUES (?, ?, ?, ?)");
 			stmt.setInt(1, gameID);
 			stmt.setString(2, name);
 			stmt.setInt(3, moveUserID);
@@ -560,6 +560,9 @@ class Database
 	// Each hashmap will contain the following:
 	// "gameid" => (int)
 	// "gamename" => (string)
+	// "userid" => (int)
+	// "username" => (string)
+	// "usercolor" => (string)
 	public ArrayList<HashMap> getSavedGames(int userID, int offset, int limit) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -567,7 +570,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT sg.gid, sg.gname FROM saved_games as sg INNER JOIN players USING(gid) WHERE uid = ? LIMIT ?, ?");
+			stmt = conn.prepareStatement("SELECT gid, gname, uid, name, color FROM saved_games INNER JOIN players USING(gid) INNER JOIN users ON(players.uid = users.id) WHERE uid = ? LIMIT ?, ?");
 			stmt.setInt(1, userID);
 			stmt.setInt(2, offset);
 			stmt.setInt(3, limit);
@@ -581,6 +584,9 @@ class Database
 				HashMap game = new HashMap();
 				game.put("gameid", set.getInt(1));
 				game.put("gamename", set.getString(2));
+				game.put("userid", set.getInt(3));
+				game.put("username", set.getString(4));
+				game.put("usercolor", set.getString(5));
 
 				games.add(game);
 			}
