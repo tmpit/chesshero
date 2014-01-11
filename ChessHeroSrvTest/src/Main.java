@@ -247,19 +247,21 @@ public class Main
 				case Action.JOIN_GAME:
 					theGame = new Game(-1, "");
 					Color opponentColor = Color.NONE;
+					Player opponent = null;
 
 					for (HashMap game : availableGames)
 					{
 						if ((Integer)game.get("gameid") == joinID)
 						{
-							String theColor = (String)game.get("playercolor");
+							String theColor = (String)game.get("usercolor");
 							opponentColor = (theColor.equals("white") ? Color.WHITE : Color.BLACK);
+							opponent = new Player((Integer)game.get("userid"), (String)game.get("username"));
 						}
 					}
 
-					if (Color.NONE == opponentColor)
+					if (Color.NONE == opponentColor || null == opponent)
 					{
-						SLog.write("Cannot start game as player color cannot be determined");
+						SLog.write("Cannot start game as opponent info could not be found");
 						try { disconnect(); } catch (IOException ignore) {}
 						me = null;
 						theGame = null;
@@ -267,7 +269,7 @@ public class Main
 					}
 
 					me.join(theGame, opponentColor.Opposite);
-					notMe = new Player((Integer)msg.get("opponentid"), (String)msg.get("opponentname"));
+					notMe = opponent;
 					notMe.join(theGame, opponentColor);
 					new GameController(theGame).startGame();
 					printBoard();
@@ -295,7 +297,7 @@ public class Main
 		{
 			switch((Integer)msg.get("event"))
 			{
-				case Push.GAME_START:
+				case Push.GAME_JOIN:
 					notMe = new Player((Integer)msg.get("opponentid"), (String)msg.get("opponentname"));
 					notMe.join(theGame, me.getColor().Opposite);
 					new GameController(theGame).startGame();
