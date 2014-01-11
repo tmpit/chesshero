@@ -1111,7 +1111,7 @@ public class ClientConnection extends Thread
 
 		if (winner != null)
 		{	// winner will be null when game is draw
-			endMsg.put("winner", winner.getUserID()); // TODO: chesco needs to support null
+			endMsg.put("winner", winner.getUserID());
 		}
 
 		writeMessage(endMsg);
