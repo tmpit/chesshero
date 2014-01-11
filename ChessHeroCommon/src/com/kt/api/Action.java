@@ -6,8 +6,9 @@ package com.kt.api;
 public class Action
 {
     // About the notation used:
-    // On the left side of the colon is the key for the parameter.
-    // On the right side of the colon is the type of the parameter.
+	// A typical parameter: [name:STR]
+    // On the left side of the colon is the key for the parameter - in this example the key is "name"
+    // On the right side of the colon is the type of the parameter as per CHESCO's supported types - in this example the type is STR which stands for string
 
     // Each request to the server should always have at least one parameter [action:INT].
     // Each response from the server should have at least one parameter [result:INT].
@@ -84,12 +85,18 @@ public class Action
 	// - [winner:INT] - the user id of the winner, this is always the opponent
     public static final int EXIT_GAME = 7;
 
+	// Execute move
+	// Description: Move a chess piece
+	// Parameters:
+	// - [move:STR] - the move as per the Pure coordinate notation: http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
+	public static final int MOVE = 8;
+
 	// Save game
 	// Description: Save and leave the game. After a game is saved, it can then be resumed only by the same two players.
 	// Since a game is closed once saved, your opponent will need to confirm that they want to do that.
 	// After you send a save game request, the game enters a paused state and a push is sent to your opponent to notify them that they have to respond to the request.
 	// During the paused state, the server will not accept any request from your opponent other than a save game request to accept or decline.
-	// If they decline the request, the game will continue normally. If the accept it, the game will be saved, after which it will be closed.
+	// If they decline the request, the game will continue normally. If they accept it, the game will be saved, after which it will be closed.
 	// Furthermore, this is a blocking request, meaning that you do not receive a response until the save game request is resolved. This applies only to the
 	// player that initiates the save game routine. Any requests sent during the block will be processed after the save game request is resolved.
 	// Parameters:
@@ -99,17 +106,17 @@ public class Action
 	// you can decline it
 	// Returns:
 	// - [saved:BOOL] - true if the game was saved, false if not
-	public static final int SAVE_GAME = 8;
+	public static final int SAVE_GAME = 9;
 
 	// Delete saved game
 	// Description: Delete a game that was previously saved
 	// Parameters:
 	// - [gameid:INT] - the id the saved game to delete
-	public static final int DELETE_SAVED_GAME = 9;
+	public static final int DELETE_SAVED_GAME = 10;
 
-	// Execute move
-	// Description: Move a chess piece
+	// Resume game
+	// Description: Enter a previously saved game. The game resumes after both of the players enter it
 	// Parameters:
-	// - [move:STR] - the move as per the Pure coordinate notation: http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
-	public static final int MOVE = 10;
+	// - [gameid:INT]
+//	public static final int RESUME_GAME = 11;
 }

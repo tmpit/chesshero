@@ -10,41 +10,47 @@ package com.kt.chesco;
  * All numbers are signed.
  * All strings are UTF-8 encoded.
  *
- * Each message consists of a body of undetermined length.
- * The body consists of parameters. Each parameter starts with 1 byte for the type of the parameter.
- * After the parameter type each parameter should be read as follows (about notation refer to the bottom of this comment):
+ * A CHESCO message consists of parameters. Each parameter starts with 1 byte for the type of the parameter.
+ * After the parameter type each parameter should be read as follows:
+ *
+ * NULL
+ * -------
+ * Null parameter
+ * It does not consist of any additional data
  *
  * BOOL
- * [val:1]
+ * -------
+ * Bool parameter
+ * Followed by 1 byte representing the value
  *
  * INT
- * [val:4]
+ * -------
+ * Integer parameter
+ * Followed by 4 bytes representing the value
  *
  * STR
- * [length:2] // The length of the data representing the string
- * [data:length] // The data representing the string
+ * -------
+ * String parameter
+ * The first 2 bytes contain the length of the data representing the string followed by the actual data
  *
  * MAP
- * [count:2] // The number of pairs following
- * [STR:x][param:y] // X key-value pairs. The key in a pair can only be a string, the value can be of any parameter type
+ * -------
+ * Map parameter
+ * The first two bytes contain the number of key-value pairs following. The key can only be STR, the value can be of any parameter type
  *
  * ARR
- * [count:2] // The number of parameters contained in the array
- * [param:x] // X parameters
+ * -------
+ * The first two bytes contain the number of parameters following. The parameters can be of any type
  *
- * The body starts with either an ARR parameter type or MAP parameter type.
- *
- * About notation:
- * Brackets represent a group of bytes representing a part of the parameter.
- * Within the brackets the part before the colon describes what that group of bytes represents.
- * The part after the colon is the length (in bytes) of the group
+ * Each message starts with either an ARR parameter type or MAP parameter type.
  */
 
 public class CHESCO
 {
-    public static final byte TYPE_BOOL = 1;
-    public static final byte TYPE_INT = 2;
-    public static final byte TYPE_STR = 3;
-    public static final byte TYPE_MAP = 4;
-    public static final byte TYPE_ARR = 5;
+	public static final byte TYPE_NULL = 1;
+    public static final byte TYPE_BOOL = 2;
+    public static final byte TYPE_INT = 3;
+    public static final byte TYPE_STR = 4;
+    public static final byte TYPE_MAP = 5;
+    public static final byte TYPE_ARR = 6;
 }

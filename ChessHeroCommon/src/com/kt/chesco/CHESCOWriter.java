@@ -23,10 +23,13 @@ public class CHESCOWriter
         this.ostream = stream;
     }
 
+	private void writeNull() throws IOException
+	{
+		ostream.write(CHESCO.TYPE_NULL);
+	}
+
     private void write(String str) throws IOException
     {
-
-
         try
         {
             byte strData[] = str.getBytes("UTF-8");
@@ -76,7 +79,11 @@ public class CHESCOWriter
                 break;
             }
 
-            if (val instanceof String)
+			if (null == val)
+			{
+				writeNull();
+			}
+            else if (val instanceof String)
             {
                 write((String) val);
             }
@@ -131,11 +138,20 @@ public class CHESCOWriter
 
             String key = entry.getKey();
 
+			if (null == key || !(key instanceof String))
+			{
+				throw new InputMismatchException("Attempting to serialize a map entry with non-string key");
+			}
+
             write(key);
 
             Object val = entry.getValue();
 
-            if (val instanceof String)
+			if (null == val)
+			{
+				writeNull();
+			}
+            else if (val instanceof String)
             {
                 write((String)val);
             }

@@ -29,6 +29,9 @@ public class CHESCOReader
 
         switch (type)
         {
+			case CHESCO.TYPE_NULL:
+				return null;
+
             case CHESCO.TYPE_BOOL:
                 return new Boolean(reader.get() != 0);
 
