@@ -388,7 +388,7 @@ class Database
 		}
 	}
 
-	public void removePlayer(int gameID, int userID) throws SQLException
+	public void deletePlayer(int gameID, int userID) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
@@ -397,6 +397,23 @@ class Database
 			stmt = conn.prepareStatement("DELETE FROM players WHERE gid = ? AND uid = ?");
 			stmt.setInt(1, gameID);
 			stmt.setInt(2, userID);
+
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
+
+	public void deletePlayersForGame(int gameID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("DELETE FROM players WHERE gid = ?");
+			stmt.setInt(1, gameID);
 
 			stmt.executeUpdate();
 		}
@@ -425,7 +442,7 @@ class Database
 		}
 	}
 
-	public void removeChatEntry(int gameID, int userID) throws SQLException
+	public void deleteChatEntry(int gameID, int userID) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
@@ -443,7 +460,7 @@ class Database
 		}
 	}
 
-	public void removeChatEntriesForGame(int gameID) throws SQLException
+	public void deleteChatEntriesForGame(int gameID) throws SQLException
 	{
 		PreparedStatement stmt = null;
 

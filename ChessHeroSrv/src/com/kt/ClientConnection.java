@@ -291,8 +291,8 @@ public class ClientConnection extends Thread
 			int userID = player.getUserID();
 
 			db.deleteGame(gID);
-			db.removePlayer(gID, userID);
-			db.removeChatEntry(gID, userID);
+			db.deletePlayer(gID, userID);
+			db.deleteChatEntry(gID, userID);
 
 			db.commit();
 		}
@@ -337,7 +337,7 @@ public class ClientConnection extends Thread
 				db.deleteGame(gameID);
 			}
 
-			db.removeChatEntriesForGame(gameID);
+			db.deleteChatEntriesForGame(gameID);
 
 			if (winner != null)
 			{
@@ -1277,11 +1277,16 @@ public class ClientConnection extends Thread
 		try
 		{
 			db.connect();
+			db.startTransaction();
 
 			if ((invalidGameID = !db.userPresentInSavedGame(gameID, player.getUserID())))
 			{
 				db.deleteSavedGame(gameID);
+				db.deleteGame(gameID);
+				db.deletePlayersForGame(gameID);
 			}
+
+			db.commit();
 		}
 		catch (SQLException e)
 		{
