@@ -47,8 +47,8 @@ public class ClientConnection extends Thread
 	private static final HashMap<String, ClientConnection> playerConnections = new HashMap<String, ClientConnection>();
 	private static final Lock connectionsMutex = new ReentrantLock(true);
 
-	// Not using synchronized methods because those use non-fair ReentrantLocks
-	// Since these methods are frequently used by all threads, non-fair policy will certainly lead to thread starvation
+	// Not using synchronized blocks because those use non-fair ReentrantLocks
+	// Since these methods are frequently used by all threads, non-fair policy might lead to thread starvation
 	private static void putConnection(int gameID, int userID, ClientConnection conn)
 	{
 		connectionsMutex.lock();
@@ -126,6 +126,9 @@ public class ClientConnection extends Thread
 
     private Player player = null;
 
+	private Boolean saveRequestUnresolved = false;
+	private Boolean saveRequestAccepted = false;
+
     ClientConnection(Socket sock) throws IOException
     {
         this.sock = sock;
@@ -134,6 +137,38 @@ public class ClientConnection extends Thread
         reader = new CHESCOReader(sock.getInputStream());
         writer = new CHESCOWriter(sock.getOutputStream());
     }
+
+	private boolean isSaveRequestUnresolved()
+	{
+		synchronized(saveRequestUnresolved)
+		{
+			return saveRequestUnresolved;
+		}
+	}
+
+	private void setSaveRequestUnresolved(boolean flag)
+	{
+		synchronized (saveRequestUnresolved)
+		{
+			saveRequestUnresolved = flag;
+		}
+	}
+
+	private boolean isSaveRequestAccepted()
+	{
+		synchronized (saveRequestAccepted)
+		{
+			return saveRequestAccepted;
+		}
+	}
+
+	private void setSaveRequestAccepted(boolean flag)
+	{
+		synchronized (saveRequestAccepted)
+		{
+			saveRequestAccepted = flag;
+		}
+	}
 
     private void closeSocket()
     {
@@ -323,13 +358,13 @@ public class ClientConnection extends Thread
 			db.deleteGame(gameID);
 			db.removeChatEntriesForGame(gameID);
 
-			if (null == winner)
-			{	// Draw
-				db.insertResult(gameID);
-			}
-			else
+			if (winner != null)
 			{
 				db.insertResult(gameID, winner.getUserID(), loser.getUserID(), game.isCheckmate());
+			}
+			else if (!game.wasSaved())
+			{	// Draw
+				db.insertResult(gameID);
 			}
 
 			db.commit();
@@ -1094,7 +1129,7 @@ public class ClientConnection extends Thread
 		{
 			return;
 		}
-
+// TODO: chesco needs to support null
 		HashMap endMsg = aPushWithEvent(Push.GAME_END);
 
 		if (winner != null)
@@ -1128,31 +1163,87 @@ public class ClientConnection extends Thread
 			return;
 		}
 
+		Boolean save = (Boolean)request.get("save");
+
+		if (null == save)
+		{
+			save = true;
+		}
+
 		ClientConnection opponentConnection = null;
 		boolean gameNotActive = false;
 		boolean invalidGameID = false;
+		boolean prompt = false;
 
 		synchronized (game)
 		{
-			if (!(invalidGameID = game.getID() != gameID) && !(invalidGameID = game.getState() != Game.STATE_ACTIVE))
+			if (!(invalidGameID = game.getID() != gameID) && !(gameNotActive = game.getState() != Game.STATE_ACTIVE))
 			{
-				try
-				{
-					db.connect();
-					db.insertGameSave(gameID, game.getName(), game.getTurn().getUserID(), game.toData());
+				short state = game.getState();
 
-					opponentConnection = getConnection(gameID, player.getOpponent().getUserID());
-				}
-				catch (SQLException e)
+				if (Game.STATE_ACTIVE == state)
 				{
-					SLog.write("Exception raised while saving game: " + e);
-					e.printStackTrace();
+					if (save)
+					{
+						opponentConnection = getConnection(gameID, player.getOpponent().getUserID());
 
-					throw new ChessHeroException(Result.INTERNAL_ERROR);
+						if (null == opponentConnection)
+						{
+							throw new ChessHeroException(Result.INTERNAL_ERROR);
+						}
+
+						game.setState(Game.STATE_PAUSED);
+						opponentConnection.setSaveRequestUnresolved(true);
+						prompt = true;
+					}
 				}
-				finally
+				else if (Game.STATE_PAUSED == state)
 				{
-					db.disconnect();
+					if (save)
+					{
+						try
+						{
+							int myUserID = player.getUserID();
+							int opponentUserID = player.getOpponent().getUserID();
+
+							db.connect();
+							db.insertGameSave(game.getName(), game.toData(), game.getTurn().getUserID(), myUserID, opponentUserID);
+
+							game.getController().endGame(null, false, true);
+
+							popConnection(gameID, myUserID);
+							popConnection(gameID, opponentUserID);
+
+							finalizeGame(game);
+						}
+						catch (SQLException e)
+						{
+							SLog.write("Exception raised while saving game: " + e);
+							e.printStackTrace();
+
+							// Revert
+							game.setState(Game.STATE_ACTIVE);
+							setSaveRequestAccepted(false);
+							setSaveRequestUnresolved(false);
+
+							throw new ChessHeroException(Result.INTERNAL_ERROR);
+						}
+						finally
+						{
+							db.disconnect();
+						}
+					}
+					else
+					{
+						game.setState(Game.STATE_ACTIVE);
+					}
+
+					setSaveRequestAccepted(save);
+					setSaveRequestUnresolved(false);
+				}
+				else
+				{
+					gameNotActive = true;
 				}
 			}
 		}
@@ -1169,14 +1260,32 @@ public class ClientConnection extends Thread
 			return;
 		}
 
-		writeMessage(aResponseWithResult(Result.OK));
+		boolean saved;
 
-		if (null == opponentConnection)
+		if (prompt)
 		{
-			return;
+			opponentConnection.writeMessage(aPushWithEvent(Push.GAME_SAVE));
+
+			while (opponentConnection.isSaveRequestUnresolved())
+			{
+				try { Thread.sleep(2); } catch (InterruptedException ignore) {}
+			}
+
+			saved = opponentConnection.isSaveRequestAccepted();
+		}
+		else
+		{
+			saved = isSaveRequestAccepted();
 		}
 
-		opponentConnection.writeMessage(aPushWithEvent(Push.GAME_SAVE));
+		HashMap response = aResponseWithResult(Result.OK);
+		response.put("saved", saved);
+		writeMessage(response);
+
+		if (saved)
+		{
+			writeMessage(aPushWithEvent(Push.GAME_END));
+		}
 	}
 
 	private void handleDeleteSavedGame(HashMap<String, Object> request) throws ChessHeroException

@@ -73,8 +73,6 @@ public class Action
     // Parameters:
 	// - [gameid:INT] - the id of the game to join
     // Returns:
-	// - [opponentname:STR] - the username of the opposing player
-	// - [opponentid:INT] - the user id of the opposing player
 	// - [chattoken:STR] - the token needed to chat with the other player
     public static final int JOIN_GAME = 6;
 
@@ -87,9 +85,20 @@ public class Action
     public static final int EXIT_GAME = 7;
 
 	// Save game
-	// Description: Save the game. It can then be resumed only by the same two players. Only one save per game can be stored - each one overwrites the previous
+	// Description: Save and leave the game. After a game is saved, it can then be resumed only by the same two players.
+	// Since a game is closed once saved, your opponent will need to confirm that they want to do that.
+	// After you send a save game request, the game enters a paused state and a push is sent to your opponent to notify them that they have to respond to the request.
+	// During the paused state, the server will not accept any request from your opponent other than a save game request to accept or decline.
+	// If they decline the request, the game will continue normally. If the accept it, the game will be saved, after which it will be closed.
+	// Furthermore, this is a blocking request, meaning that you do not receive a response until the save game request is resolved. This applies only to the
+	// player that initiates the save game routine. Any requests sent during the block will be processed after the save game request is resolved.
 	// Parameters:
 	// - [gameid:INT] - the id of the game to save
+	// - [save:BOOL] - optional, true if you want to save the game, false if not. If not present, default value is true
+	// Obviously sending false is a no-op when trying to initiate the save game routine. However, when responding to your opponent's request, this is how
+	// you can decline it
+	// Returns:
+	// - [saved:BOOL] - true if the game was saved, false if not
 	public static final int SAVE_GAME = 8;
 
 	// Delete saved game

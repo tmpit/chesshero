@@ -43,12 +43,24 @@ public class GameController
 
 	public void endGame(Player winner, boolean checkmate)
 	{
+		endGame(winner, checkmate, false);
+	}
+
+	public void endGame(Player winner, boolean checkmate, boolean saved)
+	{
 		if (Game.STATE_FINISHED == game.getState())
 		{
 			return;
 		}
 
 		game.setState(Game.STATE_FINISHED);
+
+		if (saved)
+		{
+			game.saved = true;
+			return;
+		}
+
 		game.winner = winner;
 		game.checkmate = checkmate;
 	}

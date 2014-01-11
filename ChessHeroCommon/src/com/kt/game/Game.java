@@ -14,6 +14,7 @@ public class Game
 	public static final short STATE_PENDING   	= 1; // Waiting for second player
 	public static final short STATE_ACTIVE 		= 2; // Game is being played
 	public static final short STATE_FINISHED	= 3; // Game has ended
+	public static final short STATE_PAUSED		= 4; // Game has been paused
 
 	public static final int MIN_NAME_LENGTH = 3;
 	public static final int MAX_NAME_LENGTH = 256;
@@ -129,6 +130,8 @@ public class Game
 	protected Player winner = null;
 	protected boolean checkmate = false;
 
+	protected boolean saved = false;
+
 	public Game(int gameID, String name)
 	{
 		this.name = name;
@@ -153,6 +156,11 @@ public class Game
 	public void setState(short state)
 	{
 		this.state = state;
+	}
+
+	public boolean wasSaved()
+	{
+		return saved;
 	}
 
 	public GameController getController()

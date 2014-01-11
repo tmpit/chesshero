@@ -519,17 +519,18 @@ class Database
 		}
 	}
 
-	public void insertGameSave(int gameID, String name, int moveUserID, byte gameData[]) throws SQLException
+	public void insertGameSave(String name, byte gameData[], int nextMoveUserID, int player1UserID, int player2UserID) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("REPLACE INTO saved_games (gid, gname, next, game) VALUES (?, ?, ?, ?)");
-			stmt.setInt(1, gameID);
-			stmt.setString(2, name);
-			stmt.setInt(3, moveUserID);
-			stmt.setBytes(4, gameData);
+			stmt = conn.prepareStatement("INSERT INTO saved_games (name, game, next, player1id, player2id) VALUES (?, ?, ?, ?, ?)");
+			stmt.setString(1, name);
+			stmt.setBytes(2, gameData);
+			stmt.setInt(3, nextMoveUserID);
+			stmt.setInt(4, player1UserID);
+			stmt.setInt(5, player2UserID);
 
 			stmt.executeUpdate();
 		}
