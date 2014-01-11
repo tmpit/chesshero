@@ -63,9 +63,9 @@ public class Action
 	// - [games:ARR] - each element in the array has:
 	// 		- [gameid:INT] - the id of the game
 	// 	 	- [gamename:STR] - the name of the game
-	//		- [userid:INT] - the id of the creator of the game
-	//		- [username:STR] - the name of the creator of the game
-	// 	 	- [usercolor:STR] - the color the creator of the game has picked, either "white" or "black"
+	//		- [userid:INT] - the id of the opponent
+	//		- [username:STR] - the name of the opponent
+	// 	 	- [usercolor:STR] - the color the opponent has picked, either "white" or "black"
     public static final int FETCH_GAMES = 5;
 
     // Join game

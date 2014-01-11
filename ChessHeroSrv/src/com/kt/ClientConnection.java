@@ -255,6 +255,7 @@ public class ClientConnection extends Thread
 			{
 				SLog.write("Surprise exception: " + e);
 				e.printStackTrace();
+				writeMessage(aResponseWithResult(Result.INTERNAL_ERROR));
 				running = false;
 			}
 		}
@@ -319,10 +320,10 @@ public class ClientConnection extends Thread
 		int gameID = game.getID();
 
 		Player winner = game.getWinner();
-		Player loser = winner.getOpponent();
+		Player loser = (winner != null ? winner.getOpponent() : null);
 
-		winner.leave();
-		loser.leave();
+		game.getPlayer1().leave();
+		game.getPlayer2().leave();
 
 		removeGame(gameID);
 
@@ -331,7 +332,11 @@ public class ClientConnection extends Thread
 			db.connect();
 			db.startTransaction();
 
-			db.deleteGame(gameID);
+			if (!game.wasSaved())
+			{
+				db.deleteGame(gameID);
+			}
+
 			db.removeChatEntriesForGame(gameID);
 
 			if (winner != null)
@@ -784,7 +789,7 @@ public class ClientConnection extends Thread
 
 			if (type.equals("saved"))
 			{
-				games = db.getSavedGames(player.getUserID(), offset, limit);
+				games = db.getSavedGamesWithOpponentsForUser(player.getUserID(), offset, limit);
 			}
 			else
 			{
@@ -1149,7 +1154,7 @@ public class ClientConnection extends Thread
 
 		synchronized (game)
 		{
-			if (!(invalidGameID = game.getID() != gameID) && !(gameNotActive = game.getState() != Game.STATE_ACTIVE))
+			if (!(invalidGameID = game.getID() != gameID))
 			{
 				short state = game.getState();
 
@@ -1175,16 +1180,13 @@ public class ClientConnection extends Thread
 					{
 						try
 						{
-							int myUserID = player.getUserID();
-							int opponentUserID = player.getOpponent().getUserID();
-
 							db.connect();
-							db.insertGameSave(game.getName(), game.toData(), game.getTurn().getUserID(), myUserID, opponentUserID);
+							db.insertGameSave(gameID, game.toData(), game.getTurn().getUserID());
 
 							game.getController().endGame(null, false, true);
 
-							popConnection(gameID, myUserID);
-							popConnection(gameID, opponentUserID);
+							popConnection(gameID, player.getUserID());
+							popConnection(gameID, player.getOpponent().getUserID());
 
 							finalizeGame(game);
 						}
@@ -1270,12 +1272,16 @@ public class ClientConnection extends Thread
 			return;
 		}
 
-		boolean success;
-		// TODO: check if the player is a player in the game they are trying to delete
+		boolean invalidGameID;
+
 		try
 		{
 			db.connect();
-			success = db.removeSavedGame(gameID);
+
+			if ((invalidGameID = !db.userPresentInSavedGame(gameID, player.getUserID())))
+			{
+				db.deleteSavedGame(gameID);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -1289,13 +1295,12 @@ public class ClientConnection extends Thread
 			db.disconnect();
 		}
 
-		if (success)
-		{
-			writeMessage(aResponseWithResult(Result.OK));
-		}
-		else
+		if (invalidGameID)
 		{
 			writeMessage(aResponseWithResult(Result.INVALID_GAME_ID));
+			return;
 		}
+
+		writeMessage(aResponseWithResult(Result.OK));
 	}
 }

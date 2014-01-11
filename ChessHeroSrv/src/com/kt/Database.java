@@ -1,8 +1,5 @@
 package com.kt;
 
-import com.kt.api.Result;
-
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -519,18 +516,16 @@ class Database
 		}
 	}
 
-	public void insertGameSave(String name, byte gameData[], int nextMoveUserID, int player1UserID, int player2UserID) throws SQLException
+	public void insertGameSave(int gameID, byte gameData[], int nextMoveUserID) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("INSERT INTO saved_games (name, game, next, player1id, player2id) VALUES (?, ?, ?, ?, ?)");
-			stmt.setString(1, name);
+			stmt = conn.prepareStatement("REPLACE INTO saved_games (gid, game, next) VALUES (?, ?, ?)");
+			stmt.setInt(1, gameID);
 			stmt.setBytes(2, gameData);
 			stmt.setInt(3, nextMoveUserID);
-			stmt.setInt(4, player1UserID);
-			stmt.setInt(5, player2UserID);
 
 			stmt.executeUpdate();
 		}
@@ -540,7 +535,7 @@ class Database
 		}
 	}
 
-	public boolean removeSavedGame(int gameID) throws SQLException
+	public void deleteSavedGame(int gameID) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
@@ -549,7 +544,7 @@ class Database
 			stmt = conn.prepareStatement("DELETE FROM saved_games WHERE gid = ?");
 			stmt.setInt(1, gameID);
 
-			return stmt.executeUpdate() != 0;
+			stmt.executeUpdate();
 		}
 		finally
 		{
@@ -564,17 +559,25 @@ class Database
 	// "userid" => (int)
 	// "username" => (string)
 	// "usercolor" => (string)
-	public ArrayList<HashMap> getSavedGames(int userID, int offset, int limit) throws SQLException
+	public ArrayList<HashMap> getSavedGamesWithOpponentsForUser(int userID, int offset, int limit) throws SQLException
 	{
 		PreparedStatement stmt = null;
 		ResultSet set = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT gid, gname, uid, name, color FROM saved_games INNER JOIN players USING(gid) INNER JOIN users ON(players.uid = users.id) WHERE uid = ? LIMIT ?, ?");
+			// We need to take all saved games that the player has played in and then take the player's opponent's id, name and color in each of those games
+			stmt = conn.prepareStatement("SELECT gid, gname, uid, name, color FROM games " +
+											"INNER JOIN players USING(gid)" +
+											"INNER JOIN users ON(users.id = players.uid)" +
+											"WHERE gid IN" +
+												"(SELECT gid FROM saved_games INNER JOIN players USING(gid) WHERE uid = ?)" +
+											"AND uid != ? " +
+											"LIMIT ?, ?");
 			stmt.setInt(1, userID);
-			stmt.setInt(2, offset);
-			stmt.setInt(3, limit);
+			stmt.setInt(2, userID);
+			stmt.setInt(3, offset);
+			stmt.setInt(4, limit);
 
 			set = stmt.executeQuery();
 
@@ -593,6 +596,27 @@ class Database
 			}
 
 			return games;
+		}
+		finally
+		{
+			closeResources(stmt, set);
+		}
+	}
+
+	public boolean userPresentInSavedGame(int saveID, int userID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+		ResultSet set = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("SELECT COUNT(*) FROM saved_games INNER JOIN players USING(gid) WHERE uid = ?");
+			stmt.setInt(1, saveID);
+			stmt.setInt(2, userID);
+
+			set = stmt.executeQuery();
+
+			return set.next();
 		}
 		finally
 		{
