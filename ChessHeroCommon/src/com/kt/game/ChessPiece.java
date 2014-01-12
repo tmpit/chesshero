@@ -15,6 +15,57 @@ public abstract class ChessPiece
 		public static final byte KING = 5;
 	}
 
+	public static ChessPiece chessPieceFromData(byte data[])
+	{
+		if (data.length != 2)
+		{
+			return null;
+		}
+
+		byte meta = data[0]; // First byte contains the piece tag, color and whether it has moved
+		byte tag = (byte)(meta & 0x7); // Take the first 3 bits
+
+		boolean white = (meta & 0x8) != 0; // 4th bit is 1 for white 0 for black
+		boolean moved = (meta & 0x10) != 0; // 5th bit signifies if the piece has moved
+
+		Position position = Position.positionFromData(data[1]); // Second byte contains position
+
+		if (null == position)
+		{
+			return null;
+		}
+
+		ChessPiece piece;
+		Color color = (white ? Color.WHITE : Color.BLACK);
+
+		switch (tag)
+		{
+			case Tag.PAWN:
+				piece = new Pawn(position, color);
+				break;
+			case Tag.ROOK:
+				piece = new Rook(position, color);
+				break;
+			case Tag.KNIGHT:
+				piece = new Knight(position, color);
+				break;
+			case Tag.BISHOP:
+				piece = new Bishop(position, color);
+				break;
+			case Tag.QUEEN:
+				piece = new Queen(position, color);
+				break;
+			case Tag.KING:
+				piece = new King(position, color);
+				break;
+			default:
+				return null;
+		}
+
+		piece.moved = moved;
+		return piece;
+	}
+
 	protected Position position;
 	protected Color color;
 	private Player owner = null;

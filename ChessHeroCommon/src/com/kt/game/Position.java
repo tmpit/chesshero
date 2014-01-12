@@ -39,8 +39,8 @@ public class Position implements Cloneable
 	// Returns null if the format is invalid or if the position is out of the board
 	public static Position positionFromData(byte data)
 	{
-		int x = data >>> 4; // Take the first 4 bits
-		int y = data & 0xF; // Take the latter 4 bits
+		int x = data >>> 4; // Take the upper 4 bits
+		int y = data & 0xF; // Take the lower 4 bits
 
 		if (x < 0 || x > 7 || y < 0 || y > 7)
 		{	// Invalid position
