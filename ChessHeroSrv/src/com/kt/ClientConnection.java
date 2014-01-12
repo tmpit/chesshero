@@ -42,36 +42,81 @@ public class ClientConnection extends Thread
 
     private static final String DEFAULT_PLAYER_COLOR = "white";
 
+	private static final HashMap<Integer, ArrayList<ClientConnection>> connections = new HashMap<Integer, ArrayList<ClientConnection>>();
+	private static final Lock connectionsMutex = new ReentrantLock(true);
+
+	private static final HashMap<String, ClientConnection> playerConnections = new HashMap<String, ClientConnection>();
+	private static final Lock playerConnectionsMutex = new ReentrantLock(true);
+
 	private static final HashMap<Integer, Game> games = new HashMap<Integer, Game>();
 	private static final Lock gamesMutex = new ReentrantLock(true);
 
-	private static final HashMap<String, ClientConnection> playerConnections = new HashMap<String, ClientConnection>();
-	private static final Lock connectionsMutex = new ReentrantLock(true);
-
 	// Not using synchronized blocks because those use non-fair ReentrantLocks
 	// Since these methods are frequently used by all threads, non-fair policy might lead to thread starvation
-	private static void putConnection(int gameID, int userID, ClientConnection conn)
+	private static void putConnection(int userID, ClientConnection conn)
 	{
 		connectionsMutex.lock();
-		playerConnections.put(gameID + ":" + userID, conn);
+
+		ArrayList<ClientConnection> all = connections.get(userID);
+
+		if (null == all)
+		{
+			all = new ArrayList<ClientConnection>();
+			connections.put(userID, all);
+		}
+
+		all.add(conn);
+
 		connectionsMutex.unlock();
 	}
 
-	private static ClientConnection getConnection(int gameID, int userID)
+	private static ArrayList<ClientConnection> getConnections(int userID)
+	{
+		ArrayList<ClientConnection> all = null;
+		connectionsMutex.lock();
+		all = connections.get(userID);
+		connectionsMutex.unlock();
+		return all;
+	}
+
+	private static boolean popConnection(int userID, ClientConnection conn)
 	{
 		connectionsMutex.lock();
-		ClientConnection conn = playerConnections.get(gameID + ":" + userID);
+
+		boolean success = false;
+		ArrayList<ClientConnection> all = connections.get(userID);
+
+		if (all != null)
+		{
+			success = all.remove(conn);
+		}
+
 		connectionsMutex.unlock();
+		return success;
+	}
+
+	private static void putPlayerConnection(int gameID, int userID, ClientConnection conn)
+	{
+		playerConnectionsMutex.lock();
+		playerConnections.put(gameID + ":" + userID, conn);
+		playerConnectionsMutex.unlock();
+	}
+
+	private static ClientConnection getPlayerConnection(int gameID, int userID)
+	{
+		playerConnectionsMutex.lock();
+		ClientConnection conn = playerConnections.get(gameID + ":" + userID);
+		playerConnectionsMutex.unlock();
 		return conn;
 	}
 
-	private static ClientConnection popConnection(int gameID, int userID)
+	private static ClientConnection popPlayerConnection(int gameID, int userID)
 	{
 		String key = gameID + ":" + userID;
-		connectionsMutex.lock();
+		playerConnectionsMutex.lock();
 		ClientConnection conn = playerConnections.get(key);
 		playerConnections.remove(key);
-		connectionsMutex.unlock();
+		playerConnectionsMutex.unlock();
 		return conn;
 	}
 
@@ -164,27 +209,38 @@ public class ClientConnection extends Thread
     {
         listen();
 
-        Game game = null;
+		try
+		{
+			if (null == player)
+			{
+				return;
+			}
 
-        if (player != null && (game = player.getGame()) != null)
-        {
-            synchronized (game)
-            {
+			popConnection(player.getUserID(), this);
+			Game game = null;
+
+			if (null == (game = player.getGame()))
+			{
+				return;
+			}
+
+			synchronized (game)
+			{
 				int gameID = game.getID();
 				short state = game.getState();
 
-                if (Game.STATE_PENDING == state)
-                {
+				if (Game.STATE_PENDING == state)
+				{
 					cancelGame(game);
-					popConnection(gameID, player.getUserID());
-                }
-                else if (Game.STATE_ACTIVE == state || Game.STATE_PAUSED == state)
-                {
+					popPlayerConnection(gameID, player.getUserID());
+				}
+				else if (Game.STATE_ACTIVE == state || Game.STATE_PAUSED == state)
+				{
 					Player opponent = player.getOpponent();
 					int opponentUserID = opponent.getUserID();
 
-					popConnection(gameID, player.getUserID());
-					ClientConnection opponentConnection = popConnection(gameID, opponentUserID);
+					popPlayerConnection(gameID, player.getUserID());
+					ClientConnection opponentConnection = popPlayerConnection(gameID, opponentUserID);
 
 					if (Game.STATE_PAUSED == state && opponentConnection != null)
 					{
@@ -205,11 +261,13 @@ public class ClientConnection extends Thread
 						opponentConnection.writeMessage(push);
 					}
 				}
-            }
-        }
-
-		db.disconnect();
-        closeSocket();
+			}
+		}
+		finally
+		{
+			db.disconnect();
+			closeSocket();
+		}
     }
 
     private void listen()
@@ -529,6 +587,7 @@ public class ClientConnection extends Thread
                 throw new ChessHeroException(Result.INTERNAL_ERROR);
             }
 
+			putConnection(userID, this);
             player = new Player(userID, name);
 			readTimeout = 0;
 
@@ -589,6 +648,7 @@ public class ClientConnection extends Thread
                 throw new ChessHeroException(Result.INTERNAL_ERROR);
             }
 
+			putConnection(userID, this);
             player = new Player (userID, name);
 			readTimeout = 0;
 
@@ -662,7 +722,7 @@ public class ClientConnection extends Thread
 
 			db.commit();
 
-			putConnection(gameID, userID, this);
+			putPlayerConnection(gameID, userID, this);
 
 			Game game = new Game(gameID, gameName);
 			game.setState(Game.STATE_PENDING);
@@ -742,7 +802,7 @@ public class ClientConnection extends Thread
 
                 if (!(invalidGameID = game.getID() != gID))
                 {
-					popConnection(gID, player.getUserID());
+					popPlayerConnection(gID, player.getUserID());
                     cancelGame(game);
                 }
             }
@@ -874,7 +934,7 @@ public class ClientConnection extends Thread
 
                         db.commit();
 
-						putConnection(gameID, myUserID, this);
+						putPlayerConnection(gameID, myUserID, this);
 
                         player.join(game, myColor);
 
@@ -920,7 +980,7 @@ public class ClientConnection extends Thread
 		myMsg.put("chattoken", myChatToken);
         writeMessage(myMsg);
 
-		ClientConnection opponentConnection = getConnection(gameID, opponent.getUserID());
+		ClientConnection opponentConnection = getPlayerConnection(gameID, opponent.getUserID());
 		if (opponentConnection != null)
 		{
 			HashMap msg = aPushWithEvent(Push.GAME_JOIN);
@@ -965,8 +1025,8 @@ public class ClientConnection extends Thread
 				// End the game with the opponent as the winner
 				game.getController().endGame(opponent, false);
 
-				popConnection(gameID, player.getUserID());
-				opponentConnection = popConnection(gameID, opponentUserID);
+				popPlayerConnection(gameID, player.getUserID());
+				opponentConnection = popPlayerConnection(gameID, opponentUserID);
 				readTimeout = 0;
 
 				finalizeGame(game);
@@ -1040,14 +1100,14 @@ public class ClientConnection extends Thread
 					int gameID = game.getID();
 					int opponentUserID = player.getOpponent().getUserID();
 
-					opponentConnection = getConnection(gameID, opponentUserID);
+					opponentConnection = getPlayerConnection(gameID, opponentUserID);
 
 					if (gameFinished)
 					{
 						winner = game.getWinner();
 
-						popConnection(gameID, player.getUserID());
-						popConnection(gameID, opponentUserID);
+						popPlayerConnection(gameID, player.getUserID());
+						popPlayerConnection(gameID, opponentUserID);
 
 						finalizeGame(game);
 					}
@@ -1163,7 +1223,7 @@ public class ClientConnection extends Thread
 				{
 					if (save)
 					{
-						opponentConnection = getConnection(gameID, player.getOpponent().getUserID());
+						opponentConnection = getPlayerConnection(gameID, player.getOpponent().getUserID());
 
 						if (null == opponentConnection)
 						{
@@ -1196,8 +1256,8 @@ public class ClientConnection extends Thread
 
 							game.getController().endGame(null, false, true);
 
-							popConnection(gameID, player.getUserID());
-							popConnection(gameID, player.getOpponent().getUserID());
+							popPlayerConnection(gameID, player.getUserID());
+							popPlayerConnection(gameID, player.getOpponent().getUserID());
 
 							finalizeGame(game);
 						}
@@ -1416,7 +1476,7 @@ public class ClientConnection extends Thread
 
 						db.commit();
 
-						putConnection(gameID, userID, this);
+						putPlayerConnection(gameID, userID, this);
 
 						player.join(game, Color.fromString(color));
 
