@@ -374,7 +374,7 @@ public class Game
 
 			while ((whiteLeft--) != 0)
 			{
-				whiteTaken.add(ChessPiece.aChessPiece(tag, Position.ZERO, Color.WHITE));
+				whiteTaken.add(ChessPiece.aChessPiece(tag, Position.ZERO.clone(), Color.WHITE));
 			}
 
 			int blackLeft = blackMax[tag];
@@ -386,7 +386,7 @@ public class Game
 
 			while ((blackLeft--) != 0)
 			{
-				blackTaken.add(ChessPiece.aChessPiece(tag, Position.ZERO, Color.BLACK));
+				blackTaken.add(ChessPiece.aChessPiece(tag, Position.ZERO.clone(), Color.BLACK));
 			}
 		}
 
