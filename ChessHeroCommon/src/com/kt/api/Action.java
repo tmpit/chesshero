@@ -123,5 +123,5 @@ public class Action
 	// - [gameid:INT] - the id of the game to resume
 	// Returns:
 	// - [chattoken:STR] - the token needed to chat with the other player
-	public static final int RESUME_GAME = 11;
+//	public static final int RESUME_GAME = 11;
 }

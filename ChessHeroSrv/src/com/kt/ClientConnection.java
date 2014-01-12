@@ -515,9 +515,9 @@ public class ClientConnection extends Thread
 					handleDeleteSavedGame(request);
 					break;
 
-				case Action.RESUME_GAME:
-					handleResumeGame(request);
-					break;
+//				case Action.RESUME_GAME:
+//					handleResumeGame(request);
+//					break;
 
                 default:
                     throw new ChessHeroException(Result.UNRECOGNIZED_ACTION);
