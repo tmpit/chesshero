@@ -5,7 +5,7 @@ import com.kt.api.Push;
 import com.kt.chesco.CHESCOReader;
 import com.kt.chesco.CHESCOWriter;
 import com.kt.game.*;
-import com.kt.game.chesspieces.ChessPiece;
+import com.kt.game.ChessPiece;
 import com.kt.utils.ChessHeroException;
 import com.kt.api.Result;
 import com.kt.utils.SLog;

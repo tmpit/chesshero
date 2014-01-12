@@ -112,6 +112,9 @@ public class Game
 	private int id;
 	private String name;
 
+	protected ChessPieceSet whiteChessPieceSet;
+	protected ChessPieceSet blackChessPieceSet;
+
 	protected Player player1;
 	protected Player player2;
 
@@ -136,6 +139,22 @@ public class Game
 	{
 		this.name = name;
 		this.id = gameID;
+
+		// Initializing board
+		Color color = Color.BLACK;
+
+		for (int i = 0; i < BOARD_SIDE; i++)
+		{
+			for (int j = 0; j < BOARD_SIDE; j++)
+			{
+				board[i][j] = new BoardField(new Position(i, j), color);
+				color = color.Opposite;
+			}
+
+			color = color.Opposite;
+		}
+
+		
 	}
 
 	public int getID()
@@ -198,7 +217,7 @@ public class Game
 		return attackers;
 	}
 
-	protected void initializeBoard()
+	private void initializeBoard()
 	{
 		Color color = Color.BLACK;
 

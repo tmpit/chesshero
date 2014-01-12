@@ -1,6 +1,6 @@
 package com.kt.game;
 
-import com.kt.game.chesspieces.ChessPiece;
+import com.kt.game.ChessPiece;
 
 import java.util.ArrayList;
 

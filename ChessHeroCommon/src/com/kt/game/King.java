@@ -1,4 +1,4 @@
-package com.kt.game.chesspieces;
+package com.kt.game;
 
 import com.kt.game.Color;
 import com.kt.game.MovementSet;
@@ -11,27 +11,28 @@ import java.util.Arrays;
 /**
  * Created by Toshko on 12/23/13.
  */
-public class Queen extends ChessPiece
+public class King extends ChessPiece
 {
 	static MovementSet set = new MovementSet(new ArrayList<Position>(Arrays.asList(
 			MovementSet.UP, MovementSet.LEFT, MovementSet.DOWN, MovementSet.RIGHT,
 			MovementSet.UP_LEFT, MovementSet.UP_RIGHT, MovementSet.DOWN_LEFT, MovementSet.DOWN_RIGHT
-	)));
+	)), true);
 
-	public Queen(Position position, Player owner, Color color)
+	public King(Position position, Player owner, Color color)
 	{
-		super(Tag.QUEEN, position, owner, color, set);
+		super(Tag.KING, position, owner, color, set);
 	}
 
 	@Override
 	public boolean isMoveValid(Position pos, boolean take)
 	{
-		return position.isHorizontalOrVerticalTo(pos) || position.isDiagonalTo(pos);
+		return Math.abs(position.getX() - pos.getX()) < 2 && Math.abs(position.getY() - pos.getY()) < 2; // No more than one step in any direction
 	}
 
 	@Override
 	public String toString()
 	{
-		return (Color.WHITE == color ? "Q" : "q");
+		return (Color.WHITE == color ? "K" : "k");
 	}
+
 }

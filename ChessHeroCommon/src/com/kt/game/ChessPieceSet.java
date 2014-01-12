@@ -1,7 +1,7 @@
 package com.kt.game;
 
-import com.kt.game.chesspieces.ChessPiece;
-import com.kt.game.chesspieces.King;
+import com.kt.game.ChessPiece;
+import com.kt.game.King;
 
 import java.util.ArrayList;
 

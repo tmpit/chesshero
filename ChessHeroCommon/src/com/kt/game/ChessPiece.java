@@ -1,10 +1,4 @@
-package com.kt.game.chesspieces;
-
-import com.kt.game.Color;
-import com.kt.game.MovementSet;
-import com.kt.game.Player;
-import com.kt.game.Position;
-import com.kt.utils.SLog;
+package com.kt.game;
 
 /**
  * Created by Toshko on 12/23/13.

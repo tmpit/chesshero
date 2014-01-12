@@ -1,4 +1,4 @@
-package com.kt.game.chesspieces;
+package com.kt.game;
 
 import com.kt.game.Color;
 import com.kt.game.MovementSet;
