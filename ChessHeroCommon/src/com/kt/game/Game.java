@@ -302,7 +302,7 @@ public class Game
 		}
 
 		byte bufferData[] = buffer.array();
-		int bufferOffset = buffer.arrayOffset();
+		int bufferOffset = buffer.position();
 
 		if (bufferOffset == maxSize)
 		{
@@ -317,6 +317,13 @@ public class Game
 
 	private boolean parseChessPieceData(byte data[])
 	{
+		int dataLength = data.length;
+
+		if (0 == dataLength || (dataLength % 2) != 0)
+		{	// No data or data is not divisible by 2 (each chess piece takes 2 bytes) - invalid format
+			return false;
+		}
+
 		ArrayList<ChessPiece> whiteActive = new ArrayList<ChessPiece>();
 		ArrayList<ChessPiece> blackActive = new ArrayList<ChessPiece>();
 		// 8 pawns, 2 rooks, 2 knights, 2 bishops, 1 queen, 1 king - indexes correspond to ChessPiece.Tags
@@ -346,7 +353,7 @@ public class Game
 		}
 
 		// Check if kings are present
-		if (whiteMax[ChessPiece.Tag.KING] != 1 || blackMax[ChessPiece.Tag.KING] != 1)
+		if (whiteMax[ChessPiece.Tag.KING] != 0 || blackMax[ChessPiece.Tag.KING] != 0)
 		{	// One or more kings are missing
 			return false;
 		}
@@ -355,7 +362,7 @@ public class Game
 		ArrayList<ChessPiece> whiteTaken = new ArrayList<ChessPiece>();
 		ArrayList<ChessPiece> blackTaken = new ArrayList<ChessPiece>();
 
-		// Iterate only up to the queen, kings cannot be taken and we know they are present
+		// Iterate only up to the queen, kings cannot be taken and we know they are both present
 		for (int tag = 0; tag < 5; tag++)
 		{
 			int whiteLeft = whiteMax[tag];
