@@ -18,9 +18,9 @@ public class King extends ChessPiece
 			MovementSet.UP_LEFT, MovementSet.UP_RIGHT, MovementSet.DOWN_LEFT, MovementSet.DOWN_RIGHT
 	)), true);
 
-	public King(Position position, Player owner, Color color)
+	public King(Position position, Color color)
 	{
-		super(Tag.KING, position, owner, color, set);
+		super(Tag.KING, position, color, set);
 	}
 
 	@Override

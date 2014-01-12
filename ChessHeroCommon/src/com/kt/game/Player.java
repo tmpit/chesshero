@@ -50,31 +50,39 @@ public class Player
 
 	public boolean join(Game game, Color color)
 	{
-		ChessPieceSet set = (color == Color.WHITE ? Game.initialWhiteChessPieces(this) : Game.initialBlackChessPieces(this));
+		ChessPieceSet set = (color == Color.WHITE ? game.whiteChessPieceSet : game.blackChessPieceSet);
 		return join(game, color, set);
 	}
 
 	public boolean join(Game game, Color color, ChessPieceSet pieceSet)
 	{
-		if (null == game.player1)
+		boolean player1;
+
+		if (!(player1 = null == game.player1) && game.player2 != null)
+		{	// Both players are in the game
+			return false;
+		}
+
+		if (player1)
 		{
 			game.player1 = this;
-			this.game = game;
-			this.color = color;
-			this.chessPieceSet = pieceSet;
-			return true;
 		}
-
-		if (null == game.player2)
+		else
 		{
 			game.player2 = this;
-			this.game = game;
-			this.color = color;
-			this.chessPieceSet = pieceSet;
-			return true;
 		}
 
-		return false;
+		this.game = game;
+		this.color = color;
+		this.chessPieceSet = pieceSet;
+
+		ArrayList<ChessPiece> pieces = pieceSet.getActivePieces();
+		for (ChessPiece piece : pieces)
+		{
+			piece.setOwner(this);
+		}
+
+		return true;
 	}
 
 	public void leave()
@@ -95,6 +103,7 @@ public class Player
 		}
 
 		game = null;
+		chessPieceSet = null;
 		color = Color.NONE;
 	}
 

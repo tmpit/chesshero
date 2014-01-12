@@ -1,7 +1,5 @@
 package com.kt.game;
 
-import com.kt.game.chesspieces.*;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
@@ -21,17 +19,7 @@ public class Game
 
 	public static final int BOARD_SIDE = 8;
 
-	public static ChessPieceSet initialWhiteChessPieces(Player owner)
-	{
-		return aSetOfChessPieces(owner, Color.WHITE, true);
-	}
-
-	public static ChessPieceSet initialBlackChessPieces(Player owner)
-	{
-		return aSetOfChessPieces(owner, Color.BLACK, false);
-	}
-
-	private static ChessPieceSet aSetOfChessPieces(Player owner, Color color, boolean bottom)
+	private static ChessPieceSet aSetOfChessPieces(Color color, boolean bottom)
 	{
 		int pawnRow = (bottom ? 1 : 6);
 		int mainRow = (bottom ? 0 : 7);
@@ -40,62 +28,62 @@ public class Game
 
 		for (int i = 0; i < 8; i++)
 		{
-			pieces.add(new Pawn(new Position(i, pawnRow), owner, color));
+			pieces.add(new Pawn(new Position(i, pawnRow), color));
 		}
 
-		pieces.add(new Rook(new Position(0, mainRow), owner, color));
-		pieces.add(new Rook(new Position(7, mainRow), owner, color));
-		pieces.add(new Knight(new Position(1, mainRow), owner, color));
-		pieces.add(new Knight(new Position(6, mainRow), owner, color));
-		pieces.add(new Bishop(new Position(2, mainRow), owner, color));
-		pieces.add(new Bishop(new Position(5, mainRow), owner, color));
-		pieces.add(new Queen(new Position(3, mainRow), owner, color));
-		pieces.add(new King(new Position(4, mainRow), owner, color));
+		pieces.add(new Rook(new Position(0, mainRow), color));
+		pieces.add(new Rook(new Position(7, mainRow), color));
+		pieces.add(new Knight(new Position(1, mainRow), color));
+		pieces.add(new Knight(new Position(6, mainRow), color));
+		pieces.add(new Bishop(new Position(2, mainRow), color));
+		pieces.add(new Bishop(new Position(5, mainRow), color));
+		pieces.add(new Queen(new Position(3, mainRow), color));
+		pieces.add(new King(new Position(4, mainRow), color));
 
 		return new ChessPieceSet(pieces);
 	}
 
-	private static ChessPieceSet test_aSetOfChessPieces(Player owner, Color color, boolean bottom)
+	private static ChessPieceSet test_aSetOfChessPieces(Color color, boolean bottom)
 	{
 		ArrayList<ChessPiece> pieces = new ArrayList<ChessPiece>(16);
 
 		if (bottom)
 		{
-			pieces.add(new Pawn(new Position(0, 6), owner, color));
-//			pieces.add(new Pawn(new Position(1, 1), owner, color));
-//			pieces.add(new Pawn(new Position(2, 1), owner, color));
-//			pieces.add(new Pawn(new Position(3, 1), owner, color));
-//			pieces.add(new Pawn(new Position(4, 1), owner, color));
-//			pieces.add(new Pawn(new Position(5, 1), owner, color));
-//			pieces.add(new Pawn(new Position(6, 1), owner, color));
-//			pieces.add(new Pawn(new Position(7, 1), owner, color));
-//			pieces.add(new Rook(new Position(0, 0), owner, color));
-//			pieces.add(new Rook(new Position(7, 0), owner, color));
-//			pieces.add(new Knight(new Position(1, 0), owner, color));
-//			pieces.add(new Knight(new Position(6, 0), owner, color));
-//			pieces.add(new Bishop(new Position(2, 0), owner, color));
-//			pieces.add(new Bishop(new Position(5, 0), owner, color));
-//			pieces.add(new Queen(new Position(3, 0), owner, color));
-			pieces.add(new King(new Position(4, 0), owner, color));
+			pieces.add(new Pawn(new Position(0, 6), color));
+//			pieces.add(new Pawn(new Position(1, 1), color));
+//			pieces.add(new Pawn(new Position(2, 1), color));
+//			pieces.add(new Pawn(new Position(3, 1), color));
+//			pieces.add(new Pawn(new Position(4, 1), color));
+//			pieces.add(new Pawn(new Position(5, 1), color));
+//			pieces.add(new Pawn(new Position(6, 1), color));
+//			pieces.add(new Pawn(new Position(7, 1), color));
+//			pieces.add(new Rook(new Position(0, 0), color));
+//			pieces.add(new Rook(new Position(7, 0), color));
+//			pieces.add(new Knight(new Position(1, 0), color));
+//			pieces.add(new Knight(new Position(6, 0), color));
+//			pieces.add(new Bishop(new Position(2, 0), color));
+//			pieces.add(new Bishop(new Position(5, 0), color));
+//			pieces.add(new Queen(new Position(3, 0), color));
+			pieces.add(new King(new Position(4, 0), color));
 		}
 		else
 		{
-//			pieces.add(new Pawn(new Position(0, 6), owner, color));
-//			pieces.add(new Pawn(new Position(1, 6), owner, color));
-//			pieces.add(new Pawn(new Position(2, 6), owner, color));
-//			pieces.add(new Pawn(new Position(3, 6), owner, color));
-//			pieces.add(new Pawn(new Position(4, 6), owner, color));
-//			pieces.add(new Pawn(new Position(5, 6), owner, color));
-//			pieces.add(new Pawn(new Position(6, 6), owner, color));
-//			pieces.add(new Pawn(new Position(7, 6), owner, color));
-//			pieces.add(new Rook(new Position(0, 7), owner, color));
-//			pieces.add(new Rook(new Position(7, 7), owner, color));
-//			pieces.add(new Knight(new Position(1, 7), owner, color));
-//			pieces.add(new Knight(new Position(6, 7), owner, color));
-//			pieces.add(new Bishop(new Position(2, 7), owner, color));
-//			pieces.add(new Bishop(new Position(5, 7), owner, color));
-//			pieces.add(new Queen(new Position(3, 7), owner, color));
-			pieces.add(new King(new Position(4, 7), owner, color));
+//			pieces.add(new Pawn(new Position(0, 6), color));
+//			pieces.add(new Pawn(new Position(1, 6), color));
+//			pieces.add(new Pawn(new Position(2, 6), color));
+//			pieces.add(new Pawn(new Position(3, 6), color));
+//			pieces.add(new Pawn(new Position(4, 6), color));
+//			pieces.add(new Pawn(new Position(5, 6), color));
+//			pieces.add(new Pawn(new Position(6, 6), color));
+//			pieces.add(new Pawn(new Position(7, 6), color));
+//			pieces.add(new Rook(new Position(0, 7), color));
+//			pieces.add(new Rook(new Position(7, 7), color));
+//			pieces.add(new Knight(new Position(1, 7), color));
+//			pieces.add(new Knight(new Position(6, 7), color));
+//			pieces.add(new Bishop(new Position(2, 7), color));
+//			pieces.add(new Bishop(new Position(5, 7), color));
+//			pieces.add(new Queen(new Position(3, 7), color));
+			pieces.add(new King(new Position(4, 7), color));
 		}
 
 		return new ChessPieceSet(pieces);
@@ -137,24 +125,19 @@ public class Game
 
 	public Game(int gameID, String name)
 	{
+		this(gameID, name, null);
+	}
+
+	public Game(int gameID, String name, byte data[])
+	{
 		this.name = name;
 		this.id = gameID;
 
-		// Initializing board
-		Color color = Color.BLACK;
-
-		for (int i = 0; i < BOARD_SIDE; i++)
+		if (null == data)
 		{
-			for (int j = 0; j < BOARD_SIDE; j++)
-			{
-				board[i][j] = new BoardField(new Position(i, j), color);
-				color = color.Opposite;
-			}
-
-			color = color.Opposite;
+			whiteChessPieceSet = aSetOfChessPieces(Color.WHITE, true);
+			blackChessPieceSet = aSetOfChessPieces(Color.BLACK, false);
 		}
-
-		
 	}
 
 	public int getID()
@@ -217,8 +200,9 @@ public class Game
 		return attackers;
 	}
 
-	private void initializeBoard()
+	protected void initializeBoard()
 	{
+		// Create board
 		Color color = Color.BLACK;
 
 		for (int i = 0; i < BOARD_SIDE; i++)
@@ -232,18 +216,19 @@ public class Game
 			color = color.Opposite;
 		}
 
-		ArrayList<ChessPiece> player1Pieces = player1.getChessPieceSet().getActivePieces();
+		// Assign pieces to their positions and owners
+		ArrayList<ChessPiece> whitePieces = whiteChessPieceSet.getActivePieces();
 
-		for (ChessPiece piece : player1Pieces)
+		for (ChessPiece piece : whitePieces)
 		{
 			Position pos = piece.getPosition();
 			BoardField field = board[pos.x][pos.y];
 			field.setChessPiece(piece);
 		}
 
-		ArrayList<ChessPiece> player2Pieces = player2.getChessPieceSet().getActivePieces();
+		ArrayList<ChessPiece> blackPieces = blackChessPieceSet.getActivePieces();
 
-		for (ChessPiece piece : player2Pieces)
+		for (ChessPiece piece : blackPieces)
 		{
 			Position pos = piece.getPosition();
 			BoardField field = board[pos.x][pos.y];

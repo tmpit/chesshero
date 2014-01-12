@@ -17,9 +17,9 @@ public class Bishop extends ChessPiece
 			MovementSet.UP_LEFT, MovementSet.UP_RIGHT, MovementSet.DOWN_LEFT, MovementSet.DOWN_RIGHT
 	)));
 
-	public Bishop(Position position, Player owner, Color color)
+	public Bishop(Position position, Color color)
 	{
-		super(Tag.BISHOP, position, owner, color, set);
+		super(Tag.BISHOP, position, color, set);
 	}
 
 	@Override

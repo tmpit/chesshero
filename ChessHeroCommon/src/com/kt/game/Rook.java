@@ -17,9 +17,9 @@ public class Rook extends ChessPiece
 			MovementSet.UP, MovementSet.LEFT, MovementSet.DOWN, MovementSet.RIGHT
 	)));
 
-	public Rook(Position position, Player owner, Color color)
+	public Rook(Position position, Color color)
 	{
-		super(Tag.ROOK, position, owner, color, set);
+		super(Tag.ROOK, position, color, set);
 	}
 
 	@Override

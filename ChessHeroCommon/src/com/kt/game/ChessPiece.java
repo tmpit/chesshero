@@ -17,17 +17,16 @@ public abstract class ChessPiece
 
 	protected Position position;
 	protected Color color;
-	protected Player owner;
-	protected byte tag;
-	protected MovementSet movementSet;
+	private Player owner = null;
+	private byte tag;
+	private MovementSet movementSet;
 
 	private boolean moved = false;
 
-	public ChessPiece(byte tag, Position position, Player owner, Color color, MovementSet movementSet)
+	public ChessPiece(byte tag, Position position, Color color, MovementSet movementSet)
 	{
 		this.tag = tag;
 		this.position = position;
-		this.owner = owner;
 		this.color = color;
 		this.movementSet = movementSet;
 	}
@@ -37,7 +36,7 @@ public abstract class ChessPiece
 		return position;
 	}
 
-	public void setPosition(Position newPos)
+	void setPosition(Position newPos)
 	{
 		position = newPos;
 		moved = true;
@@ -51,6 +50,11 @@ public abstract class ChessPiece
 	public Player getOwner()
 	{
 		return owner;
+	}
+
+	void setOwner(Player owner)
+	{
+		this.owner = owner;
 	}
 
 	public MovementSet getMovementSet()
@@ -68,7 +72,7 @@ public abstract class ChessPiece
 		return moved;
 	}
 
-	public abstract boolean isMoveValid(Position pos, boolean take);
+	protected abstract boolean isMoveValid(Position pos, boolean take);
 
 	public byte[] toData()
 	{

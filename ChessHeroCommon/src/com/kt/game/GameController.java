@@ -1,7 +1,6 @@
 package com.kt.game;
 
 import com.kt.api.Result;
-import com.kt.game.chesspieces.*;
 import com.kt.utils.SLog;
 
 import java.util.*;
@@ -154,24 +153,26 @@ public class GameController
 			switch (promotion)
 			{
 				case 'q':
-					promoted = new Queen(to, executor, executor.getColor());
+					promoted = new Queen(to, executor.getColor());
 					break;
 
 				case 'r':
-					promoted = new Rook(to, executor, executor.getColor());
+					promoted = new Rook(to, executor.getColor());
 					break;
 
 				case 'b':
-					promoted = new Bishop(to, executor, executor.getColor());
+					promoted = new Bishop(to, executor.getColor());
 					break;
 
 				case 'n':
-					promoted = new Knight(to, executor, executor.getColor());
+					promoted = new Knight(to, executor.getColor());
 					break;
 
 				default:
 					return Result.MISSING_PROMOTION;
 			}
+
+			promoted.setOwner(executor);
 		}
 
 		// Change positions of chess pieces

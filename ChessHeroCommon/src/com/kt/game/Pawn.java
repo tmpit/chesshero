@@ -18,9 +18,9 @@ public class Pawn extends ChessPiece
 			MovementSet.UP, MovementSet.UP2, MovementSet.UP_LEFT, MovementSet.UP_RIGHT
 	)), true);
 
-	public Pawn(Position position, Player owner, Color color)
+	public Pawn(Position position, Color color)
 	{
-		super(Tag.PAWN, position, owner, color, set);
+		super(Tag.PAWN, position, color, set);
 	}
 
 	@Override
