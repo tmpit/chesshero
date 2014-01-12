@@ -1380,7 +1380,8 @@ public class ClientConnection extends Thread
 
 			String gameName = (String)gameInfo.get("gname");
 			String chatToken = generateChatToken(gameID, userID, gameName);
-			boolean create = false;
+			boolean join = true;
+			boolean duplicateUser = false;
 
 			gamesMutex.lock();
 
@@ -1390,32 +1391,46 @@ public class ClientConnection extends Thread
 
 				if (null == (game = games.get(gameID)))
 				{
-					game = new Game(gameID, gameName);
-					create = true;
+					game = new Game(gameID, gameName, (byte[])gameInfo.get("gdata"));
+					join = false;
 				}
 
-				db.startTransaction();
-				db.insertChatEntry(gameID, userID, chatToken);
-
-				if (!create)
+				if (game.getState() != Game.STATE_ACTIVE)
 				{
-					db.deleteSavedGame(gameID);
-				}
+					Player player1 = game.getPlayer1();
+					duplicateUser = player1 != null && player1.equals(player);
 
-				db.commit();
+					if (!duplicateUser)
+					{
+						String color = (String)playerInfo.get("color");
 
-				if (create)
-				{
-					games.put(gameID, game);
-					game.setState(Game.STATE_PENDING);
-				}
-				else
-				{
-					game.setState(Game.STATE_ACTIVE);
-				}
+						db.startTransaction();
+						db.insertPlayer(gameID, userID, color);
+						db.insertChatEntry(gameID, userID, chatToken);
 
-				String color = (String)playerInfo.get("color");
-				player.join(game, Color.fromString(color));
+						if (join)
+						{
+							db.deleteSavedGame(gameID);
+							db.deletePlayersForSavedGame(gameID);
+						}
+
+						db.commit();
+
+						putConnection(gameID, userID, this);
+
+						player.join(game, Color.fromString(color));
+
+						if (join)
+						{
+							new GameController(game).startGame();
+						}
+						else
+						{
+							games.put(gameID, game);
+							game.setState(Game.STATE_PENDING);
+						}
+					}
+				}
 			}
 			finally
 			{

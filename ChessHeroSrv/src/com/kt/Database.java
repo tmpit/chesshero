@@ -648,7 +648,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT gid, gname, gdata FROM saved_games WHERE gid = ?");
+			stmt = conn.prepareStatement("SELECT gname, gdata FROM saved_games WHERE gid = ?");
 			stmt.setInt(1, gameID);
 
 			set = stmt.executeQuery();
@@ -656,9 +656,8 @@ class Database
 			if (set.next())
 			{
 				HashMap<String, Object> result = new HashMap<String, Object>();
-				result.put("gid", set.getInt(1));
-				result.put("gname", set.getString(2));
-				result.put("gdata", set.getBytes(3));
+				result.put("gname", set.getString(1));
+				result.put("gdata", set.getBytes(2));
 
 				return result;
 			}
