@@ -35,6 +35,21 @@ public class Position implements Cloneable
 		return new Position(x, y);
 	}
 
+	// Create a Position object from a serialized Position object
+	// Returns null if the format is invalid or if the position is out of the board
+	public static Position positionFromData(byte data)
+	{
+		int x = data >>> 4; // Take the first 4 bits
+		int y = data & 0xF; // Take the latter 4 bits
+
+		if (x < 0 || x > 7 || y < 0 || y > 7)
+		{	// Invalid position
+			return null;
+		}
+
+		return new Position(x, y);
+	}
+
 	// Returns position in the format [horizontal position : vertical position] e.g. A1, H3, etc.
 	// Returns null if position object has invalid parameters
 	public static String boardPositionFromPosition(Position position)
