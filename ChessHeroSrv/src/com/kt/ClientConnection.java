@@ -332,11 +332,8 @@ public class ClientConnection extends Thread
 			db.connect();
 			db.startTransaction();
 
-			if (!game.wasSaved())
-			{
-				db.deleteGame(gameID);
-			}
-
+			db.deleteGame(gameID);
+			db.deletePlayersForGame(gameID);
 			db.deleteChatEntriesForGame(gameID);
 
 			if (winner != null)
@@ -639,9 +636,9 @@ public class ClientConnection extends Thread
             return;
         }
 
-        String color = (String)request.get("color");
+		String color = (String)request.get("color");
 
-        if (null == color || (!color.equals("white") && !color.equals("black")))
+        if (null == color || Color.NONE == Color.fromString(color))
         {
             color = DEFAULT_PLAYER_COLOR;
         }
@@ -669,7 +666,7 @@ public class ClientConnection extends Thread
 
 			Game game = new Game(gameID, gameName);
 			game.setState(Game.STATE_PENDING);
-			player.join(game, (color.equals("white") ? Color.WHITE : Color.BLACK));
+			player.join(game, Color.fromString(color));
 
 			addGame(game);
 
@@ -872,7 +869,7 @@ public class ClientConnection extends Thread
 						myChatToken = generateChatToken(gameID, myUserID, gameName);
 
                         db.updateGameState(gameID, Game.STATE_ACTIVE);
-                        db.insertPlayer(gameID, myUserID, (myColor == Color.WHITE ? "white" : "black"));
+                        db.insertPlayer(gameID, myUserID, myColor.toString());
 						db.insertChatEntry(gameID, myUserID, myChatToken);
 
                         db.commit();
@@ -1184,8 +1181,18 @@ public class ClientConnection extends Thread
 					{
 						try
 						{
+							int myUserID = player.getUserID();
+							int opponentUserID = player.getOpponent().getUserID();
+							boolean iAmNext = player.equals(game.getTurn());
+
 							db.connect();
-							db.insertGameSave(gameID, game.toData(), game.getTurn().getUserID());
+							db.startTransaction();
+
+							db.insertGameSave(gameID, game.getName(), game.toData());
+							db.insertSavedGamePlayer(gameID, myUserID, player.getColor().toString(), iAmNext);
+							db.insertSavedGamePlayer(gameID, opponentUserID, player.getOpponent().getColor().toString(), !iAmNext);
+
+							db.commit();
 
 							game.getController().endGame(null, false, true);
 
@@ -1198,6 +1205,14 @@ public class ClientConnection extends Thread
 						{
 							SLog.write("Exception raised while saving game: " + e);
 							e.printStackTrace();
+
+							try
+							{
+								db.rollback();
+							}
+							catch (SQLException ignore)
+							{
+							}
 
 							// Revert
 							game.setState(Game.STATE_ACTIVE);
@@ -1283,11 +1298,12 @@ public class ClientConnection extends Thread
 			db.connect();
 			db.startTransaction();
 
-			if ((invalidGameID = !db.isUserPresentInSavedGame(gameID, player.getUserID())))
+			invalidGameID = !db.isUserPresentInSavedGame(gameID, player.getUserID());
+
+			if (!invalidGameID)
 			{
 				db.deleteSavedGame(gameID);
-				db.deleteGame(gameID);
-				db.deletePlayersForGame(gameID);
+				db.deletePlayersForSavedGame(gameID);
 			}
 
 			db.commit();
@@ -1296,6 +1312,14 @@ public class ClientConnection extends Thread
 		{
 			SLog.write("Exception raised while deleting saved game: " + e);
 			e.printStackTrace();
+
+			try
+			{
+				db.rollback();
+			}
+			catch (SQLException ignore)
+			{
+			}
 
 			throw new ChessHeroException(Result.INTERNAL_ERROR);
 		}
@@ -1347,14 +1371,14 @@ public class ClientConnection extends Thread
 				throw new ChessHeroException(Result.INTERNAL_ERROR);
 			}
 
-			String color = db.getPlayerColor(gameID, userID);
+			HashMap<String, Object> playerInfo = db.getSavedGamePlayerInfo(gameID, userID);
 
-			if (null == color)
+			if (null == playerInfo)
 			{
 				throw new ChessHeroException(Result.INTERNAL_ERROR);
 			}
 
-			String gameName = (String)gameInfo.get("gamename");
+			String gameName = (String)gameInfo.get("gname");
 			String chatToken = generateChatToken(gameID, userID, gameName);
 			boolean create = false;
 
@@ -1390,7 +1414,8 @@ public class ClientConnection extends Thread
 					game.setState(Game.STATE_ACTIVE);
 				}
 
-				player.join(game, (color.equals("white") ? Color.WHITE : Color.BLACK));
+				String color = (String)playerInfo.get("color");
+				player.join(game, Color.fromString(color));
 			}
 			finally
 			{

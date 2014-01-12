@@ -388,32 +388,6 @@ class Database
 		}
 	}
 
-	public String getPlayerColor(int gameID, int userID) throws SQLException
-	{
-		PreparedStatement stmt = null;
-		ResultSet set = null;
-
-		try
-		{
-			stmt = conn.prepareStatement("SELECT color FROM players WHERE gid = ? AND uid = ?");
-			stmt.setInt(1, gameID);
-			stmt.setInt(2, userID);
-
-			set = stmt.executeQuery();
-
-			if (set.next())
-			{
-				return set.getString(1);
-			}
-
-			return null;
-		}
-		finally
-		{
-			closeResources(stmt, set);
-		}
-	}
-
 	public void deletePlayer(int gameID, int userID) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -559,16 +533,16 @@ class Database
 		}
 	}
 
-	public void insertGameSave(int gameID, byte gameData[], int nextMoveUserID) throws SQLException
+	public void insertGameSave(int gameID, String name, byte gameData[]) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("REPLACE INTO saved_games (gid, game, next) VALUES (?, ?, ?)");
+			stmt = conn.prepareStatement("REPLACE INTO saved_games (gid, gname, gdata) VALUES (?, ?, ?)");
 			stmt.setInt(1, gameID);
-			stmt.setBytes(2, gameData);
-			stmt.setInt(3, nextMoveUserID);
+			stmt.setString(2, name);
+			stmt.setBytes(3, gameData);
 
 			stmt.executeUpdate();
 		}
@@ -610,11 +584,11 @@ class Database
 		try
 		{
 			// We need to take all saved games that the player has played in and then take the player's opponent's id, name and color in each of those games
-			stmt = conn.prepareStatement("SELECT gid, gname, uid, name, color FROM games " +
-											"INNER JOIN players USING(gid) " +
-											"INNER JOIN users ON(users.id = players.uid) " +
+			stmt = conn.prepareStatement("SELECT gid, gname, uid, name, color FROM saved_games " +
+											"INNER JOIN saved_game_players USING(gid) " +
+											"INNER JOIN users ON(users.id = saved_game_players.uid) " +
 											"WHERE gid IN " +
-												"(SELECT gid FROM saved_games INNER JOIN players USING(gid) WHERE uid = ?) " +
+												"(SELECT gid FROM saved_game_players WHERE uid = ?) " +
 											"AND uid != ? " +
 											"LIMIT ?, ?");
 			stmt.setInt(1, userID);
@@ -653,7 +627,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT COUNT(*) FROM saved_games INNER JOIN players USING(gid) WHERE uid = ?");
+			stmt = conn.prepareStatement("SELECT COUNT(*) FROM saved_game_players WHERE gid = ? AND uid = ?");
 			stmt.setInt(1, gameID);
 			stmt.setInt(2, userID);
 
@@ -674,7 +648,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT gid, gname, game, next FROM saved_games INNER JOIN games USING(gid) WHERE gid = ?");
+			stmt = conn.prepareStatement("SELECT gid, gname, gdata FROM saved_games WHERE gid = ?");
 			stmt.setInt(1, gameID);
 
 			set = stmt.executeQuery();
@@ -682,10 +656,9 @@ class Database
 			if (set.next())
 			{
 				HashMap<String, Object> result = new HashMap<String, Object>();
-				result.put("gameid", set.getInt(1));
-				result.put("gamename", set.getString(2));
-				result.put("game", set.getBytes(3));
-				result.put("next", set.getInt(4));
+				result.put("gid", set.getInt(1));
+				result.put("gname", set.getString(2));
+				result.put("gdata", set.getBytes(3));
 
 				return result;
 			}
@@ -695,6 +668,85 @@ class Database
 		finally
 		{
 			closeResources(stmt, set);
+		}
+	}
+
+	public void insertSavedGamePlayer(int gameID, int userID, String color, boolean next) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("INSERT INTO saved_game_players (gid, uid, color, next) VALUES (?, ?, ?, ?)");
+			stmt.setInt(1, gameID);
+			stmt.setInt(2, userID);
+			stmt.setString(3, color);
+			stmt.setBoolean(4, next);
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
+
+	public HashMap<String, Object> getSavedGamePlayerInfo(int gameID, int userID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+		ResultSet set = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("SELECT color, next FROM saved_game_players WHERE gid = ? and uid = ?");
+			stmt.setInt(1, gameID);
+			stmt.setInt(2, userID);
+			set = stmt.executeQuery();
+
+			if (set.next())
+			{
+				HashMap<String, Object> result = new HashMap<String, Object>();
+				result.put("color", set.getString(1));
+				result.put("next", set.getBoolean(2));
+				return result;
+			}
+
+			return null;
+		}
+		finally
+		{
+			closeResources(stmt, set);
+		}
+	}
+
+	public void deleteSavedGamePlayer(int gameID, int userID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("DELETE FROM saved_game_players WHERE gid = ? AND uid = ?");
+			stmt.setInt(1, gameID);
+			stmt.setInt(2, userID);
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
+
+	public void deletePlayersForSavedGame(int gameID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("DELETE FROM saved_game_players WHERE gid = ?");
+			stmt.setInt(1, gameID);
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
 		}
 	}
 }

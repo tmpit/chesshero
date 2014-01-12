@@ -18,4 +18,31 @@ public enum Color
 		WHITE.Opposite = BLACK;
 		BLACK.Opposite = WHITE;
 	}
+
+	@Override
+	public String toString()
+	{
+		if (this == Color.WHITE)
+		{
+			return "white";
+		}
+		if (this == Color.BLACK)
+		{
+			return "black";
+		}
+		return null;
+	}
+
+	public static Color fromString(String str)
+	{
+		if (str.equals("white"))
+		{
+			return Color.WHITE;
+		}
+		if (str.equals("black"))
+		{
+			return Color.BLACK;
+		}
+		return Color.NONE;
+	}
 }
