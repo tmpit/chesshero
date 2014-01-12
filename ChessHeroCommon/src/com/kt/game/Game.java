@@ -216,7 +216,7 @@ public class Game
 			color = color.Opposite;
 		}
 
-		// Assign pieces to their positions and owners
+		// Assign pieces to their positions
 		ArrayList<ChessPiece> whitePieces = whiteChessPieceSet.getActivePieces();
 
 		for (ChessPiece piece : whitePieces)
