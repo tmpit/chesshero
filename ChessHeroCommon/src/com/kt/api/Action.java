@@ -92,8 +92,10 @@ public class Action
 	public static final int MOVE = 8;
 
 	// Save game
-	// Description: Save and leave the game. After a game is saved, it can then be resumed only by the same two players.
-	// Since a game is closed once saved, your opponent will need to confirm that they want to do that.
+	// Description: Save and leave the game. After a game is saved, it can then be resumed only by the same two players. A game save in Chess Hero represents
+	// the state of a specific game before that game was closed. The state can only be used to resume a specific game and cannot be used to start a separate
+	// independent instance of the game.
+	// Since a game is closed once saved, your opponent will need to confirm that they are willing to perform this action as well.
 	// After you send a save game request, the game enters a paused state and a push is sent to your opponent to notify them that they have to respond to the request.
 	// During the paused state, the server will not accept any request from your opponent other than a save game request to accept or decline.
 	// If they decline the request, the game will continue normally. If they accept it, the game will be saved, after which it will be closed.
@@ -111,12 +113,15 @@ public class Action
 	// Delete saved game
 	// Description: Delete a game that was previously saved
 	// Parameters:
-	// - [gameid:INT] - the id the saved game to delete
+	// - [gameid:INT] - the id of the game to delete
 	public static final int DELETE_SAVED_GAME = 10;
 
 	// Resume game
-	// Description: Enter a previously saved game. The game resumes after both of the players enter it
+	// Description: Enter a previously saved game. The game resumes after both of the players enter it, in which moment the game save is deleted as it serves no
+	// purpose from this moment on
 	// Parameters:
-	// - [gameid:INT]
-//	public static final int RESUME_GAME = 11;
+	// - [gameid:INT] - the id of the game to resume
+	// Returns:
+	// - [chattoken:STR] - the token needed to chat with the other player
+	public static final int RESUME_GAME = 11;
 }

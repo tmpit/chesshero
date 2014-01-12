@@ -448,6 +448,10 @@ public class ClientConnection extends Thread
                     handleExitGame(request);
                     break;
 
+				case Action.MOVE:
+					handleMove(request);
+					break;
+
 				case Action.SAVE_GAME:
 					handleSaveGame(request);
 					break;
@@ -456,8 +460,8 @@ public class ClientConnection extends Thread
 					handleDeleteSavedGame(request);
 					break;
 
-				case Action.MOVE:
-					handleMove(request);
+				case Action.RESUME_GAME:
+					handleResumeGame(request);
 					break;
 
                 default:
@@ -1102,7 +1106,7 @@ public class ClientConnection extends Thread
 			opponentConnection.writeMessage(msg);
 		}
 
-		if (false == gameFinished)
+		if (!gameFinished)
 		{
 			return;
 		}
@@ -1279,7 +1283,7 @@ public class ClientConnection extends Thread
 			db.connect();
 			db.startTransaction();
 
-			if ((invalidGameID = !db.userPresentInSavedGame(gameID, player.getUserID())))
+			if ((invalidGameID = !db.isUserPresentInSavedGame(gameID, player.getUserID())))
 			{
 				db.deleteSavedGame(gameID);
 				db.deleteGame(gameID);
@@ -1307,5 +1311,117 @@ public class ClientConnection extends Thread
 		}
 
 		writeMessage(aResponseWithResult(Result.OK));
+	}
+
+	private void handleResumeGame(HashMap<String, Object> request) throws ChessHeroException
+	{
+		if (player.getGame() != null)
+		{
+			writeMessage(aResponseWithResult(Result.ALREADY_PLAYING));
+			return;
+		}
+
+		Integer gameID = (Integer)request.get("gameid");
+
+		if (null == gameID)
+		{
+			writeMessage(aResponseWithResult(Result.MISSING_PARAMETERS));
+			return;
+		}
+
+		try
+		{
+			db.connect();
+			int userID = player.getUserID();
+
+			if (!db.isUserPresentInSavedGame(gameID, userID))
+			{
+				writeMessage(aResponseWithResult(Result.INVALID_GAME_ID));
+				return;
+			}
+
+			HashMap<String, Object> gameInfo = db.getGameSave(gameID);
+
+			if (null == gameInfo)
+			{
+				throw new ChessHeroException(Result.INTERNAL_ERROR);
+			}
+
+			String color = db.getPlayerColor(gameID, userID);
+
+			if (null == color)
+			{
+				throw new ChessHeroException(Result.INTERNAL_ERROR);
+			}
+
+			String gameName = (String)gameInfo.get("gamename");
+			String chatToken = generateChatToken(gameID, userID, gameName);
+			boolean create = false;
+
+			gamesMutex.lock();
+
+			try
+			{
+				Game game = null;
+
+				if (null == (game = games.get(gameID)))
+				{
+					game = new Game(gameID, gameName);
+					create = true;
+				}
+
+				db.startTransaction();
+				db.insertChatEntry(gameID, userID, chatToken);
+
+				if (!create)
+				{
+					db.deleteSavedGame(gameID);
+				}
+
+				db.commit();
+
+				if (create)
+				{
+					games.put(gameID, game);
+					game.setState(Game.STATE_PENDING);
+				}
+				else
+				{
+					game.setState(Game.STATE_ACTIVE);
+				}
+
+				player.join(game, (color.equals("white") ? Color.WHITE : Color.BLACK));
+			}
+			finally
+			{
+				gamesMutex.unlock();
+			}
+		}
+		catch (SQLException e)
+		{
+			SLog.write("Exception raised while resuming game: " + e);
+			e.printStackTrace();
+
+			try
+			{
+				db.rollback();
+			}
+			catch (SQLException ignore)
+			{
+			}
+
+			throw new ChessHeroException(Result.INTERNAL_ERROR);
+		}
+		catch (NoSuchAlgorithmException e)
+		{
+			SLog.write("Exception raised while resuming game: " + e);
+			e.printStackTrace();
+
+			throw new ChessHeroException(Result.INTERNAL_ERROR);
+		}
+		finally
+		{
+			db.disconnect();
+		}
 	}
 }

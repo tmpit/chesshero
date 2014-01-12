@@ -388,6 +388,32 @@ class Database
 		}
 	}
 
+	public String getPlayerColor(int gameID, int userID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+		ResultSet set = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("SELECT color FROM players WHERE gid = ? AND uid = ?");
+			stmt.setInt(1, gameID);
+			stmt.setInt(2, userID);
+
+			set = stmt.executeQuery();
+
+			if (set.next())
+			{
+				return set.getString(1);
+			}
+
+			return null;
+		}
+		finally
+		{
+			closeResources(stmt, set);
+		}
+	}
+
 	public void deletePlayer(int gameID, int userID) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -585,10 +611,10 @@ class Database
 		{
 			// We need to take all saved games that the player has played in and then take the player's opponent's id, name and color in each of those games
 			stmt = conn.prepareStatement("SELECT gid, gname, uid, name, color FROM games " +
-											"INNER JOIN players USING(gid)" +
-											"INNER JOIN users ON(users.id = players.uid)" +
-											"WHERE gid IN" +
-												"(SELECT gid FROM saved_games INNER JOIN players USING(gid) WHERE uid = ?)" +
+											"INNER JOIN players USING(gid) " +
+											"INNER JOIN users ON(users.id = players.uid) " +
+											"WHERE gid IN " +
+												"(SELECT gid FROM saved_games INNER JOIN players USING(gid) WHERE uid = ?) " +
 											"AND uid != ? " +
 											"LIMIT ?, ?");
 			stmt.setInt(1, userID);
@@ -620,7 +646,7 @@ class Database
 		}
 	}
 
-	public boolean userPresentInSavedGame(int saveID, int userID) throws SQLException
+	public boolean isUserPresentInSavedGame(int gameID, int userID) throws SQLException
 	{
 		PreparedStatement stmt = null;
 		ResultSet set = null;
@@ -628,12 +654,43 @@ class Database
 		try
 		{
 			stmt = conn.prepareStatement("SELECT COUNT(*) FROM saved_games INNER JOIN players USING(gid) WHERE uid = ?");
-			stmt.setInt(1, saveID);
+			stmt.setInt(1, gameID);
 			stmt.setInt(2, userID);
 
 			set = stmt.executeQuery();
 
 			return set.next();
+		}
+		finally
+		{
+			closeResources(stmt, set);
+		}
+	}
+
+	public HashMap<String, Object> getGameSave(int gameID) throws SQLException
+	{
+		PreparedStatement stmt = null;
+		ResultSet set = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("SELECT gid, gname, game, next FROM saved_games INNER JOIN games USING(gid) WHERE gid = ?");
+			stmt.setInt(1, gameID);
+
+			set = stmt.executeQuery();
+
+			if (set.next())
+			{
+				HashMap<String, Object> result = new HashMap<String, Object>();
+				result.put("gameid", set.getInt(1));
+				result.put("gamename", set.getString(2));
+				result.put("game", set.getBytes(3));
+				result.put("next", set.getInt(4));
+
+				return result;
+			}
+
+			return null;
 		}
 		finally
 		{
