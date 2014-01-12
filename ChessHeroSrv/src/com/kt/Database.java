@@ -682,6 +682,7 @@ class Database
 			stmt.setInt(2, userID);
 			stmt.setString(3, color);
 			stmt.setBoolean(4, next);
+			stmt.executeUpdate();
 		}
 		finally
 		{
@@ -714,23 +715,6 @@ class Database
 		finally
 		{
 			closeResources(stmt, set);
-		}
-	}
-
-	public void deleteSavedGamePlayer(int gameID, int userID) throws SQLException
-	{
-		PreparedStatement stmt = null;
-
-		try
-		{
-			stmt = conn.prepareStatement("DELETE FROM saved_game_players WHERE gid = ? AND uid = ?");
-			stmt.setInt(1, gameID);
-			stmt.setInt(2, userID);
-			stmt.executeUpdate();
-		}
-		finally
-		{
-			closeResources(stmt, null);
 		}
 	}
 
