@@ -133,7 +133,7 @@ public class Game
 		this.name = name;
 		this.id = gameID;
 
-		if (null == data)
+		if (null == data || !parseChessPieceData(data))
 		{
 			whiteChessPieceSet = aSetOfChessPieces(Color.WHITE, true);
 			blackChessPieceSet = aSetOfChessPieces(Color.BLACK, false);
@@ -284,17 +284,19 @@ public class Game
 
 	public byte[] toData()
 	{
-		ArrayList<ChessPiece> player1Pieces = player1.getChessPieceSet().getActivePieces();
-		ArrayList<ChessPiece> player2Pieces = player2.getChessPieceSet().getActivePieces();
+		ArrayList<ChessPiece> whitePieces = whiteChessPieceSet.getActivePieces();
+		ArrayList<ChessPiece> blackPieces = blackChessPieceSet.getActivePieces();
 
-		int maxSize = 64; // The maximum possible size of the serialized game
+		// A serialized game consists of all active pieces on the board
+		// Each piece takes 2 bytes so the maximum number of bytes a game can be represented by is 64 bytes
+		int maxSize = 64;
 		ByteBuffer buffer = ByteBuffer.allocate(maxSize);
 
-		for (ChessPiece piece : player1Pieces)
+		for (ChessPiece piece : whitePieces)
 		{
 			buffer.put(piece.toData());
 		}
-		for (ChessPiece piece : player2Pieces)
+		for (ChessPiece piece : blackPieces)
 		{
 			buffer.put(piece.toData());
 		}
@@ -311,5 +313,79 @@ public class Game
 		System.arraycopy(bufferData, 0, trimmed, 0, bufferOffset);
 
 		return trimmed;
+	}
+
+	private boolean parseChessPieceData(byte data[])
+	{
+		ArrayList<ChessPiece> whiteActive = new ArrayList<ChessPiece>();
+		ArrayList<ChessPiece> blackActive = new ArrayList<ChessPiece>();
+		// 8 pawns, 2 rooks, 2 knights, 2 bishops, 1 queen, 1 king - indexes correspond to ChessPiece.Tags
+		int whiteMax[] = new int[]{8, 2, 2, 2, 1, 1};
+		int blackMax[] = new int[]{8, 2, 2, 2, 1, 1};
+		int dataLenght = data.length;
+
+		// Initialize active pieces
+		for (int i = 0; i < dataLenght; i += 2)
+		{	// Each chess piece is 2 bytes
+			ChessPiece piece = ChessPiece.chessPieceFromData(new byte[]{data[i], data[i + 1]});
+			if (null == piece)
+			{	// Invalid format
+				return false;
+			}
+
+			if (Color.WHITE == piece.getColor())
+			{
+				whiteActive.add(piece);
+				whiteMax[piece.getTag()]--;
+			}
+			else
+			{
+				blackActive.add(piece);
+				blackMax[piece.getTag()]--;
+			}
+		}
+
+		// Check if kings are present
+		if (whiteMax[ChessPiece.Tag.KING] != 1 || blackMax[ChessPiece.Tag.KING] != 1)
+		{	// One or more kings are missing
+			return false;
+		}
+
+		// Initialize taken pieces
+		ArrayList<ChessPiece> whiteTaken = new ArrayList<ChessPiece>();
+		ArrayList<ChessPiece> blackTaken = new ArrayList<ChessPiece>();
+
+		// Iterate only up to the queen, kings cannot be taken and we know they are present
+		for (int tag = 0; tag < 5; tag++)
+		{
+			int whiteLeft = whiteMax[tag];
+
+			if (whiteLeft < 0)
+			{	// There are more active white pieces of this type than there should be
+				return false;
+			}
+
+			while ((whiteLeft--) != 0)
+			{
+				whiteTaken.add(ChessPiece.aChessPiece(tag, Position.ZERO, Color.WHITE));
+			}
+
+			int blackLeft = blackMax[tag];
+
+			if (blackLeft < 0)
+			{	// There are more active black pieces of this type than there should be
+				return false;
+			}
+
+			while ((blackLeft--) != 0)
+			{
+				blackTaken.add(ChessPiece.aChessPiece(tag, Position.ZERO, Color.BLACK));
+			}
+		}
+
+		whiteChessPieceSet = new ChessPieceSet(whiteActive, whiteTaken);
+		blackChessPieceSet = new ChessPieceSet(blackActive, blackTaken);
+
+		return true;
 	}
 }

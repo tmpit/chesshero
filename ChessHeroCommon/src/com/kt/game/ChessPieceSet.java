@@ -28,15 +28,6 @@ public class ChessPieceSet
 		{
 			takenPieces.addAll(taken);
 		}
-
-		for (ChessPiece piece : active)
-		{
-			if (piece instanceof King)
-			{
-				king = (King)piece;
-				break;
-			}
-		}
 	}
 
 	public ArrayList<ChessPiece> getActivePieces()
@@ -51,6 +42,18 @@ public class ChessPieceSet
 
 	public King getKing()
 	{
+		if (null == king)
+		{
+			for (ChessPiece piece : activePieces)
+			{
+				if (piece instanceof King)
+				{
+					king = (King)piece;
+					break;
+				}
+			}
+		}
+
 		return king;
 	}
 

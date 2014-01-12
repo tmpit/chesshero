@@ -35,35 +35,29 @@ public abstract class ChessPiece
 			return null;
 		}
 
-		ChessPiece piece;
 		Color color = (white ? Color.WHITE : Color.BLACK);
+		ChessPiece piece = aChessPiece(tag, position, color);
 
-		switch (tag)
+		if (piece != null)
 		{
-			case Tag.PAWN:
-				piece = new Pawn(position, color);
-				break;
-			case Tag.ROOK:
-				piece = new Rook(position, color);
-				break;
-			case Tag.KNIGHT:
-				piece = new Knight(position, color);
-				break;
-			case Tag.BISHOP:
-				piece = new Bishop(position, color);
-				break;
-			case Tag.QUEEN:
-				piece = new Queen(position, color);
-				break;
-			case Tag.KING:
-				piece = new King(position, color);
-				break;
-			default:
-				return null;
+			piece.moved = moved;
 		}
 
-		piece.moved = moved;
 		return piece;
+	}
+
+	public static ChessPiece aChessPiece(int tag, Position position, Color color)
+	{
+		switch (tag)
+		{
+			case Tag.PAWN: 		return new Pawn(position, color);
+			case Tag.ROOK: 		return new Rook(position, color);
+			case Tag.KNIGHT: 	return new Knight(position, color);
+			case Tag.BISHOP: 	return new Bishop(position, color);
+			case Tag.QUEEN: 	return new Queen(position, color);
+			case Tag.KING: 		return new King(position, color);
+			default: 			return null;
+		}
 	}
 
 	protected Position position;
