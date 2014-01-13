@@ -22,6 +22,11 @@ public class GameController
 
 	public void startGame()
 	{
+		startGame(null);
+	}
+
+	public void startGame(Player turn)
+	{
 		if (Game.STATE_ACTIVE == game.getState())
 		{
 			return;
@@ -30,7 +35,11 @@ public class GameController
 		game.setState(Game.STATE_ACTIVE);
 		game.initializeBoard();
 
-		if (Color.WHITE == game.player1.getColor())
+		if (turn != null)
+		{
+			game.turn = turn;
+		}
+		else if (Color.WHITE == game.player1.getColor())
 		{
 			game.turn = game.player1;
 		}

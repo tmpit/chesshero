@@ -329,10 +329,9 @@ public class Game
 		// 8 pawns, 2 rooks, 2 knights, 2 bishops, 1 queen, 1 king - indexes correspond to ChessPiece.Tags
 		int whiteMax[] = new int[]{8, 2, 2, 2, 1, 1};
 		int blackMax[] = new int[]{8, 2, 2, 2, 1, 1};
-		int dataLenght = data.length;
 
 		// Initialize active pieces
-		for (int i = 0; i < dataLenght; i += 2)
+		for (int i = 0; i < dataLength; i += 2)
 		{	// Each chess piece is 2 bytes
 			ChessPiece piece = ChessPiece.chessPieceFromData(new byte[]{data[i], data[i + 1]});
 			if (null == piece)
@@ -354,7 +353,7 @@ public class Game
 
 		// Check if kings are present
 		if (whiteMax[ChessPiece.Tag.KING] != 0 || blackMax[ChessPiece.Tag.KING] != 0)
-		{	// One or more kings are missing
+		{	// One or more kings are missing or someone has more than one king
 			return false;
 		}
 
