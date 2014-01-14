@@ -117,11 +117,15 @@ public class Action
 	public static final int DELETE_SAVED_GAME = 10;
 
 	// Resume game
-	// Description: Enter a previously saved game. The game resumes after both of the players enter it, in which moment the game save is deleted as it serves no
-	// purpose from this moment on
+	// Description: Enter a previously saved game. The game resumes after both players enter it. After a game is resumed, the save gets deleted.
 	// Parameters:
 	// - [gameid:INT] - the id of the game to resume
+	// - [resume:BOOL] - optional, true if you want to resume the game, false if not. If not present, default value is true
+	// Sending false is a no-op when trying to initiate the resume game routine. However, when responding to your opponent's request, this is how you decline it
 	// Returns:
+	// - [game:STR] - the game data encoded as a UTF-8 string
 	// - [chattoken:STR] - the token needed to chat with the other player
-//	public static final int RESUME_GAME = 11;
+	// - [next:BOOL] - true if you are the next to make a move, false if not
+	// - [started:BOOL] - true if the game has started - the game starts when both players enter the game or in other words when you are the second player to enter it
+	public static final int RESUME_GAME = 11;
 }
