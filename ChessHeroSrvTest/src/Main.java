@@ -1,4 +1,3 @@
-import com.kt.*;
 import com.kt.api.Action;
 import com.kt.api.Push;
 import com.kt.api.Result;
@@ -12,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -25,13 +25,11 @@ public class Main
     private static CHESCOReader reader;
     private static CHESCOWriter writer;
 
-	private static boolean shouldRespondToMessages = true;
+	private static boolean shouldHandlePushMessages = true;
 
-	private static int lastAction;
-	private static String joinColor;
-	private static int joinID;
 	private static ArrayList<HashMap> availableGames;
-	private static String lastMove;
+
+	private static Boolean iAmNextOnResume = null;
 
 	private static Player me;
 	private static Player notMe;
@@ -145,6 +143,14 @@ public class Main
 			{
 				saveGame(Integer.parseInt(args[1]));
 			}
+			else if (args[0].equals("deletesave"))
+			{
+				deleteSavedGame(Integer.parseInt(args[1]));
+			}
+			else if (args[0].equals("resumegame"))
+			{
+				resumeGame(Integer.parseInt(args[1]));
+			}
             else
             {
                 SLog.write("Unrecognized command");
@@ -211,96 +217,30 @@ public class Main
 	{
 		SLog.write(msg);
 
-		if (!shouldRespondToMessages)
+		if (!shouldHandlePushMessages)
 		{
 			return;
 		}
 
-		if (msg.containsKey("result"))
-		{
-			if ((Integer)msg.get("result") != Result.OK)
-			{
-				return;
-			}
-
-			switch (lastAction)
-			{
-				case Action.LOGIN:
-				case Action.REGISTER:
-					me = new Player((Integer)msg.get("userid"), (String)msg.get("username"));
-					break;
-
-				case Action.CREATE_GAME:
-					theGame = new Game(-1, "");
-					me.join(theGame, (null == joinColor ? Color.WHITE : joinColor.equals("white") ? Color.WHITE : Color.BLACK));
-					break;
-
-				case Action.CANCEL_GAME:
-					me.leave();
-					theGame = null;
-					break;
-
-				case Action.FETCH_GAMES:
-					availableGames = (ArrayList)msg.get("games");
-					break;
-
-				case Action.JOIN_GAME:
-					theGame = new Game(-1, "");
-					Color opponentColor = Color.NONE;
-					Player opponent = null;
-
-					for (HashMap game : availableGames)
-					{
-						if ((Integer)game.get("gameid") == joinID)
-						{
-							String theColor = (String)game.get("usercolor");
-							opponentColor = (theColor.equals("white") ? Color.WHITE : Color.BLACK);
-							opponent = new Player((Integer)game.get("userid"), (String)game.get("username"));
-						}
-					}
-
-					if (Color.NONE == opponentColor || null == opponent)
-					{
-						SLog.write("Cannot start game as opponent info could not be found");
-						try { disconnect(); } catch (IOException ignore) {}
-						me = null;
-						theGame = null;
-						return;
-					}
-
-					me.join(theGame, opponentColor.Opposite);
-					notMe = opponent;
-					notMe.join(theGame, opponentColor);
-					new GameController(theGame).startGame();
-					printBoard();
-					break;
-
-				case Action.EXIT_GAME:
-					theGame = null;
-					notMe = null;
-					break;
-
-				case Action.MOVE:
-					theGame.getController().execute(me, lastMove);
-					printBoard();
-					break;
-
-				case Action.SAVE_GAME:
-					break;
-
-				default:
-					SLog.write("unrecognized action");
-					break;
-			}
-		}
-		else if (msg.containsKey("push"))
+		if (msg.containsKey("push"))
 		{
 			switch((Integer)msg.get("event"))
 			{
 				case Push.GAME_JOIN:
 					notMe = new Player((Integer)msg.get("opponentid"), (String)msg.get("opponentname"));
 					notMe.join(theGame, me.getColor().Opposite);
-					new GameController(theGame).startGame();
+
+					if (iAmNextOnResume != null)
+					{
+						new GameController(theGame).startGame(iAmNextOnResume ? me : notMe);
+					}
+					else
+					{
+						new GameController(theGame).startGame();
+					}
+
+					iAmNextOnResume = null;
+
 					printBoard();
 					break;
 
@@ -331,35 +271,40 @@ public class Main
 
     public static void login(String name, String pass) throws IOException
     {
-		lastAction = Action.LOGIN;
-
         HashMap req = new HashMap();
         req.put("action", Action.LOGIN);
         req.put("username", name);
         req.put("password", pass);
         writer.write(req);
 
-        listen(1);
+        HashMap res = (HashMap)reader.read();
+		SLog.write(res);
+
+		if (Result.OK == (Integer)res.get("result"))
+		{
+			me = new Player((Integer)res.get("userid"), (String)res.get("username"));
+		}
     }
 
     public static void reg(String name, String pass) throws IOException
     {
-		lastAction = Action.REGISTER;
-
         HashMap req = new HashMap();
         req.put("action", Action.REGISTER);
         req.put("username", name);
         req.put("password", pass);
         writer.write(req);
 
-        listen(1);
+		HashMap res = (HashMap)reader.read();
+		SLog.write(res);
+
+		if (Result.OK == (Integer)res.get("result"))
+		{
+			me = new Player((Integer)res.get("userid"), (String)res.get("username"));
+		}
     }
 
     public static void createGame(String name, String color) throws IOException
     {
-		lastAction = Action.CREATE_GAME;
-		joinColor = color;
-
         HashMap req = new HashMap();
         req.put("action", Action.CREATE_GAME);
         req.put("gamename", name);
@@ -369,25 +314,35 @@ public class Main
 		}
         writer.write(req);
 
-        listen(1);
+        HashMap res = (HashMap)reader.read();
+		SLog.write(res);
+
+		if (Result.OK == (Integer)res.get("result"))
+		{
+			theGame = new Game(-1, "");
+			me.join(theGame, (null == color ? Color.WHITE : color.equals("white") ? Color.WHITE : Color.BLACK));
+		}
     }
 
     public static void cancelGame(int gameid) throws IOException
     {
-		lastAction = Action.CANCEL_GAME;
-
         HashMap req = new HashMap();
         req.put("action", Action.CANCEL_GAME);
         req.put("gameid", gameid);
         writer.write(req);
 
-        listen(1);
+     	HashMap res = (HashMap)reader.read();
+		SLog.write(res);
+
+		if (Result.OK == (Integer)res.get("result"))
+		{
+			me.leave();
+			theGame = null;
+		}
     }
 
     public static void fetchGames(String type, int offset, int limit) throws IOException
     {
-		lastAction = Action.FETCH_GAMES;
-
         HashMap req = new HashMap();
         req.put("action", Action.FETCH_GAMES);
 		if (type != null)
@@ -404,57 +359,169 @@ public class Main
         }
         writer.write(req);
 
-        listen(1);
+        HashMap res = (HashMap)reader.read();
+		SLog.write(res);
+
+		if (Result.OK == (Integer)res.get("result"))
+		{
+			availableGames = (ArrayList)res.get("games");
+		}
     }
 
     public static void joinGame(int gameID) throws IOException
     {
-		lastAction = Action.JOIN_GAME;
-		joinID = gameID;
-
         HashMap req = new HashMap();
         req.put("action", Action.JOIN_GAME);
         req.put("gameid", gameID);
         writer.write(req);
 
-        listen(1);
-    }
+        HashMap res = (HashMap)reader.read();
+		SLog.write(res);
+
+		if (Result.OK == (Integer)res.get("result"))
+		{
+			theGame = new Game(-1, "");
+			Color opponentColor = Color.NONE;
+			Player opponent = null;
+
+			for (HashMap game : availableGames)
+			{
+				if ((Integer)game.get("gameid") == gameID)
+				{
+					String theColor = (String)game.get("usercolor");
+					opponentColor = (theColor.equals("white") ? Color.WHITE : Color.BLACK);
+					opponent = new Player((Integer)game.get("userid"), (String)game.get("username"));
+				}
+			}
+
+			if (Color.NONE == opponentColor || null == opponent)
+			{
+				SLog.write("Cannot start game as opponent info could not be found");
+				try { disconnect(); } catch (IOException ignore) {}
+				me = null;
+				theGame = null;
+				return;
+			}
+
+			me.join(theGame, opponentColor.Opposite);
+			notMe = opponent;
+			notMe.join(theGame, opponentColor);
+			new GameController(theGame).startGame();
+			printBoard();
+		}
+	}
 
 	public static void exitGame(int gameID) throws IOException
 	{
-		lastAction = Action.EXIT_GAME;
-
 		HashMap req = new HashMap();
 		req.put("action", Action.EXIT_GAME);
 		req.put("gameid", gameID);
 		writer.write(req);
 
-		listen(1);
+		HashMap res = (HashMap)reader.read();
+		SLog.write(res);
+
+		if (Result.OK == (Integer)res.get("result"))
+		{
+			theGame = null;
+			notMe = null;
+		}
 	}
 
 	public static void move(String move) throws IOException
 	{
-		lastAction = Action.MOVE;
-		lastMove = move;
-
 		HashMap req = new HashMap();
 		req.put("action", Action.MOVE);
 		req.put("move", move);
 		writer.write(req);
 
-		listen(1);
+		HashMap res = (HashMap)reader.read();
+		SLog.write(res);
+
+		if (Result.OK == (Integer)res.get("result"))
+		{
+			theGame.getController().execute(me, move);
+			printBoard();
+		}
 	}
 
 	public static void saveGame(int gameID) throws IOException
 	{
-		lastAction = Action.SAVE_GAME;
-
 		HashMap req = new HashMap();
 		req.put("action", Action.SAVE_GAME);
 		req.put("gameid", gameID);
 		writer.write(req);
 
-		listen(1);
+		HashMap res = (HashMap)reader.read();
+		SLog.write(res);
+
+		if (Result.OK == (Integer)res.get("result"))
+		{
+			theGame = null;
+			notMe = null;
+		}
+	}
+
+	public static void deleteSavedGame(int gameID) throws IOException
+	{
+		HashMap req = new HashMap();
+		req.put("action", Action.DELETE_SAVED_GAME);
+		req.put("gameid", gameID);
+		writer.write(req);
+
+		HashMap res = (HashMap)reader.read();
+		SLog.write(res);
+	}
+
+	public static void resumeGame(int gameID) throws IOException
+	{
+		HashMap req = new HashMap();
+		req.put("action", Action.RESUME_GAME);
+		req.put("gameid", gameID);
+		writer.write(req);
+
+		HashMap res = (HashMap)reader.read();
+		SLog.write(res);
+
+		if (Result.OK == (Integer)res.get("result"))
+		{
+			String dataStr = (String)res.get("game");
+			byte data[] = dataStr.getBytes("UTF-8");
+			theGame = new Game(-1, "", data);
+
+			Color opponentColor = Color.NONE;
+			Player opponent = null;
+
+			for (HashMap game : availableGames)
+			{
+				if ((Integer)game.get("gameid") == gameID)
+				{
+					String theColor = (String)game.get("usercolor");
+					opponentColor = (theColor.equals("white") ? Color.WHITE : Color.BLACK);
+					opponent = new Player((Integer)game.get("userid"), (String)game.get("username"));
+				}
+			}
+
+			if (Color.NONE == opponentColor || null == opponent)
+			{
+				SLog.write("Cannot start game as opponent info could not be found");
+				try { disconnect(); } catch (IOException ignore) {}
+				me = null;
+				theGame = null;
+				return;
+			}
+
+			me.join(theGame, opponentColor.Opposite);
+			iAmNextOnResume = (Boolean)res.get("next");
+
+			if ((Boolean)res.get("started"))
+			{
+				notMe = opponent;
+				notMe.join(theGame, opponentColor);
+				new GameController(theGame).startGame(iAmNextOnResume ? me : notMe);
+				printBoard();
+			}
+		}
 	}
 
 	public static void printBoard()
