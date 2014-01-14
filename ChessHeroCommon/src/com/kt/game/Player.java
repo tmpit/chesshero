@@ -50,12 +50,6 @@ public class Player
 
 	public boolean join(Game game, Color color)
 	{
-		ChessPieceSet set = (color == Color.WHITE ? game.whiteChessPieceSet : game.blackChessPieceSet);
-		return join(game, color, set);
-	}
-
-	public boolean join(Game game, Color color, ChessPieceSet pieceSet)
-	{
 		boolean player1;
 
 		if (!(player1 = null == game.player1) && game.player2 != null)
@@ -72,11 +66,13 @@ public class Player
 			game.player2 = this;
 		}
 
+		ChessPieceSet set = (color == Color.WHITE ? game.whiteChessPieceSet : game.blackChessPieceSet);
+
 		this.game = game;
 		this.color = color;
-		this.chessPieceSet = pieceSet;
+		this.chessPieceSet = set;
 
-		ArrayList<ChessPiece> pieces = pieceSet.getActivePieces();
+		ArrayList<ChessPiece> pieces = set.getActivePieces();
 		for (ChessPiece piece : pieces)
 		{
 			piece.setOwner(this);
