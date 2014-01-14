@@ -228,16 +228,17 @@ class Database
 
     // Returns the new game id
     // On error returns -1
-    public int insertGame(String name, short state) throws SQLException
+    public int insertGame(String name, short state, int timeout) throws SQLException
     {
         PreparedStatement stmt = null;
         ResultSet set = null;
 
         try
         {
-            stmt = conn.prepareStatement("INSERT INTO games (gname, state) VALUES (?, ?)");
+            stmt = conn.prepareStatement("INSERT INTO games (gname, state, timeout) VALUES (?, ?, ?)");
             stmt.setString(1, name);
             stmt.setShort(2, state);
+			stmt.setInt(3, timeout);
 
             stmt.executeUpdate();
 
@@ -309,7 +310,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT gid, gname, uid, name, color FROM games INNER JOIN players USING(gid) INNER JOIN users ON(players.uid = users.id) WHERE STATE = ? LIMIT ?, ?");
+			stmt = conn.prepareStatement("SELECT gid, gname, timeout, uid, name, color FROM games INNER JOIN players USING(gid) INNER JOIN users ON(players.uid = users.id) WHERE STATE = ? LIMIT ?, ?");
 			stmt.setShort(1, state);
 			stmt.setInt(2, offset);
 			stmt.setInt(3, limit);
@@ -322,9 +323,10 @@ class Database
 				HashMap game = new HashMap();
 				game.put("gameid", set.getInt(1));
 				game.put("gamename", set.getString(2));
-				game.put("userid", set.getInt(3));
-				game.put("username", set.getString(4));
-				game.put("usercolor", set.getString(5));
+				game.put("timeout", set.getInt(3));
+				game.put("userid", set.getInt(4));
+				game.put("username", set.getString(5));
+				game.put("usercolor", set.getString(6));
 
 				games.add(game);
 			}
