@@ -260,6 +260,24 @@ class Database
         }
     }
 
+	public void insertGame(int gameID, String name, short state) throws SQLException
+	{
+		PreparedStatement stmt = null;
+
+		try
+		{
+			stmt = conn.prepareStatement("INSERT INTO games (gid, gname, state) VALUES (?, ?, ?)");
+			stmt.setInt(1, gameID);
+			stmt.setString(2, name);
+			stmt.setShort(3, state);
+			stmt.executeUpdate();
+		}
+		finally
+		{
+			closeResources(stmt, null);
+		}
+	}
+
     public void deleteGame(int gameID) throws SQLException
     {
         PreparedStatement stmt = null;
@@ -274,38 +292,6 @@ class Database
         finally
         {
             closeResources(stmt, null);
-        }
-    }
-
-    public ArrayList getGames(short state, int offset, int limit) throws SQLException
-    {
-        PreparedStatement stmt = null;
-        ResultSet set = null;
-
-        try
-        {
-            stmt = conn.prepareStatement("SELECT gid, gname FROM games WHERE state = ? LIMIT ?, ?");
-            stmt.setShort(1, state);
-            stmt.setInt(2, offset);
-            stmt.setInt(3, limit);
-
-            ArrayList games = new ArrayList();
-            set = stmt.executeQuery();
-
-            while (set.next())
-            {
-                HashMap game = new HashMap();
-                game.put("gameid", set.getInt(1));
-                game.put("gamename", set.getString(2));
-
-                games.add(game);
-            }
-
-            return games;
-        }
-        finally
-        {
-            closeResources(stmt, set);
         }
     }
 
@@ -689,27 +675,29 @@ class Database
 		}
 	}
 
-	public HashMap<String, Object> getSavedGamePlayerInfo(int gameID, int userID) throws SQLException
+	public ArrayList<HashMap> getSavedGamePlayers(int gameID) throws SQLException
 	{
 		PreparedStatement stmt = null;
 		ResultSet set = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT color, next FROM saved_game_players WHERE gid = ? and uid = ?");
+			stmt = conn.prepareStatement("SELECT uid, color, next FROM saved_game_players WHERE gid = ?");
 			stmt.setInt(1, gameID);
-			stmt.setInt(2, userID);
 			set = stmt.executeQuery();
 
-			if (set.next())
+			ArrayList<HashMap> players = new ArrayList<HashMap>(2);
+
+			while (set.next())
 			{
-				HashMap<String, Object> result = new HashMap<String, Object>();
-				result.put("color", set.getString(1));
-				result.put("next", set.getBoolean(2));
-				return result;
+				HashMap<String, Object> player = new HashMap<String, Object>();
+				player.put("id", set.getInt(1));
+				player.put("color", set.getString(2));
+				player.put("next", set.getBoolean(3));
+				players.add(player);
 			}
 
-			return null;
+			return players;
 		}
 		finally
 		{
