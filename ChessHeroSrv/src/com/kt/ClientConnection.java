@@ -32,7 +32,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientConnection extends Thread
 {
-    private static final int READ_TIMEOUT = 15 * 1000; // In milliseconds
+    private static final int NOAUTH_READ_TIMEOUT = 15 * 1000; // 15 seconds in milliseconds
+	private static final int AUTH_READ_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 
     private static final int DEFAULT_FETCH_GAMES_OFFSET = 0;
     private static final int DEFAULT_FETCH_GAMES_LIMIT = 100;
@@ -118,7 +119,7 @@ public class ClientConnection extends Thread
 
     private boolean running = true;
     private Socket sock = null;
-	private int readTimeout = READ_TIMEOUT;
+	private int readTimeout = NOAUTH_READ_TIMEOUT;
 
     private CHESCOReader reader = null;
     private CHESCOWriter writer = null;
@@ -183,7 +184,7 @@ public class ClientConnection extends Thread
 				int gameID = game.getID();
 				short state = game.getState();
 
-				if (Game.STATE_PENDING == state)
+				if (Game.STATE_PENDING == state || Game.STATE_WAITING == state)
 				{
 					cancelGame(game);
 					popPlayerConnection(gameID, player.getUserID());
@@ -542,7 +543,7 @@ public class ClientConnection extends Thread
             }
 
             player = new Player(userID, name);
-			readTimeout = 0;
+			readTimeout = AUTH_READ_TIMEOUT;
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("username", name);
@@ -602,7 +603,7 @@ public class ClientConnection extends Thread
             }
 
             player = new Player (userID, name);
-			readTimeout = 0;
+			readTimeout = AUTH_READ_TIMEOUT;
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("username", name);
@@ -748,16 +749,14 @@ public class ClientConnection extends Thread
 
         synchronized (game)
         {
-            if (!(isInGame = game.getState() != Game.STATE_PENDING))
-            {
-                int gID = gameIDToDelete.intValue();
+			short state = game.getState();
+			int gameID = game.getID();
 
-                if (!(invalidGameID = game.getID() != gID))
-                {
-					popPlayerConnection(gID, player.getUserID());
-                    cancelGame(game);
-                }
-            }
+			if (!(invalidGameID = gameIDToDelete != gameID) && !(isInGame = Game.STATE_PENDING == state || Game.STATE_WAITING == state))
+			{
+				popPlayerConnection(gameID, player.getUserID());
+				cancelGame(game);
+			}
         }
 
         if (isInGame)
@@ -979,7 +978,6 @@ public class ClientConnection extends Thread
 
 				popPlayerConnection(gameID, player.getUserID());
 				opponentConnection = popPlayerConnection(gameID, opponentUserID);
-				readTimeout = 0;
 
 				finalizeGame(game);
 			}
@@ -1348,7 +1346,7 @@ public class ClientConnection extends Thread
 
 		writeMessage(aResponseWithResult(Result.OK));
 	}
-	// TODO: handle cancel and disconnect while waiting for resume
+
 	private void handleResumeGame(HashMap<String, Object> request) throws ChessHeroException
 	{
 		if (player.getGame() != null)
