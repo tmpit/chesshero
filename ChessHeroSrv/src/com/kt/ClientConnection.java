@@ -42,9 +42,6 @@ public class ClientConnection extends Thread
 
     private static final String DEFAULT_PLAYER_COLOR = "white";
 
-	private static final HashMap<Integer, ArrayList<ClientConnection>> connections = new HashMap<Integer, ArrayList<ClientConnection>>();
-	private static final Lock connectionsMutex = new ReentrantLock(true);
-
 	private static final HashMap<String, ClientConnection> playerConnections = new HashMap<String, ClientConnection>();
 	private static final Lock playerConnectionsMutex = new ReentrantLock(true);
 
@@ -53,48 +50,6 @@ public class ClientConnection extends Thread
 
 	// Not using synchronized blocks because those use non-fair ReentrantLocks
 	// Since these methods are frequently used by all threads, non-fair policy might lead to thread starvation
-	private static void putConnection(int userID, ClientConnection conn)
-	{
-		connectionsMutex.lock();
-
-		ArrayList<ClientConnection> all = connections.get(userID);
-
-		if (null == all)
-		{
-			all = new ArrayList<ClientConnection>();
-			connections.put(userID, all);
-		}
-
-		all.add(conn);
-
-		connectionsMutex.unlock();
-	}
-
-	private static ArrayList<ClientConnection> getConnections(int userID)
-	{
-		ArrayList<ClientConnection> all = null;
-		connectionsMutex.lock();
-		all = connections.get(userID);
-		connectionsMutex.unlock();
-		return all;
-	}
-
-	private static boolean popConnection(int userID, ClientConnection conn)
-	{
-		connectionsMutex.lock();
-
-		boolean success = false;
-		ArrayList<ClientConnection> all = connections.get(userID);
-
-		if (all != null)
-		{
-			success = all.remove(conn);
-		}
-
-		connectionsMutex.unlock();
-		return success;
-	}
-
 	private static void putPlayerConnection(int gameID, int userID, ClientConnection conn)
 	{
 		playerConnectionsMutex.lock();
@@ -216,7 +171,6 @@ public class ClientConnection extends Thread
 				return;
 			}
 
-			popConnection(player.getUserID(), this);
 			Game game = null;
 
 			if (null == (game = player.getGame()))
@@ -473,7 +427,7 @@ public class ClientConnection extends Thread
 				return;
 			}
 
-            switch (action.intValue())
+            switch (action)
             {
                 case Action.LOGIN:
                     handleLogin(request);
@@ -515,9 +469,9 @@ public class ClientConnection extends Thread
 					handleDeleteSavedGame(request);
 					break;
 
-//				case Action.RESUME_GAME:
-//					handleResumeGame(request);
-//					break;
+				case Action.RESUME_GAME:
+					handleResumeGame(request);
+					break;
 
                 default:
                     throw new ChessHeroException(Result.UNRECOGNIZED_ACTION);
@@ -587,7 +541,6 @@ public class ClientConnection extends Thread
                 throw new ChessHeroException(Result.INTERNAL_ERROR);
             }
 
-			putConnection(userID, this);
             player = new Player(userID, name);
 			readTimeout = 0;
 
@@ -648,7 +601,6 @@ public class ClientConnection extends Thread
                 throw new ChessHeroException(Result.INTERNAL_ERROR);
             }
 
-			putConnection(userID, this);
             player = new Player (userID, name);
 			readTimeout = 0;
 
@@ -1396,7 +1348,7 @@ public class ClientConnection extends Thread
 
 		writeMessage(aResponseWithResult(Result.OK));
 	}
-
+	// TODO: handle cancel and disconnect while waiting for resume
 	private void handleResumeGame(HashMap<String, Object> request) throws ChessHeroException
 	{
 		if (player.getGame() != null)
@@ -1413,115 +1365,206 @@ public class ClientConnection extends Thread
 			return;
 		}
 
+		int myUserID = player.getUserID();
+		boolean success = false;
+
 		try
 		{
 			db.connect();
-			int userID = player.getUserID();
 
-			if (!db.isUserPresentInSavedGame(gameID, userID))
+			if (!db.isUserPresentInSavedGame(gameID, myUserID))
 			{
 				writeMessage(aResponseWithResult(Result.INVALID_GAME_ID));
 				return;
 			}
 
-			HashMap<String, Object> gameInfo = db.getGameSave(gameID);
+			HashMap gameInfo = db.getGameSave(gameID);
 
 			if (null == gameInfo)
 			{
+				SLog.write("Raising exception: no game info");
 				throw new ChessHeroException(Result.INTERNAL_ERROR);
 			}
 
-			HashMap<String, Object> playerInfo = db.getSavedGamePlayerInfo(gameID, userID);
+			ArrayList<HashMap> playersInfo = db.getSavedGamePlayers(gameID);
 
-			if (null == playerInfo)
+			if (null == playersInfo || playersInfo.size() != 2)
 			{
+				SLog.write("Raising exception: no players info");
 				throw new ChessHeroException(Result.INTERNAL_ERROR);
 			}
 
+			HashMap firstPlayer = playersInfo.get(0);
+			HashMap secondPlayer = playersInfo.get(1);
+			HashMap myPlayerInfo = firstPlayer.get("id").equals(myUserID) ? firstPlayer : secondPlayer;
+			HashMap opponentPlayerInfo = firstPlayer == myPlayerInfo ? secondPlayer : firstPlayer;
+
+			Game game = null;
+			byte gameData[] = (byte[])gameInfo.get("gdata");
 			String gameName = (String)gameInfo.get("gname");
-			String chatToken = generateChatToken(gameID, userID, gameName);
-			boolean join = true;
-			boolean duplicateUser = false;
 
 			gamesMutex.lock();
 
-			try
+			if (null == (game = games.get(gameID)))
 			{
-				Game game = null;
+				game = new Game(gameID, gameName, gameData);
+				games.put(gameID, game);
+			}
 
-				if (null == (game = games.get(gameID)))
+			gamesMutex.unlock();
+
+			boolean gameOccupied = false;
+			boolean duplicateUser = false;
+			String color = (String)myPlayerInfo.get("color");
+			String token = null;
+			String gameDataEncoded = null;
+			ClientConnection opponentConnection = null;
+			boolean join = false;
+
+			synchronized (game)
+			{
+				short state = game.getState();
+
+				try
 				{
-					game = new Game(gameID, gameName, (byte[])gameInfo.get("gdata"));
-					join = false;
+					token = generateChatToken(gameID, myUserID, gameName);
+					gameDataEncoded = new String(gameData, "UTF-8");
+				}
+				catch (Exception e)
+				{
+					SLog.write("Exception raised while resuming game: " + e);
+					e.printStackTrace();
+
+					throw new ChessHeroException(Result.INTERNAL_ERROR);
 				}
 
-				if (game.getState() != Game.STATE_ACTIVE)
+				if (Game.STATE_INIT == state)
 				{
-					Player player1 = game.getPlayer1();
-					duplicateUser = player1 != null && player1.equals(player);
-
-					if (!duplicateUser)
+					try
 					{
-						String color = (String)playerInfo.get("color");
-
 						db.startTransaction();
-						db.insertPlayer(gameID, userID, color);
-						db.insertChatEntry(gameID, userID, chatToken);
 
-						if (join)
-						{
-							db.deleteSavedGame(gameID);
-							db.deletePlayersForSavedGame(gameID);
-						}
+						db.insertGame(gameID, gameName, Game.STATE_WAITING);
+						db.insertPlayer(gameID, myUserID, color);
+						db.insertChatEntry(gameID, myUserID, token);
 
 						db.commit();
+					}
+					catch (SQLException e)
+					{
+						SLog.write("Exception raised while resuming game: " + e);
+						e.printStackTrace();
 
-						putPlayerConnection(gameID, userID, this);
+						try
+						{
+							db.rollback();
+						}
+						catch (SQLException ignore)
+						{
+						}
 
+						throw new ChessHeroException(Result.INTERNAL_ERROR);
+					}
+
+					putPlayerConnection(gameID, myUserID, this);
+					game.setState(Game.STATE_WAITING);
+					player.join(game, Color.fromString(color));
+				}
+				else if (Game.STATE_WAITING == state)
+				{
+					if (!(duplicateUser = game.getPlayer1().equals(player)))
+					{
+						opponentConnection = getPlayerConnection(gameID, (Integer)opponentPlayerInfo.get("id"));
+
+						if (null == opponentConnection)
+						{
+							SLog.write("Raising exception: no opponent connection");
+							throw new ChessHeroException(Result.INTERNAL_ERROR);
+						}
+
+						try
+						{
+							db.startTransaction();
+
+							db.insertPlayer(gameID, myUserID, color);
+							db.insertChatEntry(gameID, myUserID, token);
+							db.updateGameState(gameID, Game.STATE_ACTIVE);
+							db.deleteSavedGame(gameID);
+							db.deletePlayersForSavedGame(gameID);
+
+							db.commit();
+						}
+						catch (SQLException e)
+						{
+							SLog.write("Exception raised while resuming game: " + e);
+							e.printStackTrace();
+
+							try
+							{
+								db.rollback();
+							}
+							catch (SQLException ignore)
+							{
+							}
+
+							throw new ChessHeroException(Result.INTERNAL_ERROR);
+						}
+
+						putPlayerConnection(gameID, myUserID, this);
 						player.join(game, Color.fromString(color));
-
-						if (join)
-						{
-							new GameController(game).startGame();
-						}
-						else
-						{
-							games.put(gameID, game);
-							game.setState(Game.STATE_PENDING);
-						}
+						Boolean myTurn = (Boolean)myPlayerInfo.get("next");
+						new GameController(game).startGame(myTurn ? player : player.getOpponent());
+						join = true;
 					}
 				}
+				else
+				{
+					gameOccupied = true;
+				}
 			}
-			finally
+
+			if (gameOccupied)
 			{
-				gamesMutex.unlock();
+				writeMessage(aResponseWithResult(Result.GAME_OCCUPIED));
+				return;
 			}
+
+			if (duplicateUser)
+			{
+				writeMessage(aResponseWithResult(Result.DUPLICATE_PLAYER));
+				return;
+			}
+
+			HashMap response = aResponseWithResult(Result.OK);
+			response.put("game", gameDataEncoded);
+			response.put("chattoken", token);
+			response.put("next", (Boolean)myPlayerInfo.get("next"));
+			response.put("started", join);
+			writeMessage(response);
+
+			if (join)
+			{
+				HashMap push = aPushWithEvent(Push.GAME_JOIN);
+				push.put("opponentname", player.getName());
+				push.put("opponentid", player.getUserID());
+				opponentConnection.writeMessage(push);
+			}
+
+			success = true;
 		}
 		catch (SQLException e)
 		{
 			SLog.write("Exception raised while resuming game: " + e);
 			e.printStackTrace();
-
-			try
-			{
-				db.rollback();
-			}
-			catch (SQLException ignore)
-			{
-			}
-
-			throw new ChessHeroException(Result.INTERNAL_ERROR);
-		}
-		catch (NoSuchAlgorithmException e)
-		{
-			SLog.write("Exception raised while resuming game: " + e);
-			e.printStackTrace();
-
-			throw new ChessHeroException(Result.INTERNAL_ERROR);
 		}
 		finally
 		{
 			db.disconnect();
+
+			if (!success)
+			{
+				removeGame(gameID);
+			}
 		}
 	}
 }
