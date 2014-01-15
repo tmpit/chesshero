@@ -1604,8 +1604,53 @@ public class ClientConnection extends Thread implements GameClockEventListener
 	}
 
 	@Override
-	public void playerDidTimeout(Player player)
+	public void playerDidTimeout(Player thePlayer)
 	{
+		SLog.write("Sudden death: " + thePlayer);
 
+		if (!thePlayer.equals(player))
+		{	// Not me
+			return;
+		}
+
+		Game game = thePlayer.getGame();
+
+		if (null == game)
+		{
+			return;
+		}
+
+		int opponentUserID;
+		ClientConnection opponentConnection;
+
+		synchronized (game)
+		{
+			if (game.getState() != Game.STATE_ACTIVE)
+			{
+				return;
+			}
+
+			Player opponent = thePlayer.getOpponent();
+			opponentUserID = opponent.getUserID();
+			int gameID = game.getID();
+
+			// End the game with the opponent as the winner
+			game.getController().endGame(opponent, false);
+
+			popPlayerConnection(gameID, thePlayer.getUserID());
+			opponentConnection = popPlayerConnection(gameID, opponentUserID);
+
+			finalizeGame(game);
+		}
+
+		HashMap push = aPushWithEvent(Push.GAME_END);
+		push.put("winner", opponentUserID);
+		push.put("suddendeath", true);
+		writeMessage(push);
+
+		if (opponentConnection != null)
+		{
+			opponentConnection.writeMessage(push);
+		}
 	}
 }
