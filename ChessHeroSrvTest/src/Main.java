@@ -103,7 +103,7 @@ public class Main
             }
             else if (args[0].equals("creategame"))
             {
-                createGame(args[1], (args.length > 2 ? args[2] : null));
+                createGame(args[1], (args.length > 2 ? args[2] : null), (args.length > 3 ? Integer.parseInt(args[3]) : Game.NO_TIMEOUT));
             }
             else if (args[0].equals("cancelgame"))
             {
@@ -164,7 +164,7 @@ public class Main
 		{
 			connect();
 			login("tttt", "pppp");
-			createGame("mygame", "white");
+			createGame("mygame", "white", 1);
 			listen(1);
 		}
 		else if (2 == index)
@@ -303,11 +303,12 @@ public class Main
 		}
     }
 
-    public static void createGame(String name, String color) throws IOException
+    public static void createGame(String name, String color, int timeout) throws IOException
     {
         HashMap req = new HashMap();
         req.put("action", Action.CREATE_GAME);
         req.put("gamename", name);
+		req.put("timeout", timeout);
 		if (color != null)
 		{
 			req.put("color", color);
@@ -319,7 +320,7 @@ public class Main
 
 		if (Result.OK == (Integer)res.get("result"))
 		{
-			theGame = new Game(-1, "");
+			theGame = new Game(-1, "", Game.NO_TIMEOUT);
 			me.join(theGame, (null == color ? Color.WHITE : color.equals("white") ? Color.WHITE : Color.BLACK));
 		}
     }
@@ -380,7 +381,6 @@ public class Main
 
 		if (Result.OK == (Integer)res.get("result"))
 		{
-			theGame = new Game(-1, "");
 			Color opponentColor = Color.NONE;
 			Player opponent = null;
 
@@ -399,10 +399,10 @@ public class Main
 				SLog.write("Cannot start game as opponent info could not be found");
 				try { disconnect(); } catch (IOException ignore) {}
 				me = null;
-				theGame = null;
 				return;
 			}
 
+			theGame = new Game(-1, "", Game.NO_TIMEOUT);
 			me.join(theGame, opponentColor.Opposite);
 			notMe = opponent;
 			notMe.join(theGame, opponentColor);
@@ -487,7 +487,7 @@ public class Main
 		{
 			String dataStr = (String)res.get("game");
 			byte data[] = dataStr.getBytes("UTF-8");
-			theGame = new Game(-1, "", data);
+			theGame = new Game(-1, "", Game.NO_TIMEOUT, data);
 
 			Color opponentColor = Color.NONE;
 			Player opponent = null;
