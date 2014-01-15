@@ -48,7 +48,6 @@ public class GameController
 			game.turn = game.player2;
 		}
 
-		game.player1.lastMoveTimestampMillis = game.player2.lastMoveTimestampMillis = System.currentTimeMillis();
 		GameClock clock = game.getClock();
 
 		if (clock != null)
@@ -292,8 +291,15 @@ public class GameController
 
 		// Update whose turn it is
 		game.turn = opponent;
-		executor.lastMoveTimestampMillis = System.currentTimeMillis();
 		SLog.write("player to play next turn: " + opponent);
+
+		// Update duration
+		GameClock clock = game.getClock();
+
+		if (clock != null)
+		{
+			executor.millisPlayed = (System.currentTimeMillis() - clock.getStartTimeMillis()) - opponent.millisPlayed;
+		}
 
 		// Update general game state
 		game.lastPawnRunner = context.doubleMove;

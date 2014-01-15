@@ -14,7 +14,7 @@ public class Player
 
 	private Game game;
 	private Color color = Color.NONE;
-	protected long lastMoveTimestampMillis;
+	protected long millisPlayed = 0;
 
 	private ChessPieceSet chessPieceSet;
 

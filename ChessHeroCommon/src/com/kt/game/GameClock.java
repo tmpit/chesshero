@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public class GameClock extends Thread
 {
 	private Game game;
+	private long startTimeMillis = 0;
 	private ArrayList<GameClockEventListener> listeners = new ArrayList<GameClockEventListener>(2);
 
 	public GameClock(Game game)
@@ -25,11 +26,19 @@ public class GameClock extends Thread
 		listeners.remove(listener);
 	}
 
+	public long getStartTimeMillis()
+	{
+		return startTimeMillis;
+	}
+
 	@Override
 	public void run()
 	{
+		startTimeMillis = System.currentTimeMillis();
+
 		long timeout = game.getTimeout() * 60 * 1000l;
-		long startTime = System.currentTimeMillis();
+		long runningMillis;
+		long idleMillis;
 		Player player;
 		boolean didTimeout;
 
@@ -43,7 +52,9 @@ public class GameClock extends Thread
 				}
 
 				player = game.turn;
-				didTimeout = game.turn.lastMoveTimestampMillis - startTime > timeout;
+				runningMillis = System.currentTimeMillis() - startTimeMillis;
+				idleMillis = runningMillis - (player.millisPlayed + player.getOpponent().millisPlayed);
+				didTimeout = player.millisPlayed + idleMillis > timeout;
 			}
 
 			if (didTimeout)
@@ -52,6 +63,8 @@ public class GameClock extends Thread
 				{
 					listener.playerDidTimeout(player);
 				}
+
+				return;
 			}
 
 			try
