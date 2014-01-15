@@ -300,6 +300,7 @@ class Database
 	// Each hashmap will contain the following:
 	// "gameid" => (int)
 	// "gamename" => (string)
+	// "timeout" => (int)
 	// "userid" => (int)
 	// "username" => (string)
 	// "usercolor" => (string)
@@ -521,16 +522,17 @@ class Database
 		}
 	}
 
-	public void insertGameSave(int gameID, String name, byte gameData[]) throws SQLException
+	public void insertGameSave(int gameID, String name, byte gameData[], int timeout) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("REPLACE INTO saved_games (gid, gname, gdata) VALUES (?, ?, ?)");
+			stmt = conn.prepareStatement("REPLACE INTO saved_games (gid, gname, gdata, timeout) VALUES (?, ?, ?, ?)");
 			stmt.setInt(1, gameID);
 			stmt.setString(2, name);
 			stmt.setBytes(3, gameData);
+			stmt.setInt(4, timeout);
 
 			stmt.executeUpdate();
 		}
@@ -561,6 +563,7 @@ class Database
 	// Each hashmap will contain the following:
 	// "gameid" => (int)
 	// "gamename" => (string)
+	// "timeout" => (int)
 	// "userid" => (int)
 	// "username" => (string)
 	// "usercolor" => (string)
@@ -572,7 +575,7 @@ class Database
 		try
 		{
 			// We need to take all saved games that the player has played in and then take the player's opponent's id, name and color in each of those games
-			stmt = conn.prepareStatement("SELECT gid, gname, uid, name, color FROM saved_games " +
+			stmt = conn.prepareStatement("SELECT gid, gname, timeout, uid, name, color FROM saved_games " +
 											"INNER JOIN saved_game_players USING(gid) " +
 											"INNER JOIN users ON(users.id = saved_game_players.uid) " +
 											"WHERE gid IN " +
@@ -593,9 +596,10 @@ class Database
 				HashMap game = new HashMap();
 				game.put("gameid", set.getInt(1));
 				game.put("gamename", set.getString(2));
-				game.put("userid", set.getInt(3));
-				game.put("username", set.getString(4));
-				game.put("usercolor", set.getString(5));
+				game.put("timeout", set.getInt(3));
+				game.put("userid", set.getInt(4));
+				game.put("username", set.getString(5));
+				game.put("usercolor", set.getString(6));
 
 				games.add(game);
 			}
@@ -636,7 +640,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT gname, gdata FROM saved_games WHERE gid = ?");
+			stmt = conn.prepareStatement("SELECT gname, gdata, timeout FROM saved_games WHERE gid = ?");
 			stmt.setInt(1, gameID);
 
 			set = stmt.executeQuery();
@@ -646,6 +650,7 @@ class Database
 				HashMap<String, Object> result = new HashMap<String, Object>();
 				result.put("gname", set.getString(1));
 				result.put("gdata", set.getBytes(2));
+				result.put("timeout", set.getLong(3));
 
 				return result;
 			}
