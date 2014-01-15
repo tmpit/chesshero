@@ -37,6 +37,11 @@ public class GameClock extends Thread
 		{
 			synchronized (game)
 			{
+				if (Game.STATE_FINISHED == game.getState())
+				{	// The game has finished while waiting to acquire the lock
+					return;
+				}
+
 				player = game.turn;
 				didTimeout = game.turn.lastMoveTimestampMillis - startTime > timeout;
 			}
