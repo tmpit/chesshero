@@ -37,23 +37,41 @@ public class GameClock extends Thread
 		startTimeMillis = System.currentTimeMillis();
 
 		long timeout = game.getTimeout() * 60 * 1000l;
-		long runningMillis;
+		long runningMillis = 0;
 		long idleMillis;
+		long inactiveMillis = 0;
 		Player player;
 		boolean didTimeout;
 
 		while (!this.isInterrupted())
 		{
+			try
+			{
+				Thread.sleep(1000);
+			}
+			catch (InterruptedException e)
+			{
+				// The clock will get interrupted when the game ends
+				return;
+			}
+
 			synchronized (game)
 			{
-				if (Game.STATE_FINISHED == game.getState())
-				{	// The game has finished while waiting to acquire the lock
+				short state = game.getState();
+
+				if (Game.STATE_PAUSED == state)
+				{
+					inactiveMillis = (System.currentTimeMillis() - startTimeMillis) - runningMillis;
+					continue;
+				}
+				if (state != Game.STATE_ACTIVE)
+				{
 					return;
 				}
 
 				player = game.turn;
 				runningMillis = System.currentTimeMillis() - startTimeMillis;
-				idleMillis = runningMillis - (player.millisPlayed + player.getOpponent().millisPlayed);
+				idleMillis = runningMillis - (player.millisPlayed + player.getOpponent().millisPlayed + inactiveMillis);
 				didTimeout = player.millisPlayed + idleMillis > timeout;
 			}
 
@@ -64,16 +82,6 @@ public class GameClock extends Thread
 					listener.playerDidTimeout(player);
 				}
 
-				return;
-			}
-
-			try
-			{
-				Thread.sleep(1000);
-			}
-			catch (InterruptedException e)
-			{
-				// The clock will get interrupted when the game ends
 				return;
 			}
 		}
