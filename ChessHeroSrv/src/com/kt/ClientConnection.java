@@ -30,7 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * To change this template use File | Settings | File Templates.
  */
 
-public class ClientConnection extends Thread
+public class ClientConnection extends Thread implements GameClockEventListener
 {
     private static final int NOAUTH_READ_TIMEOUT = 15 * 1000; // 15 seconds in milliseconds
 	private static final int AUTH_READ_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -653,9 +653,9 @@ public class ClientConnection extends Thread
 
 		if (null == timeout)
 		{
-			timeout = Game.DEFAULT_TIMEOUT_DURATION;
+			timeout = Game.DEFAULT_TIMEOUT;
 		}
-		else if (timeout < Game.MIN_TIMEOUT_DURATION || timeout > Game.MAX_TIMEOUT_DURATION)
+		else if (timeout < Game.MIN_TIMEOUT || timeout > Game.MAX_TIMEOUT)
 		{
 			writeMessage(aResponseWithResult(Result.INVALID_TIMEOUT));
 			return;
@@ -692,6 +692,12 @@ public class ClientConnection extends Thread
 			Game game = new Game(gameID, gameName, timeout);
 			game.setState(Game.STATE_PENDING);
 			player.join(game, Color.fromString(color));
+			GameClock clock = game.getClock();
+
+			if (clock != null)
+			{
+				clock.addEventListener(this);
+			}
 
 			addGame(game);
 
@@ -900,6 +906,12 @@ public class ClientConnection extends Thread
 						putPlayerConnection(gameID, myUserID, this);
 
                         player.join(game, myColor);
+						GameClock clock = game.getClock();
+
+						if (clock != null)
+						{
+							clock.addEventListener(this);
+						}
 
                         GameController controller = new GameController(game);
 						controller.startGame();
@@ -1479,6 +1491,12 @@ public class ClientConnection extends Thread
 					putPlayerConnection(gameID, myUserID, this);
 					game.setState(Game.STATE_WAITING);
 					player.join(game, Color.fromString(color));
+					GameClock clock = game.getClock();
+
+					if (clock != null)
+					{
+						clock.addEventListener(this);
+					}
 				}
 				else if (Game.STATE_WAITING == state)
 				{
@@ -1522,6 +1540,13 @@ public class ClientConnection extends Thread
 
 						putPlayerConnection(gameID, myUserID, this);
 						player.join(game, Color.fromString(color));
+						GameClock clock = game.getClock();
+
+						if (clock != null)
+						{
+							clock.addEventListener(this);
+						}
+
 						Boolean myTurn = (Boolean)myPlayerInfo.get("next");
 						new GameController(game).startGame(myTurn ? player : player.getOpponent());
 						join = true;
@@ -1576,5 +1601,11 @@ public class ClientConnection extends Thread
 				removeGame(gameID);
 			}
 		}
+	}
+
+	@Override
+	public void playerDidTimeout(Player player)
+	{
+
 	}
 }
