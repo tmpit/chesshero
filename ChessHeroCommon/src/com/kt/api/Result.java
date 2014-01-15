@@ -29,6 +29,7 @@ public class Result
     public static final int EXIT_NA = 114;              		// Exit game / Exit is not applicable (e.g. game has not started yet)
 	public static final int MOVE_NA = 115;						// Move / Move is not applicable (e.g. game has not started yet)
 	public static final int SAVE_NA = 116;						// Save game / Save game is not applicable (e.g. game has not started yet)
+	public static final int INVALID_TIMEOUT = 117;				// Create game / The timeout duration specified is invalid, check minimum and maximum values
 
 
 	public static final int INVALID_MOVE_FORMAT = 200;			// Move / Invalid notation used - refer to http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation

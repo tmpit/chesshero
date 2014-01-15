@@ -40,6 +40,8 @@ public class Action
     // Parameters:
 	// - [gamename:STR] - the name of the game
 	// - [color:STR] - optional, the color of the player, either "black" or "white", default value is "white"
+	// - [timeout:INT] - optional, the time (in minutes) each player has to finish the game (time control used is "sudden death").
+	// The value must be between 3 and 30 minutes for timed chess matches or 0 for timeless. If not present, the default is 20
     // Returns:
 	// - [gameid:INT] - the id of the game
 	// - [chattoken:STR] - the token needed to chat with the other player
@@ -64,6 +66,7 @@ public class Action
 	// - [games:ARR] - each element in the array has:
 	// 		- [gameid:INT] - the id of the game
 	// 	 	- [gamename:STR] - the name of the game
+	//		- [timeout:INT] - the game's timeout in seconds
 	//		- [userid:INT] - the id of the opponent
 	//		- [username:STR] - the name of the opponent
 	// 	 	- [usercolor:STR] - the color the opponent has picked, either "white" or "black"
