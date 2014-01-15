@@ -649,6 +649,18 @@ public class ClientConnection extends Thread
             return;
         }
 
+		Integer timeout = (Integer)request.get("timeout");
+
+		if (null == timeout)
+		{
+			timeout = Game.DEFAULT_TIMEOUT_DURATION;
+		}
+		else if (timeout < Game.MIN_TIMEOUT_DURATION || timeout > Game.MAX_TIMEOUT_DURATION)
+		{
+			writeMessage(aResponseWithResult(Result.INVALID_TIMEOUT));
+			return;
+		}
+
 		String color = (String)request.get("color");
 
         if (null == color || Color.NONE == Color.fromString(color))
@@ -661,7 +673,7 @@ public class ClientConnection extends Thread
             db.connect();
 			db.startTransaction();
 
-            int gameID = db.insertGame(gameName, Game.STATE_PENDING);
+            int gameID = db.insertGame(gameName, Game.STATE_PENDING, timeout);
 
             if (-1 == gameID)
             {
@@ -677,7 +689,7 @@ public class ClientConnection extends Thread
 
 			putPlayerConnection(gameID, userID, this);
 
-			Game game = new Game(gameID, gameName);
+			Game game = new Game(gameID, gameName, timeout);
 			game.setState(Game.STATE_PENDING);
 			player.join(game, Color.fromString(color));
 
@@ -1198,7 +1210,7 @@ public class ClientConnection extends Thread
 							db.connect();
 							db.startTransaction();
 
-							db.insertGameSave(gameID, game.getName(), game.toData());
+							db.insertGameSave(gameID, game.getName(), game.toData(), game.getTimeout());
 							db.insertSavedGamePlayer(gameID, myUserID, player.getColor().toString(), iAmNext);
 							db.insertSavedGamePlayer(gameID, opponentUserID, player.getOpponent().getColor().toString(), !iAmNext);
 
@@ -1405,7 +1417,7 @@ public class ClientConnection extends Thread
 
 			if (null == (game = games.get(gameID)))
 			{
-				game = new Game(gameID, gameName, gameData);
+				game = new Game(gameID, gameName, (Integer)gameInfo.get("timeout"), gameData);
 				games.put(gameID, game);
 			}
 
