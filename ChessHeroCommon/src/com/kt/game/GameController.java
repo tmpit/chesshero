@@ -12,23 +12,12 @@ public class GameController
 {
 	private Game game;
 	private BoardField board[][];
-	private GameClock clock = null;
 
 	public GameController(Game game)
 	{
 		this.game = game;
 		this.board = game.getBoard();
 		game.controller = this;
-
-		if (game.getTimeout() != Game.NO_TIMEOUT_DURATION)
-		{
-			clock = new GameClock(game);
-		}
-	}
-
-	public GameClock getClock()
-	{
-		return clock;
 	}
 
 	public void startGame()
@@ -59,11 +48,11 @@ public class GameController
 			game.turn = game.player2;
 		}
 
-		int timeout = game.getTimeout();
+		game.player1.lastMoveTimestampMillis = game.player2.lastMoveTimestampMillis = System.currentTimeMillis();
+		GameClock clock = game.getClock();
 
-		if (timeout != Game.NO_TIMEOUT_DURATION)
+		if (clock != null)
 		{
-			game.player1.lastMoveTimestampMillis = game.player2.lastMoveTimestampMillis = System.currentTimeMillis();
 			clock.start();
 		}
 	}
@@ -90,6 +79,8 @@ public class GameController
 
 		game.winner = winner;
 		game.checkmate = checkmate;
+
+		GameClock clock = game.getClock();
 
 		if (clock != null)
 		{

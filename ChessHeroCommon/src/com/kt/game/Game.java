@@ -18,10 +18,10 @@ public class Game
 	public static final int MIN_NAME_LENGTH = 3;
 	public static final int MAX_NAME_LENGTH = 256;
 
-	public static final int MIN_TIMEOUT_DURATION = 3; // In minutes
-	public static final int MAX_TIMEOUT_DURATION = 30;
-	public static final int NO_TIMEOUT_DURATION = 0;
-	public static final int DEFAULT_TIMEOUT_DURATION = NO_TIMEOUT_DURATION;
+	public static final int MIN_TIMEOUT = 3; // In minutes
+	public static final int MAX_TIMEOUT = 30;
+	public static final int NO_TIMEOUT = 0;
+	public static final int DEFAULT_TIMEOUT = NO_TIMEOUT;
 
 	public static final int BOARD_SIDE = 8;
 
@@ -106,6 +106,7 @@ public class Game
 	private int id;
 	private String name;
 	private int timeout;
+	private GameClock clock = null;
 
 	protected ChessPieceSet whiteChessPieceSet;
 	protected ChessPieceSet blackChessPieceSet;
@@ -146,6 +147,11 @@ public class Game
 			whiteChessPieceSet = aSetOfChessPieces(Color.WHITE, true);
 			blackChessPieceSet = aSetOfChessPieces(Color.BLACK, false);
 		}
+
+		if (timeout != NO_TIMEOUT)
+		{
+			clock = new GameClock(this);
+		}
 	}
 
 	public int getID()
@@ -161,6 +167,11 @@ public class Game
 	public int getTimeout()
 	{
 		return timeout;
+	}
+
+	public GameClock getClock()
+	{
+		return clock;
 	}
 
 	public short getState()
@@ -364,7 +375,7 @@ public class Game
 			}
 		}
 
-		// Check if kings are present
+		// Check kings
 		if (whiteMax[ChessPiece.Tag.KING] != 0 || blackMax[ChessPiece.Tag.KING] != 0)
 		{	// One or more kings are missing or someone has more than one king
 			return false;
