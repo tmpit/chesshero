@@ -18,6 +18,11 @@ public class Game
 	public static final int MIN_NAME_LENGTH = 3;
 	public static final int MAX_NAME_LENGTH = 256;
 
+	public static final int MIN_TIMEOUT_DURATION = 3; // In minutes
+	public static final int MAX_TIMEOUT_DURATION = 30;
+	public static final int NO_TIMEOUT_DURATION = 0;
+	public static final int DEFAULT_TIMEOUT_DURATION = NO_TIMEOUT_DURATION;
+
 	public static final int BOARD_SIDE = 8;
 
 	private static ChessPieceSet aSetOfChessPieces(Color color, boolean bottom)
@@ -100,13 +105,14 @@ public class Game
 
 	private int id;
 	private String name;
+	private int timeout;
 
 	protected ChessPieceSet whiteChessPieceSet;
 	protected ChessPieceSet blackChessPieceSet;
 
 	protected Player player1;
 	protected Player player2;
-
+	// TODO: saved games timeout
 	private BoardField board[][] = new BoardField[BOARD_SIDE][BOARD_SIDE];
 
 	protected GameController controller;
@@ -124,15 +130,16 @@ public class Game
 
 	protected boolean saved = false;
 
-	public Game(int gameID, String name)
+	public Game(int gameID, String name, int timeout)
 	{
-		this(gameID, name, null);
+		this(gameID, name, timeout, null);
 	}
 
-	public Game(int gameID, String name, byte data[])
+	public Game(int gameID, String name, int timeout, byte data[])
 	{
 		this.name = name;
 		this.id = gameID;
+		this.timeout = timeout;
 
 		if (null == data || !parseChessPieceData(data))
 		{
@@ -149,6 +156,11 @@ public class Game
 	public String getName()
 	{
 		return name;
+	}
+
+	public int getTimeout()
+	{
+		return timeout;
 	}
 
 	public short getState()

@@ -12,12 +12,23 @@ public class GameController
 {
 	private Game game;
 	private BoardField board[][];
+	private GameClock clock = null;
 
 	public GameController(Game game)
 	{
 		this.game = game;
 		this.board = game.getBoard();
 		game.controller = this;
+
+		if (game.getTimeout() != Game.NO_TIMEOUT_DURATION)
+		{
+			clock = new GameClock(game);
+		}
+	}
+
+	public GameClock getClock()
+	{
+		return clock;
 	}
 
 	public void startGame()
@@ -47,6 +58,14 @@ public class GameController
 		{
 			game.turn = game.player2;
 		}
+
+		int timeout = game.getTimeout();
+
+		if (timeout != Game.NO_TIMEOUT_DURATION)
+		{
+			game.player1.lastMoveTimestampMillis = game.player2.lastMoveTimestampMillis = System.currentTimeMillis();
+			clock.start();
+		}
 	}
 
 	public void endGame(Player winner, boolean checkmate)
@@ -71,6 +90,11 @@ public class GameController
 
 		game.winner = winner;
 		game.checkmate = checkmate;
+
+		if (clock != null)
+		{
+			clock.interrupt();
+		}
 	}
 
 	public int execute(Player executor, String move)
@@ -124,6 +148,12 @@ public class GameController
 		}
 
 		SLog.write("Executing move: from " + from + " to " + to + (promotion != '\0' ? " promotion " + promotion : ""));
+
+		if (from.equals(to))
+		{
+			SLog.write("no-op");
+			return Result.OK;
+		}
 
 		BoardField fromField = board[from.x][from.y];
 		ChessPiece movedPiece = fromField.getChessPiece(); // The chess piece that is being moved
@@ -271,6 +301,7 @@ public class GameController
 
 		// Update whose turn it is
 		game.turn = opponent;
+		executor.lastMoveTimestampMillis = System.currentTimeMillis();
 		SLog.write("player to play next turn: " + opponent);
 
 		// Update general game state
