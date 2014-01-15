@@ -24,17 +24,19 @@ public class Push
 	// Game ended
 	// Description: This event is sent to the two players in the event of a game ending.
 	// The game can end in four ways:
-	// - the game reaches its natural end
-	// - the game is saved
+	// - by sudden death
+	// - by checkmate
 	// - one of the players exits the game
 	// - one of the players disconnects from the server
 	// Whoever exits the game (or disconnects, which the server interprets in the same way) is considered defeated.
 	// In the first and second cases, this event will be sent to both players
 	// In the third and fourth cases, this event will be sent to the player that is still in the game
 	// Parameters:
-	// - [winner:INT] - optional, the user id of the winner, if there is no such key, the game has been closed (e.g. after a save), if winner is null, the game is draw
-	// - [opponentexited:BOOL] - optional, sent when the other player exits the game, always true, might be present only if there is a winner
-	// - [opponentdisconnected:BOOL] - optional, sent when the other player disconnects from the server, always true, might be present only if there is a winner
+	// - [winner:INT] - the user id of the winner or null if the game is draw
+	// - [suddendeath:BOOL] - optional, always true, present when the winner's opponent runs out of time
+	// - [checkmate:BOOL] - optional, always true, present when the winner has checkmated their opponent
+	// - [exit:BOOL] - optional, always true, sent when the winner's opponent exits the game
+	// - [disconnect:BOOL] - optional, always true, sent when the winner's opponent disconnects from the server
 	public static final int GAME_END = 2;
 
 	// Game move

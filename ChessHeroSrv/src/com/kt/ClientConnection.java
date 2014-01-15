@@ -211,7 +211,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 					{
 						HashMap push = aPushWithEvent(Push.GAME_END);
 						push.put("winner", opponentUserID);
-						push.put("opponentdisconnected", true);
+						push.put("disconnect", true);
 
 						opponentConnection.writeMessage(push);
 					}
@@ -1027,7 +1027,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		{
 			HashMap msg = aPushWithEvent(Push.GAME_END);
 			msg.put("winner", opponentUserID);
-			msg.put("opponentexited", true);
+			msg.put("exit", true);
 
 			opponentConnection.writeMessage(msg);
 		}
@@ -1145,8 +1145,13 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		HashMap endMsg = aPushWithEvent(Push.GAME_END);
 
 		if (winner != null)
-		{	// winner will be null when game is draw
+		{
 			endMsg.put("winner", winner.getUserID());
+			endMsg.put("checkmate", true);
+		}
+		else
+		{
+			endMsg.put("winner", null);
 		}
 
 		writeMessage(endMsg);
@@ -1308,11 +1313,6 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		HashMap response = aResponseWithResult(Result.OK);
 		response.put("saved", saved);
 		writeMessage(response);
-
-		if (saved)
-		{
-			writeMessage(aPushWithEvent(Push.GAME_END));
-		}
 	}
 
 	private void handleDeleteSavedGame(HashMap<String, Object> request) throws ChessHeroException

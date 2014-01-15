@@ -110,7 +110,7 @@ public class Action
 	// Obviously sending false is a no-op when trying to initiate the save game routine. However, when responding to your opponent's request, this is how
 	// you can decline it
 	// Returns:
-	// - [saved:BOOL] - true if the game was saved, false if not
+	// - [saved:BOOL] - true if the game was saved and closed, false if not
 	public static final int SAVE_GAME = 9;
 
 	// Delete saved game
