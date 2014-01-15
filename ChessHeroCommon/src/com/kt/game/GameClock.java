@@ -30,17 +30,23 @@ public class GameClock extends Thread
 	{
 		long timeout = game.getTimeout() * 60 * 1000l;
 		long startTime = System.currentTimeMillis();
+		Player player;
+		boolean didTimeout;
 
 		while (!this.isInterrupted())
 		{
-			if (game.turn.lastMoveTimestampMillis - startTime > timeout)
+			synchronized (game)
+			{
+				player = game.turn;
+				didTimeout = game.turn.lastMoveTimestampMillis - startTime > timeout;
+			}
+
+			if (didTimeout)
 			{
 				for (GameClockEventListener listener : listeners)
 				{
-					listener.playerDidTimeout(game.turn);
+					listener.playerDidTimeout(player);
 				}
-
-				return;
 			}
 
 			try
