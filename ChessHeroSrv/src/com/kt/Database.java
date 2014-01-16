@@ -261,16 +261,17 @@ class Database
         }
     }
 
-	public void insertGame(int gameID, String name, short state) throws SQLException
+	public void insertGame(int gameID, String name, short state, int timeout) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("INSERT INTO games (gid, gname, state) VALUES (?, ?, ?)");
+			stmt = conn.prepareStatement("INSERT INTO games (gid, gname, state, timeout) VALUES (?, ?, ?, ?)");
 			stmt.setInt(1, gameID);
 			stmt.setString(2, name);
 			stmt.setShort(3, state);
+			stmt.setInt(4, timeout);
 			stmt.executeUpdate();
 		}
 		finally
@@ -622,10 +623,14 @@ class Database
 			stmt = conn.prepareStatement("SELECT COUNT(*) FROM saved_players WHERE gid = ? AND uid = ?");
 			stmt.setInt(1, gameID);
 			stmt.setInt(2, userID);
-
 			set = stmt.executeQuery();
 
-			return set.next();
+			if (set.next())
+			{
+				return set.getInt(1) != 0;
+			}
+
+			return false;
 		}
 		finally
 		{
@@ -650,7 +655,7 @@ class Database
 				HashMap<String, Object> result = new HashMap<String, Object>();
 				result.put("gname", set.getString(1));
 				result.put("gdata", set.getBytes(2));
-				result.put("timeout", set.getLong(3));
+				result.put("timeout", set.getInt(3));
 
 				return result;
 			}
