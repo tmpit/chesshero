@@ -663,17 +663,18 @@ class Database
 		}
 	}
 
-	public void insertSavedGamePlayer(int gameID, int userID, String color, boolean next) throws SQLException
+	public void insertSavedGamePlayer(int gameID, int userID, String color, boolean next, long millisPlayed) throws SQLException
 	{
 		PreparedStatement stmt = null;
 
 		try
 		{
-			stmt = conn.prepareStatement("INSERT INTO saved_players (gid, uid, color, next) VALUES (?, ?, ?, ?)");
+			stmt = conn.prepareStatement("INSERT INTO saved_players (gid, uid, color, next, millis_played) VALUES (?, ?, ?, ?, ?)");
 			stmt.setInt(1, gameID);
 			stmt.setInt(2, userID);
 			stmt.setString(3, color);
 			stmt.setBoolean(4, next);
+			stmt.setLong(5, millisPlayed);
 			stmt.executeUpdate();
 		}
 		finally
@@ -689,7 +690,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT uid, color, next FROM saved_players WHERE gid = ?");
+			stmt = conn.prepareStatement("SELECT uid, color, next, millis_played FROM saved_players WHERE gid = ?");
 			stmt.setInt(1, gameID);
 			set = stmt.executeQuery();
 
@@ -701,6 +702,7 @@ class Database
 				player.put("id", set.getInt(1));
 				player.put("color", set.getString(2));
 				player.put("next", set.getBoolean(3));
+				player.put("played", set.getLong(4));
 				players.add(player);
 			}
 

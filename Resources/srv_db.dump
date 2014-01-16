@@ -128,6 +128,7 @@ CREATE TABLE `saved_players` (
   `uid` int(10) unsigned NOT NULL,
   `color` char(5) NOT NULL,
   `next` tinyint(1) NOT NULL,
+  `millis_played` bigint(20) NOT NULL,
   PRIMARY KEY (`gid`,`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -157,4 +158,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-01-16 21:20:37
+-- Dump completed on 2014-01-16 21:26:12
