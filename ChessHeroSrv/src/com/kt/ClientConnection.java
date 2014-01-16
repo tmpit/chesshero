@@ -656,7 +656,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		{
 			timeout = Game.DEFAULT_TIMEOUT;
 		}
-		else if (timeout < Game.MIN_TIMEOUT || timeout > Game.MAX_TIMEOUT)
+		else if (timeout != Game.NO_TIMEOUT && (timeout < Game.MIN_TIMEOUT || timeout > Game.MAX_TIMEOUT))
 		{
 			writeMessage(aResponseWithResult(Result.INVALID_TIMEOUT));
 			return;
