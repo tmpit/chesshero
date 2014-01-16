@@ -60,7 +60,7 @@ public class GameClock extends Thread
 				short state = game.getState();
 
 				if (Game.STATE_PAUSED == state)
-				{
+				{	// Far from accurate but good enough
 					inactiveMillis = (System.currentTimeMillis() - startTimeMillis) - runningMillis;
 					continue;
 				}

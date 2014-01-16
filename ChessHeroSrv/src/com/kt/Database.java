@@ -576,10 +576,10 @@ class Database
 		{
 			// We need to take all saved games that the player has played in and then take the player's opponent's id, name and color in each of those games
 			stmt = conn.prepareStatement("SELECT gid, gname, timeout, uid, name, color FROM saved_games " +
-											"INNER JOIN saved_game_players USING(gid) " +
-											"INNER JOIN users ON(users.id = saved_game_players.uid) " +
+											"INNER JOIN saved_players USING(gid) " +
+											"INNER JOIN users ON(users.id = saved_players.uid) " +
 											"WHERE gid IN " +
-												"(SELECT gid FROM saved_game_players WHERE uid = ?) " +
+												"(SELECT gid FROM saved_players WHERE uid = ?) " +
 											"AND uid != ? " +
 											"LIMIT ?, ?");
 			stmt.setInt(1, userID);
@@ -619,7 +619,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT COUNT(*) FROM saved_game_players WHERE gid = ? AND uid = ?");
+			stmt = conn.prepareStatement("SELECT COUNT(*) FROM saved_players WHERE gid = ? AND uid = ?");
 			stmt.setInt(1, gameID);
 			stmt.setInt(2, userID);
 
@@ -669,7 +669,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("INSERT INTO saved_game_players (gid, uid, color, next) VALUES (?, ?, ?, ?)");
+			stmt = conn.prepareStatement("INSERT INTO saved_players (gid, uid, color, next) VALUES (?, ?, ?, ?)");
 			stmt.setInt(1, gameID);
 			stmt.setInt(2, userID);
 			stmt.setString(3, color);
@@ -689,7 +689,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("SELECT uid, color, next FROM saved_game_players WHERE gid = ?");
+			stmt = conn.prepareStatement("SELECT uid, color, next FROM saved_players WHERE gid = ?");
 			stmt.setInt(1, gameID);
 			set = stmt.executeQuery();
 
@@ -718,7 +718,7 @@ class Database
 
 		try
 		{
-			stmt = conn.prepareStatement("DELETE FROM saved_game_players WHERE gid = ?");
+			stmt = conn.prepareStatement("DELETE FROM saved_players WHERE gid = ?");
 			stmt.setInt(1, gameID);
 			stmt.executeUpdate();
 		}
