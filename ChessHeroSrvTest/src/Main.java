@@ -164,7 +164,7 @@ public class Main
 		{
 			connect();
 			login("tttt", "pppp");
-			createGame("mygame", "white", 1);
+			createGame("mygame", "white", Game.NO_TIMEOUT);
 			listen(1);
 		}
 		else if (2 == index)
