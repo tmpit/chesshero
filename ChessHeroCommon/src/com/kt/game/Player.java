@@ -49,7 +49,17 @@ public class Player
 		return color;
 	}
 
+	public long getMillisPlayed()
+	{
+		return millisPlayed;
+	}
+
 	public boolean join(Game game, Color color)
+	{
+		return join(game, color, 0);
+	}
+
+	public boolean join(Game game, Color color, long millisPlayed)
 	{
 		boolean player1;
 
@@ -72,6 +82,7 @@ public class Player
 		this.game = game;
 		this.color = color;
 		this.chessPieceSet = set;
+		this.millisPlayed = millisPlayed;
 
 		ArrayList<ChessPiece> pieces = set.getActivePieces();
 		for (ChessPiece piece : pieces)

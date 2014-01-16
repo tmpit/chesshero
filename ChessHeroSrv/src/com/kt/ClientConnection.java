@@ -1221,22 +1221,23 @@ public class ClientConnection extends Thread implements GameClockEventListener
 						try
 						{
 							int myUserID = player.getUserID();
-							int opponentUserID = player.getOpponent().getUserID();
+							Player opponent = player.getOpponent();
+							int opponentUserID = opponent.getUserID();
 							boolean iAmNext = player.equals(game.getTurn());
 
 							db.connect();
 							db.startTransaction();
 
 							db.insertGameSave(gameID, game.getName(), game.toData(), game.getTimeout());
-							db.insertSavedGamePlayer(gameID, myUserID, player.getColor().toString(), iAmNext);
-							db.insertSavedGamePlayer(gameID, opponentUserID, player.getOpponent().getColor().toString(), !iAmNext);
+							db.insertSavedGamePlayer(gameID, myUserID, player.getColor().toString(), iAmNext, player.getMillisPlayed());
+							db.insertSavedGamePlayer(gameID, opponentUserID, opponent.getColor().toString(), !iAmNext, opponent.getMillisPlayed());
 
 							db.commit();
 
 							game.getController().endGame(null, false, true);
 
-							popPlayerConnection(gameID, player.getUserID());
-							popPlayerConnection(gameID, player.getOpponent().getUserID());
+							popPlayerConnection(gameID, myUserID);
+							popPlayerConnection(gameID, opponentUserID);
 
 							finalizeGame(game);
 						}
@@ -1490,7 +1491,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 					putPlayerConnection(gameID, myUserID, this);
 					game.setState(Game.STATE_WAITING);
-					player.join(game, Color.fromString(color));
+					player.join(game, Color.fromString(color), (Long)myPlayerInfo.get("played"));
 					GameClock clock = game.getClock();
 
 					if (clock != null)
@@ -1539,7 +1540,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 						}
 
 						putPlayerConnection(gameID, myUserID, this);
-						player.join(game, Color.fromString(color));
+						player.join(game, Color.fromString(color), (Long)myPlayerInfo.get("played"));
 						GameClock clock = game.getClock();
 
 						if (clock != null)
