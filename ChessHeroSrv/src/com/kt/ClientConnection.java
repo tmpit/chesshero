@@ -32,7 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientConnection extends Thread implements GameClockEventListener
 {
-    private static final int NOAUTH_READ_TIMEOUT = 15 * 1000; // 15 seconds in milliseconds
+    private static final int NOAUTH_READ_TIMEOUT = 60 * 1000; // 60 seconds in milliseconds
 	private static final int AUTH_READ_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 
     private static final int DEFAULT_FETCH_GAMES_OFFSET = 0;
@@ -481,6 +481,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
         catch (ClassCastException e)
         {
             SLog.write("A request parameter is not of the appropriate type");
+			e.printStackTrace();
             writeMessage(aResponseWithResult(Result.INVALID_PARAM));
         }
     }
@@ -770,7 +771,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 			short state = game.getState();
 			int gameID = game.getID();
 
-			if (!(invalidGameID = gameIDToDelete != gameID) && !(isInGame = Game.STATE_PENDING == state || Game.STATE_WAITING == state))
+			if (!(invalidGameID = gameIDToDelete != gameID) && !(isInGame = state != Game.STATE_PENDING && state != Game.STATE_WAITING))
 			{
 				popPlayerConnection(gameID, player.getUserID());
 				cancelGame(game);
@@ -1425,12 +1426,13 @@ public class ClientConnection extends Thread implements GameClockEventListener
 			Game game = null;
 			byte gameData[] = (byte[])gameInfo.get("gdata");
 			String gameName = (String)gameInfo.get("gname");
+			int gameTimeout = (Integer)gameInfo.get("timeout");
 
 			gamesMutex.lock();
 
 			if (null == (game = games.get(gameID)))
 			{
-				game = new Game(gameID, gameName, (Integer)gameInfo.get("timeout"), gameData);
+				game = new Game(gameID, gameName, gameTimeout, gameData);
 				games.put(gameID, game);
 			}
 
@@ -1467,7 +1469,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 					{
 						db.startTransaction();
 
-						db.insertGame(gameID, gameName, Game.STATE_WAITING);
+						db.insertGame(gameID, gameName, Game.STATE_WAITING, gameTimeout);
 						db.insertPlayer(gameID, myUserID, color);
 						db.insertChatEntry(gameID, myUserID, token);
 
@@ -1592,6 +1594,8 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		{
 			SLog.write("Exception raised while resuming game: " + e);
 			e.printStackTrace();
+
+			throw new ChessHeroException(Result.INTERNAL_ERROR);
 		}
 		finally
 		{
