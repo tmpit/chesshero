@@ -1,5 +1,7 @@
 package com.kt.game;
 
+import com.kt.utils.SLog;
+
 import java.util.ArrayList;
 
 /**
@@ -34,7 +36,7 @@ public class GameClock extends Thread
 	@Override
 	public void run()
 	{
-		startTimeMillis = System.currentTimeMillis();
+		startTimeMillis = System.currentTimeMillis() - (game.turn.millisPlayed + game.turn.getOpponent().millisPlayed);
 
 		long timeout = game.getTimeout() * 60 * 1000l;
 		long runningMillis = 0;
