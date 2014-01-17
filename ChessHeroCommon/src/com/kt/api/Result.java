@@ -32,7 +32,7 @@ public class Result
 	public static final int INVALID_TIMEOUT = 117;				// Create game / The timeout duration specified is invalid, check minimum and maximum values
 
 
-	public static final int INVALID_MOVE_FORMAT = 200;			// Move / Invalid notation used - refer to http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
+	public static final int INVALID_MOVE_FORMAT = 200;			// Move / Invalid notation used - refer to Pure coordinate notation at http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
 	public static final int NOT_YOUR_TURN = 201;				// Move / it is not your turn to make a move
 	public static final int NO_CHESSPIECE = 202;				// Move / no chess piece specified
 	public static final int NOT_YOUR_CHESSPIECE = 203;			// Move / attempting to move a chess piece that is not your own
@@ -42,7 +42,7 @@ public class Result
 
 
 	public static final int ACTION_DISABLED = 300;				// Any request / The action is temporarily disabled for you. Currently this can only happen when
-																// when your opponent has prompted you to save the game
+																// your opponent has prompted you to save the game
 
 
     public static final int INVALID_REQUEST_FORMAT = 400;		// Any request / The request couldn't be parsed

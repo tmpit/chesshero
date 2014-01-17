@@ -91,7 +91,7 @@ public class Action
 	// Execute move
 	// Description: Move a chess piece
 	// Parameters:
-	// - [move:STR] - the move as per the Pure coordinate notation: http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
+	// - [move:STR] - the move as per the Pure coordinate notation described at http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
 	public static final int MOVE = 8;
 
 	// Save game
@@ -123,7 +123,6 @@ public class Action
 	// Description: Enter a previously saved game. The game resumes after both players enter it. After a game is resumed, the save gets deleted.
 	// Parameters:
 	// - [gameid:INT] - the id of the game to resume
-	// Sending false is a no-op when trying to initiate the resume game routine. However, when responding to your opponent's request, this is how you decline it
 	// Returns:
 	// - [game:STR] - the game data encoded as a UTF-8 string
 	// - [chattoken:STR] - the token needed to chat with the other player
