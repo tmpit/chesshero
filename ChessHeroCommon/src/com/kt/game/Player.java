@@ -5,11 +5,11 @@ import com.kt.game.ChessPiece;
 import java.util.ArrayList;
 
 /**
- * @author Todor Pitekov
- * @author Kiril Tabakov
- *
  * The Player class represents a user with user id, username and game-specific data such as the color of the player,
  * their chess piece set, which game they are in and how long they have played in there
+ *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class Player
 {

@@ -12,10 +12,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * The CHESCOWriter class is used to serialize objects to an output stream as per the CHESCO messaging protocol
+ *
  * @author Todor Pitekov
  * @author Kiril Tabakov
- *
- * The CHESCOWriter class is used to serialize objects to an output stream as per the CHESCO messaging protocol
  * @see com.kt.chesco.CHESCO
  */
 public class CHESCOWriter

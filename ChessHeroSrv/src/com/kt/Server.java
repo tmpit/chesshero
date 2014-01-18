@@ -7,11 +7,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * @author Todor Pitekov
- * @author Kiril Tabakov
- *
  * The Server is a wrapper around a {@code ServerSocket} that also dispatches
  * {@code ClientConnection} objects with accepted client {@code Socket}s
+ *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class Server
 {

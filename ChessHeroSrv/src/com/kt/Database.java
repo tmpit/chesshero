@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * @author Todor Pitekov
- * @author Kiril Tabakov
- *
  * The Database class provides a convenient interface for performing database queries on the
  * Chess Hero database
+ *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 class Database
 {

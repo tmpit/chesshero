@@ -1,10 +1,10 @@
 package com.kt.game;
 
 /**
+ * The ChessPiece class is the base class for all chess pieces in the game of chess
+ *
  * @author Todor Pitekov
  * @author Kiril Tabakov
- *
- * The ChessPiece class is the base class for all chess pieces in the game of chess
  */
 public abstract class ChessPiece
 {

@@ -4,11 +4,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 /**
- * @author Todor Pitekov
- * @author Kiril Tabakov
- *
  * The Game class represents the state of a chess game and groups all game-related components such as players
  * and chess board
+ *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class Game
 {

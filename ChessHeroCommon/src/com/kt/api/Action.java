@@ -1,8 +1,6 @@
 package com.kt.api;
 
 /**
- * @author Todor Pitekov
- * @author Kiril Tabakov
  * <pre>
  * The Action class groups all action codes the game server recognizes
  *
@@ -17,6 +15,9 @@ package com.kt.api;
  * Each action has a Parameters section which lists all additional parameters expected by the server alongside the action code parameter and a Returns
  * section listing all additional parameters (alongside the result code) the server will return if the request succeeds
  * </pre>
+ *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  * @see com.kt.api.Result
  * @see com.kt.chesco.CHESCO
  */

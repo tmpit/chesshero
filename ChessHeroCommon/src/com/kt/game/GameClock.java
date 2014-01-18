@@ -5,11 +5,11 @@ import com.kt.utils.SLog;
 import java.util.ArrayList;
 
 /**
- * @author Todor Pitekov
- * @author Kiril Tabakov
- *
  * The GameClock's job is to keep track of the time each player in a game has played and to signal listeners
  * when a player has run out of time
+ *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class GameClock extends Thread
 {

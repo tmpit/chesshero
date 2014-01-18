@@ -1,8 +1,6 @@
 package com.kt.chesco;
 
 /**
- * @author Todor Pitekov
- * @author Kiril Tabakov
  * <pre>
  * CHESCO messaging protocol
  * Protocol specifications:
@@ -46,8 +44,10 @@ package com.kt.chesco;
  *
  * Each message starts with either an ARR parameter type or MAP parameter type.
  * </pre>
+ *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
-
 public class CHESCO
 {
 	public static final byte TYPE_NULL = 1;

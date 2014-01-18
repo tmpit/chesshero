@@ -1,10 +1,10 @@
 package com.kt.game;
 
 /**
+ * The GameClockEventListener interface is used by the game clock to signal listeners of game-clock-related events
+ *
  * @author Todor Pitekov
  * @author Kiril Tabakov
- *
- * The GameClockEventListener interface is used by the game clock to signal listeners of game-clock-related events
  */
 public interface GameClockEventListener
 {

@@ -12,10 +12,10 @@ import java.util.HashMap;
 import java.util.InputMismatchException;
 
 /**
+ * The CHESCOReader class is used to read raw data from an input stream and parse it as per the CHESCO messaging protocol
+ *
  * @author Todor Pitekov
  * @author Kiril Tabakov
- *
- * The CHESCOReader class is used to read raw data from an input stream and parse it as per the CHESCO messaging protocol
  * @see com.kt.chesco.CHESCO
  */
 public class CHESCOReader
@@ -33,7 +33,7 @@ public class CHESCOReader
 
 	/**
 	 * Reads and parses a CHESCO message from this reader's input stream
-	 * @return {@code Object} that can be either a {@code HashMap} or a {@code ArrayList}
+	 * @return {@code Object} that can be either a {@code HashMap} or an {@code ArrayList}
 	 * @throws InputMismatchException Thrown when the format of the received data does not conform to CHESCO
 	 * @throws IOException
 	 */
@@ -95,10 +95,9 @@ public class CHESCOReader
 }
 
 /**
+ * The CHESCOStreamReader class is used to conveniently read bytes from an input stream
  * @author Todor Pitekov
  * @author Kiril Tabakov
- *
- * The CHESCOStreamReader class is used to conveniently read bytes from an input stream
  */
 class CHESCOStreamReader
 {

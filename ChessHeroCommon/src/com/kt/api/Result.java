@@ -1,10 +1,10 @@
 package com.kt.api;
 
 /**
+ * The Result class groups all result codes the game server can return
+ *
  * @author Todor Pitekov
  * @author Kiril Tabakov
- *
- * The Result class groups all result codes the game server can return
  */
 public class Result
 {

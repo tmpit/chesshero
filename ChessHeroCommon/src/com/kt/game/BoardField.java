@@ -3,11 +3,11 @@ package com.kt.game;
 import com.kt.game.ChessPiece;
 
 /**
- * @author Todor Pitekov
- * @author Kiril Tabakov
- *
  * The BoardField class represents a field in a chess board. A chess board is represented by a grid of
  * objects of this class. Each instance has a color, position and a chess piece (if a chess piece is positioned on this field)
+ *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class BoardField
 {

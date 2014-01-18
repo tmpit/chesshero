@@ -3,11 +3,11 @@ package com.kt.game;
 import java.util.Collection;
 
 /**
+ * The MovementSet class represents a container for all the directions a certain chess piece
+ * can move in
+ *
  * @author Todor Pitekov
  * @author Kiril Tabakov
- *
- * The MovementSet class reprensents a container for all the directions a certain chess piece
- * can move in
  */
 public class MovementSet
 {

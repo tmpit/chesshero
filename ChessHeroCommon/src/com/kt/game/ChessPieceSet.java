@@ -6,12 +6,12 @@ import com.kt.game.King;
 import java.util.ArrayList;
 
 /**
- * @author Todor Pitekov
- * @author Kiril Tabakov
- *
  * The ChessPieceSet class represents a set of chess pieces a chess player possesses. An instance of
  * this class contains two collections of chess pieces - pieces that are still on the chess board
  * and chess pieces that are taken
+ *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class ChessPieceSet
 {

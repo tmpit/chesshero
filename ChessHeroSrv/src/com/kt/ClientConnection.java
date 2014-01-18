@@ -23,11 +23,12 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * The ClientConnection class is responsible for communicating with a client. It processes client requests
+ * and responses back to the client
+ *
  * @author Todor Pitekov
  * @author Kiril Tabakov
  *
- * The ClientConnection class is responsible for communicating with a client. It processes client requests
- * and responses back to the client
  * @see com.kt.api.Action
  * @see com.kt.api.Result
  * @see com.kt.api.Push

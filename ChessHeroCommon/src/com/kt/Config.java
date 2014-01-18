@@ -1,10 +1,10 @@
 package com.kt;
 
 /**
+ * The Config class is used to group and configuration options for the project
+ *
  * @author Todor Pitekov
  * @author Kiril Tabakov
- *
- * The Config class is used to group and configuration options for the project
  */
 public class Config
 {

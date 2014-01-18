@@ -1,10 +1,10 @@
 package com.kt.game;
 
 /**
+ * The Color class is used to represent either the color of a chess piece or a field on the chess board
+ *
  * @author Todor Pitekov
  * @author Kiril Tabakov
- *
- * The Color class is used to represent either the color of a chess piece or a field on the chess board
  */
 public enum Color
 {

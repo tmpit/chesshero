@@ -1,9 +1,6 @@
 package com.kt.api;
 
 /**
- * @author Todor Pitekov
- * @author Kiril Tabakov
- *
  * <pre>
  * The Push class groups event codes for push messages. A push message is considered any message sent
  * from the server that is not a response to a request. Each push message must have at least two
@@ -11,8 +8,12 @@ package com.kt.api;
  * [event:INT] which signifies the event that has occurred.
  *
  * About the notation used refer to the com.kt.api.Action class
- * @see com.kt.api.Action
  * </pre>
+ *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * @see com.kt.api.Action
  */
 public class Push
 {

@@ -6,12 +6,12 @@ import com.kt.utils.SLog;
 import java.util.*;
 
 /**
- * @author Todor Pitekov
- * @author Kiril Tabakov
- *
  * The GameController class is the class responsible for controlling the game during gameplay.
  * It operates on a {@code Game} object and works with its chess board to validate and execute
  * moves. It is also responsible for ending the game
+ *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class GameController
 {

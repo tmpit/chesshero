@@ -6,11 +6,11 @@ import java.security.SecureRandom;
 import java.util.Formatter;
 
 /**
- * @author Todor Pitekov
- * @author Todor Pitekov
- *
  * The Credentials class groups methods for password and username validation as well as generating a password salt
  * and salting a password
+ *
+ * @author Todor Pitekov
+ * @author Todor Pitekov
  */
 
 public class Credentials
