@@ -18,15 +18,13 @@ public class Server
 {
     public final static int SERVER_SOCK_PORT = 4848;
 
-    private ServerSocket _sock;
+    private ServerSocket sock;
 
-    Server()
+    public Server()
     {
         try
         {
-            _sock = new ServerSocket(SERVER_SOCK_PORT);
-
-            listen();
+			sock = new ServerSocket(SERVER_SOCK_PORT);
         }
         catch (IOException e)
         {
@@ -35,23 +33,24 @@ public class Server
         }
     }
 
-    private void listen() throws IOException
+    public void listen()
     {
         while (true)
         {
-            SLog.write("Listening...");
-            Socket clientSock = _sock.accept();
-            SLog.write("Client socket accepted");
+			try
+			{
+				SLog.write("Listening...");
+				Socket clientSock = sock.accept();
+				SLog.write("Client socket accepted");
 
-            try
-            {
-                ClientConnection connection = new ClientConnection(clientSock);
-                connection.start();
-            }
-            catch (IOException e)
-            {
-                SLog.write("Exception raised while initializing client connection");
-            }
+				ClientConnection connection = new ClientConnection(clientSock);
+				connection.start();
+			}
+			catch (IOException e)
+			{
+				SLog.write("Exception raised accepting client socket or initializing connection: " + e);
+				e.printStackTrace();
+			}
         }
     }
 }
