@@ -1,6 +1,6 @@
 package com.kt.game;
 
-import com.kt.gameapi.Result;
+import com.kt.api.Result;
 import com.kt.utils.SLog;
 
 import java.util.*;

@@ -1,4 +1,4 @@
-package com.kt.gameapi;
+package com.kt.api;
 
 /**
  * Created with IntelliJ IDEA.

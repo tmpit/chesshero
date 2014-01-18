@@ -1,6 +1,6 @@
-import com.kt.gameapi.Action;
-import com.kt.gameapi.Push;
-import com.kt.gameapi.Result;
+import com.kt.api.Action;
+import com.kt.api.Push;
+import com.kt.api.Result;
 import com.kt.chesco.CHESCOReader;
 import com.kt.chesco.CHESCOWriter;
 import com.kt.game.*;
