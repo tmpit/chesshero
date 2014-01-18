@@ -10,7 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Created by Toshko on 12/23/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class Pawn extends ChessPiece
 {
@@ -18,6 +19,11 @@ public class Pawn extends ChessPiece
 			MovementSet.UP, MovementSet.UP2, MovementSet.UP_LEFT, MovementSet.UP_RIGHT
 	)), true);
 
+	/**
+	 * Initializes a newly created {@code Pawn} object with a position and color
+	 * @param position A {@code Position}
+	 * @param color A {@code Color}
+	 */
 	public Pawn(Position position, Color color)
 	{
 		super(Tag.PAWN, position, color, set);

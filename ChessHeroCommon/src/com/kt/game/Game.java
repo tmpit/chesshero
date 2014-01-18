@@ -4,16 +4,44 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 /**
- * Created by Toshko on 12/23/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The Game class represents the state of a chess game and groups all game-related components such as players
+ * and chess board
  */
 public class Game
 {
-	public static final short STATE_INIT     	= 0; // Initialized
-	public static final short STATE_PENDING   	= 1; // Waiting for second player
-	public static final short STATE_ACTIVE 		= 2; // Game is being played
-	public static final short STATE_FINISHED	= 3; // Game has ended
-	public static final short STATE_PAUSED		= 4; // Game has been paused
-	public static final short STATE_WAITING		= 5; // Waiting to be resumed
+	/**
+	 * The {@code Game} instance has just been initialized
+	 */
+	public static final short STATE_INIT     	= 0;
+
+	/**
+	 * The game has just been created and the player inside it is waiting for an opponent to join
+	 */
+	public static final short STATE_PENDING   	= 1;
+
+	/**
+	 * The game is being played
+	 */
+	public static final short STATE_ACTIVE 		= 2;
+
+	/**
+	 * The game has ended
+	 */
+	public static final short STATE_FINISHED	= 3;
+
+	/**
+	 * The game has been paused. This can only happen during the save game routine
+	 */
+	public static final short STATE_PAUSED		= 4;
+
+	/**
+	 * This game is loaded from a saved state and there is only one player inside it
+	 * waiting for their opponent to join and resume the game
+	 */
+	public static final short STATE_WAITING		= 5;
 
 	public static final int MIN_NAME_LENGTH = 3;
 	public static final int MAX_NAME_LENGTH = 256;
@@ -25,6 +53,13 @@ public class Game
 
 	public static final int BOARD_SIDE = 8;
 
+	/**
+	 * Creates and returns the initial chess piece set with the specified color and initial positions
+	 * either on the top or the bottom of the game board
+	 * @param color A {@code Color}
+	 * @param bottom true if the chess pieces should be positioned at the bottom, false for top
+	 * @return A {@code ChessPieceSet}
+	 */
 	private static ChessPieceSet aSetOfChessPieces(Color color, boolean bottom)
 	{
 		int pawnRow = (bottom ? 1 : 6);
@@ -49,52 +84,11 @@ public class Game
 		return new ChessPieceSet(pieces);
 	}
 
-	private static ChessPieceSet test_aSetOfChessPieces(Color color, boolean bottom)
-	{
-		ArrayList<ChessPiece> pieces = new ArrayList<ChessPiece>(16);
-
-		if (bottom)
-		{
-			pieces.add(new Pawn(new Position(0, 6), color));
-//			pieces.add(new Pawn(new Position(1, 1), color));
-//			pieces.add(new Pawn(new Position(2, 1), color));
-//			pieces.add(new Pawn(new Position(3, 1), color));
-//			pieces.add(new Pawn(new Position(4, 1), color));
-//			pieces.add(new Pawn(new Position(5, 1), color));
-//			pieces.add(new Pawn(new Position(6, 1), color));
-//			pieces.add(new Pawn(new Position(7, 1), color));
-//			pieces.add(new Rook(new Position(0, 0), color));
-//			pieces.add(new Rook(new Position(7, 0), color));
-//			pieces.add(new Knight(new Position(1, 0), color));
-//			pieces.add(new Knight(new Position(6, 0), color));
-//			pieces.add(new Bishop(new Position(2, 0), color));
-//			pieces.add(new Bishop(new Position(5, 0), color));
-//			pieces.add(new Queen(new Position(3, 0), color));
-			pieces.add(new King(new Position(4, 0), color));
-		}
-		else
-		{
-//			pieces.add(new Pawn(new Position(0, 6), color));
-//			pieces.add(new Pawn(new Position(1, 6), color));
-//			pieces.add(new Pawn(new Position(2, 6), color));
-//			pieces.add(new Pawn(new Position(3, 6), color));
-//			pieces.add(new Pawn(new Position(4, 6), color));
-//			pieces.add(new Pawn(new Position(5, 6), color));
-//			pieces.add(new Pawn(new Position(6, 6), color));
-//			pieces.add(new Pawn(new Position(7, 6), color));
-//			pieces.add(new Rook(new Position(0, 7), color));
-//			pieces.add(new Rook(new Position(7, 7), color));
-//			pieces.add(new Knight(new Position(1, 7), color));
-//			pieces.add(new Knight(new Position(6, 7), color));
-//			pieces.add(new Bishop(new Position(2, 7), color));
-//			pieces.add(new Bishop(new Position(5, 7), color));
-//			pieces.add(new Queen(new Position(3, 7), color));
-			pieces.add(new King(new Position(4, 7), color));
-		}
-
-		return new ChessPieceSet(pieces);
-	}
-
+	/**
+	 * Validates a name for a game
+	 * @param name The {@code String} to validate
+	 * @return true if the name is a valid game name, false if not
+	 */
 	public static boolean isGameNameValid(String name)
 	{
 		int length = name.trim().length();
@@ -113,7 +107,7 @@ public class Game
 
 	protected Player player1;
 	protected Player player2;
-	// TODO: saved games timeout
+
 	private BoardField board[][] = new BoardField[BOARD_SIDE][BOARD_SIDE];
 
 	protected GameController controller;
@@ -131,11 +125,26 @@ public class Game
 
 	protected boolean saved = false;
 
+	/**
+	 * Initializes a newly created {@code Game} instance with a game id, name and timeout
+	 * @param gameID An {@code int}
+	 * @param name A {@code String}
+	 * @param timeout An {@code int}
+	 */
 	public Game(int gameID, String name, int timeout)
 	{
 		this(gameID, name, timeout, null);
 	}
 
+	/**
+	 * Initializes a newly created {@code Game} instance with a game id, name, timeout and loads the state
+	 * of the chess board from {@code byte} array. If parsing of the data fails, the game board is initialized
+	 * with the initial chess pieces and positions as if this is a new game
+	 * @param gameID An {@code int}
+	 * @param name A {@code String}
+	 * @param timeout An {@code int}
+	 * @param data A {@code byte} array with the chess board data
+	 */
 	public Game(int gameID, String name, int timeout, byte data[])
 	{
 		this.name = name;
@@ -154,76 +163,137 @@ public class Game
 		}
 	}
 
+	/**
+	 * Gets the id of the game
+	 * @return An {@code int}
+	 */
 	public int getID()
 	{
 		return id;
 	}
 
+	/**
+	 * Gets the name of the game
+	 * @return A {@code String}
+	 */
 	public String getName()
 	{
 		return name;
 	}
 
+	/**
+	 * Gets the timeout of the game
+	 * @return An {@code int}
+	 */
 	public int getTimeout()
 	{
 		return timeout;
 	}
 
+	/**
+	 * Gets the game clock of the game
+	 * @return A {@code GameClock}
+	 */
 	public GameClock getClock()
 	{
 		return clock;
 	}
 
+	/**
+	 * Gets the state of the game
+	 * @return A {@code short} that is one of the state constants for the game
+	 */
 	public short getState()
 	{
 		return state;
 	}
 
+	/**
+	 * Sets the state of the game
+	 * @param state A {@code short} that is one of the state constants for the game
+	 */
 	public void setState(short state)
 	{
 		this.state = state;
 	}
 
+	/**
+	 * True if the game has been saved, false if not. Used to determine how to finalize the game when closing
+	 * after saving it
+	 * @return True if the game has been saved, false if not
+	 */
 	public boolean wasSaved()
 	{
 		return saved;
 	}
 
+	/**
+	 * Gets the game controller
+	 * @return A {@code GameController}
+	 */
 	public GameController getController()
 	{
 		return controller;
 	}
 
+	/**
+	 * Gets the first player to join the game
+	 * @return A {@code Player}
+	 */
 	public Player getPlayer1()
 	{
 		return player1;
 	}
 
+	/**
+	 * Gets the second player to join the game
+	 * @return A {@code Player}
+	 */
 	public Player getPlayer2()
 	{
 		return player2;
 	}
 
+	/**
+	 * Gets the player whose turn it is
+	 * @return A {@code Player}
+	 */
 	public Player getTurn()
 	{
 		return turn;
 	}
 
+	/**
+	 * Gets whoever has won the game
+	 * @return A {@code Player}
+	 */
 	public Player getWinner()
 	{
 		return winner;
 	}
 
+	/**
+	 * True if the game has ended due to a checkmate, false if not. Used to determine how to finalize a game after
+	 * it has finished
+	 * @return True if the game has ended due to a checkmate, false if not
+	 */
 	public boolean isCheckmate()
 	{
 		return checkmate;
 	}
 
+	/**
+	 * Gets the attackers of the king of the player whose turn it is now
+	 * @return An {@code ArrayList} with {@code ChessPiece} instances or null if the king is not being attacked
+	 */
 	public ArrayList<ChessPiece> getAttackers()
 	{
 		return attackers;
 	}
 
+	/**
+	 * Creates the chess board, assigns positions, colors and chess pieces to each field
+	 */
 	protected void initializeBoard()
 	{
 		// Create board
@@ -260,6 +330,10 @@ public class Game
 		}
 	}
 
+	/**
+	 * Gets the chess board
+	 * @return A two-dimensional array of {@code BoardField} instances
+	 */
 	protected BoardField[][] getBoard()
 	{
 		return board;
@@ -306,6 +380,10 @@ public class Game
 		return base + description;
 	}
 
+	/**
+	 * Serializes all active chess pieces and returns a {@code byte} array
+	 * @return A {@code byte} array containing the chess board data
+	 */
 	public byte[] toData()
 	{
 		ArrayList<ChessPiece> whitePieces = whiteChessPieceSet.getActivePieces();
@@ -339,6 +417,13 @@ public class Game
 		return trimmed;
 	}
 
+	/**
+	 * Attempts to parse the specified data as serialized chess piece data. On success it creates
+	 * black and white chess piece sets and assigns them to the {@code whiteChessPieceSet} and
+	 * {@code blackChessPieceSet} fields
+	 * @param data The data to parse in the form of a {@code byte} array
+	 * @return True if the data has been parsed successfully, false if not
+	 */
 	private boolean parseChessPieceData(byte data[])
 	{
 		int dataLength = data.length;

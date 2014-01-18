@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Toshko
- * Date: 11/16/13
- * Time: 4:14 PM
- * To change this template use File | Settings | File Templates.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The Database class provides a convenient interface for performing database queries on the
+ * Chess Hero database
  */
 class Database
 {
@@ -23,6 +23,10 @@ class Database
     private boolean isOpen = false;
     private boolean inTransaction = false;
 
+	/**
+	 * Attempts to connect to the MySQL server
+	 * @throws SQLException Thrown if connection could not be established
+	 */
     public void connect() throws SQLException
     {
         if (isOpen)
@@ -52,6 +56,9 @@ class Database
         }
     }
 
+	/**
+	 * Disconnects from the MySQL server
+	 */
     public void disconnect()
     {
         if (null == conn)
@@ -74,6 +81,11 @@ class Database
         }
     }
 
+	/**
+	 * Properly closes a prepared statement and a result set objects
+	 * @param stmt The {@code PreparedStatement}
+	 * @param set The {@code ResultSet}
+	 */
     private void closeResources(PreparedStatement stmt, ResultSet set)
     {
         if (null == stmt)
@@ -95,6 +107,10 @@ class Database
         }
     }
 
+	/**
+	 * Attempts to begin a transaction
+	 * @throws SQLException
+	 */
     public void startTransaction() throws SQLException
     {
         if (inTransaction)
@@ -106,6 +122,10 @@ class Database
         inTransaction = true;
     }
 
+	/**
+	 * Attempts to close a transaction
+	 * @throws SQLException
+	 */
     public void commit() throws SQLException
     {
         if (!inTransaction)
@@ -117,6 +137,10 @@ class Database
         inTransaction = false;
     }
 
+	/**
+	 * Attempts to rollback a transaction
+	 * @throws SQLException
+	 */
     public void rollback() throws SQLException
     {
         if (!inTransaction)
@@ -128,6 +152,12 @@ class Database
         inTransaction = false;
     }
 
+	/**
+	 * Checks if a user with the specified username already exists in the database
+	 * @param username A {@code String}
+	 * @return True if the user with the specified username already exists in the database, false if not
+	 * @throws SQLException
+	 */
     public boolean userExists(String username) throws SQLException
     {
         PreparedStatement stmt = null;
@@ -137,16 +167,14 @@ class Database
         {
             stmt = conn.prepareStatement("SELECT COUNT(*) FROM users WHERE name = ?");
             stmt.setString(1, username);
-
-            boolean exists = false;
             set = stmt.executeQuery();
 
-            while (set.next())
-            {
-                exists = set.getInt(1) > 0;
-            }
+			if (set.next())
+			{
+				return set.getInt(1) > 0;
+			}
 
-            return exists;
+			return false;
         }
         finally
         {
@@ -154,7 +182,12 @@ class Database
         }
     }
 
-    // Returns -1 if the user with that name does not exist
+	/**
+	 * Gets the user id of a user with the specified user name
+	 * @param username A {@code String}
+	 * @return The user id of the user or -1 if no such user exists in the database
+	 * @throws SQLException
+	 */
     public int getUserID(String username) throws SQLException
     {
         PreparedStatement stmt = null;
@@ -180,6 +213,13 @@ class Database
         }
     }
 
+	/**
+	 * Gets the password hash and salt for a user with the specified username and constructs
+	 * a {@code AuthPair} object from them
+	 * @param username A {@code String}
+	 * @return An {@code AuthPair} instance with the password hash and salt or null if no such user exists
+	 * @throws SQLException
+	 */
     public AuthPair getAuthPair(String username) throws SQLException
     {
         PreparedStatement stmt = null;
@@ -207,6 +247,13 @@ class Database
         }
     }
 
+	/**
+	 * Inserts a user entry in the database with the specified username, password hash and salt
+	 * @param name A {@code String}
+	 * @param passHash A {@code String}
+	 * @param salt An {@code int}
+	 * @throws SQLException
+	 */
     public void insertUser(String name, String passHash, int salt) throws SQLException
     {
         PreparedStatement stmt = null;
@@ -226,8 +273,14 @@ class Database
         }
     }
 
-    // Returns the new game id
-    // On error returns -1
+	/**
+	 * Inserts a game entry in the database with the specified name, state and timeout
+	 * @param name A {@code String}
+	 * @param state A state constant declared in the {@code Game} class
+	 * @param timeout An {@code int}
+	 * @return The game id of the newly created game or -1 if the id could not be fetched
+	 * @throws SQLException
+	 */
     public int insertGame(String name, short state, int timeout) throws SQLException
     {
         PreparedStatement stmt = null;
@@ -261,6 +314,14 @@ class Database
         }
     }
 
+	/**
+	 * Inserts a game entry in the database with the specified game id, name, state and timeout
+	 * @param gameID An {@code int}
+	 * @param name A {@code String}
+	 * @param state A state constant declared in the {@code Game} class
+	 * @param timeout An {@code int}
+	 * @throws SQLException
+	 */
 	public void insertGame(int gameID, String name, short state, int timeout) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -280,6 +341,11 @@ class Database
 		}
 	}
 
+	/**
+	 * Deletes a game entry from the database with the specified game id
+	 * @param gameID An {@code int}
+	 * @throws SQLException
+	 */
     public void deleteGame(int gameID) throws SQLException
     {
         PreparedStatement stmt = null;
@@ -297,14 +363,24 @@ class Database
         }
     }
 
-	// Get games of the specified state within offset and limit and returns player color along with game info
-	// Each hashmap will contain the following:
-	// "gameid" => (int)
-	// "gamename" => (string)
-	// "timeout" => (int)
-	// "userid" => (int)
-	// "username" => (string)
-	// "usercolor" => (string)
+	/**
+	 * Gets an array of maps with info for games and the players in them for games with the specified state
+	 * and within the specified offset and limit parameters
+	 * @param state A state constant declared in the {@code Game} class
+	 * @param offset An {@code int}
+	 * @param limit An {@code int}
+	 * @return An {@code ArrayList} of {@code HashMap}s each one containing the following keys and data mapped
+	 * to those keys:
+	 * <pre>
+	 * "gameid" => (int) - The id of the game
+	 * "gamename" => (string) - The name of the game
+	 * "timeout" => (int) - The timeout value of the game
+	 * "userid" => (int) - The user id of a player in the game
+	 * "username" => (string) - The username of a player in the game
+	 * "usercolor" => (string) - The color of a player in the game
+	 * </pre>
+	 * @throws SQLException
+	 */
 	public ArrayList<HashMap> getGamesAndPlayerInfo(short state, int offset, int limit) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -341,6 +417,12 @@ class Database
 		}
 	}
 
+	/**
+	 * Updates a game with the specified game id with the specified state
+	 * @param gameID An {@code int}
+	 * @param state A state constant declared in the {@code Game} class
+	 * @throws SQLException
+	 */
     public void updateGameState(int gameID, short state) throws SQLException
     {
         PreparedStatement stmt = null;
@@ -359,6 +441,13 @@ class Database
         }
     }
 
+	/**
+	 * Inserts a player entry in the database with the specified game id, user id and color
+	 * @param gameID An {@code int}
+	 * @param userID An {@code int}
+	 * @param color A {@code String}
+	 * @throws SQLException
+	 */
 	public void insertPlayer(int gameID, int userID, String color) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -378,6 +467,12 @@ class Database
 		}
 	}
 
+	/**
+	 * Deletes a player entry from the database for the specified game and user identifiers
+	 * @param gameID An {@code int}
+	 * @param userID An {@code int}
+	 * @throws SQLException
+	 */
 	public void deletePlayer(int gameID, int userID) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -396,6 +491,11 @@ class Database
 		}
 	}
 
+	/**
+	 * Deletes player entries for a specified game id
+	 * @param gameID An {@code int}
+	 * @throws SQLException
+	 */
 	public void deletePlayersForGame(int gameID) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -413,6 +513,13 @@ class Database
 		}
 	}
 
+	/**
+	 * Inserts a chat entry in the database with the specified game id, user id and chat token
+	 * @param gameID An {@code int}
+	 * @param userID An {@code int}
+	 * @param token A {@code String}
+	 * @throws SQLException
+	 */
 	public void insertChatEntry(int gameID, int userID, String token) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -432,6 +539,12 @@ class Database
 		}
 	}
 
+	/**
+	 * Deletes a chat entry from the database for the specified game id and user id
+	 * @param gameID An {@code int}
+	 * @param userID An {@code int}
+	 * @throws SQLException
+	 */
 	public void deleteChatEntry(int gameID, int userID) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -450,6 +563,11 @@ class Database
 		}
 	}
 
+	/**
+	 * Deletes chat entries from the database for the specified game id
+	 * @param gameID An {@code int}
+	 * @throws SQLException
+	 */
 	public void deleteChatEntriesForGame(int gameID) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -467,6 +585,11 @@ class Database
 		}
 	}
 
+	/**
+	 * Inserts a result entry in the database for the specified game id
+	 * @param gameID An {@code int}
+	 * @throws SQLException
+	 */
 	public void insertResult(int gameID) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -484,6 +607,15 @@ class Database
 		}
 	}
 
+	/**
+	 * Inserts a result entry in the database with the specified game id, winner user id, loser user id
+	 * and a flag specifying if the game finished due to a checkmate
+	 * @param gameID An {@code int}
+	 * @param winnerUserID An {@code int}
+	 * @param loserUserID An {@code int}
+	 * @param checkmate A {@code boolean}
+	 * @throws SQLException
+	 */
 	public void insertResult(int gameID, int winnerUserID, int loserUserID, boolean checkmate) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -504,6 +636,13 @@ class Database
 		}
 	}
 
+	/**
+	 * Inserts a move entry in the database with the specified game id, user id and move string
+	 * @param gameID An {@code int}
+	 * @param userID An {@code int}
+	 * @param move A {@code String}
+	 * @throws SQLException
+	 */
 	public void insertMove(int gameID, int userID, String move) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -523,6 +662,14 @@ class Database
 		}
 	}
 
+	/**
+	 * Inserts a game save entry in the database with the specified game id, name, game data and timeout
+	 * @param gameID An {@code int}
+	 * @param name A {@code String}
+	 * @param gameData A {@code byte[]}
+	 * @param timeout An {@code int}
+	 * @throws SQLException
+	 */
 	public void insertGameSave(int gameID, String name, byte gameData[], int timeout) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -543,6 +690,11 @@ class Database
 		}
 	}
 
+	/**
+	 * Delete a save game entry from the database for the specified game id
+	 * @param gameID An {@code int}
+	 * @throws SQLException
+	 */
 	public void deleteSavedGame(int gameID) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -560,14 +712,24 @@ class Database
 		}
 	}
 
-	// Get saved games within offset and limit in which a user with the specified user id plays
-	// Each hashmap will contain the following:
-	// "gameid" => (int)
-	// "gamename" => (string)
-	// "timeout" => (int)
-	// "userid" => (int)
-	// "username" => (string)
-	// "usercolor" => (string)
+	/**
+	 * Gets a list of all saved games the user with the specified user id is present in along
+	 * with info about their opponent with the specified offset and limit
+	 * @param userID An {@code int}
+	 * @param offset An {@code int}
+	 * @param limit An {@code int}
+	 * @return An {@code ArrayList} of {@code HashMap}s each containing the following keys and data
+	 * mapped to those keys:
+	 * <pre>
+	 * "gameid" => (int) - The id of the game
+	 * "gamename" => (string) - The name of the game
+	 * "timeout" => (int) - The timeout value of the game
+	 * "userid" => (int) - The user id of the opponent within the game
+	 * "username" => (string) - The name of the opponent within the game
+	 * "usercolor" => (string) - The color of the opponent within the game
+	 * </pre>
+	 * @throws SQLException
+	 */
 	public ArrayList<HashMap> getSavedGamesWithOpponentsForUser(int userID, int offset, int limit) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -613,6 +775,14 @@ class Database
 		}
 	}
 
+	/**
+	 * Checks whether a user with the specified user is is a player within a saved game with
+	 * the specified game id
+	 * @param gameID An {@code int}
+	 * @param userID An {@code int}
+	 * @return True if the user is a player within the game, false if not
+	 * @throws SQLException
+	 */
 	public boolean isUserPresentInSavedGame(int gameID, int userID) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -638,6 +808,17 @@ class Database
 		}
 	}
 
+	/**
+	 * Gets name, timeout and game data for a saved game with the specified game id
+	 * @param gameID An {@code int}
+	 * @return A {@code HashMap} with keys and the data mapped to those keys:
+	 * <pre>
+	 * "gname" => (string) - The name of the game
+	 * "gdata" => (byte[]) - The game data
+	 * "timeout" => (int) - The timeout value of the game
+	 * </pre>
+	 * @throws SQLException
+	 */
 	public HashMap<String, Object> getGameSave(int gameID) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -668,6 +849,16 @@ class Database
 		}
 	}
 
+	/**
+	 * Inserts a player save entry in the database with the specified game id, user id, color, the time (in milliseconds)
+	 * the player has played the game and a flag specifying if they are the next to perform a move within the game
+	 * @param gameID An {@code int}
+	 * @param userID An {@code int}
+	 * @param color A {@code String}
+	 * @param next A {@code boolean}
+	 * @param millisPlayed A {@code long}
+	 * @throws SQLException
+	 */
 	public void insertSavedGamePlayer(int gameID, int userID, String color, boolean next, long millisPlayed) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -688,6 +879,18 @@ class Database
 		}
 	}
 
+	/**
+	 * Gets info about the two players present in a saved game with the specified game id
+	 * @param gameID An {@code int}
+	 * @return An {@code ArrayList} of {@code HashMap}s with keys and data mapped to those keys:
+	 * <pre>
+	 * "id" => (int) - The user id of the player
+	 * "color" => (string) - The color of the player within the game
+	 * "next" => (boolean) - True if the player is the next to perform a move within the game, false if not
+	 * "played" => (long) - The time (in milliseconds) the player has played the game
+	 * </pre>
+	 * @throws SQLException
+	 */
 	public ArrayList<HashMap> getSavedGamePlayers(int gameID) throws SQLException
 	{
 		PreparedStatement stmt = null;
@@ -719,6 +922,11 @@ class Database
 		}
 	}
 
+	/**
+	 * Deletes a player save entry from the database for the specified game id
+	 * @param gameID An {@code int}
+	 * @throws SQLException
+	 */
 	public void deletePlayersForSavedGame(int gameID) throws SQLException
 	{
 		PreparedStatement stmt = null;

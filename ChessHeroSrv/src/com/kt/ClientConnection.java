@@ -23,11 +23,14 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Toshko
- * Date: 11/9/13
- * Time: 7:56 PM
- * To change this template use File | Settings | File Templates.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The ClientConnection class is responsible for communicating with a client. It processes client requests
+ * and responses back to the client
+ * @see com.kt.api.Action
+ * @see com.kt.api.Result
+ * @see com.kt.api.Push
  */
 
 public class ClientConnection extends Thread implements GameClockEventListener
@@ -49,15 +52,29 @@ public class ClientConnection extends Thread implements GameClockEventListener
 	private static final HashMap<Integer, Game> games = new HashMap<Integer, Game>();
 	private static final Lock gamesMutex = new ReentrantLock(true);
 
-	// Not using synchronized blocks because those use non-fair ReentrantLocks
-	// Since these methods are frequently used by all threads, non-fair policy might lead to thread starvation
+	/**
+	 * Maps a {@code ClientConnection} to a user with the specified id playing in a game with
+	 * the specified id
+	 * @param gameID An {@code int}
+	 * @param userID An {@code int}
+	 * @param conn A {@code ClientConnection}
+	 */
 	private static void putPlayerConnection(int gameID, int userID, ClientConnection conn)
 	{
+		// Not using synchronized blocks because those use non-fair ReentrantLocks
+		// Since these methods are frequently used by all threads, non-fair policy might lead to thread starvation
 		playerConnectionsMutex.lock();
 		playerConnections.put(gameID + ":" + userID, conn);
 		playerConnectionsMutex.unlock();
 	}
 
+	/**
+	 * Gets a {@code ClientConnection} mapped to a user with the specified user id playing in a game
+	 * with the specified game id
+	 * @param gameID An {@code int}
+	 * @param userID An {@code int}
+	 * @return A {@code ClientConnection} or null if there is nothing mapped to the specified parameters
+	 */
 	private static ClientConnection getPlayerConnection(int gameID, int userID)
 	{
 		playerConnectionsMutex.lock();
@@ -66,6 +83,14 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		return conn;
 	}
 
+	/**
+	 * Removes a {@code ClientConnection} mapped to a user with the specified user id playing in a game
+	 * with the specified game id and returns it
+	 * @param gameID An {@code int}
+	 * @param userID An {@code int}
+	 * @return The removed {@code ClientConnection} or null if there is nothing mapped to the specified
+	 * parameters
+	 */
 	private static ClientConnection popPlayerConnection(int gameID, int userID)
 	{
 		String key = gameID + ":" + userID;
@@ -76,6 +101,10 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		return conn;
 	}
 
+	/**
+	 * Maps a {@code Game} instance to its game id
+	 * @param game The {@code Game}
+	 */
 	private static void addGame(Game game)
 	{
 		gamesMutex.lock();
@@ -83,6 +112,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		gamesMutex.unlock();
 	}
 
+	/**
+	 * Removes a {@code Game} for the specified game id and returns it
+	 * @param gameID An {@code int}
+	 * @return The removed {@code Game} or null if there is no game mapped to the specified game id
+	 */
 	private static Game removeGame(int gameID)
 	{
 		gamesMutex.lock();
@@ -92,6 +126,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		return game;
 	}
 
+	/**
+	 * Gets the {@code Game} for the specified game id and returns it
+	 * @param gameID An {@code int}
+	 * @return The removed {@code Game} or null if there is no game mapped to the specified game id
+	 */
 	private static Game getGame(int gameID)
 	{
 		gamesMutex.lock();
@@ -100,6 +139,15 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		return game;
 	}
 
+	/**
+	 * Generates a chat token for authentication with the chat server based on a game id, user id and the name
+	 * of the game. The hashing algorithm used is sha-1
+	 * @param gameID An {@code int}
+	 * @param userID An {@code int}
+	 * @param gameName A {@code String}
+	 * @return The chat token
+	 * @throws NoSuchAlgorithmException
+	 */
 	private static String generateChatToken(int gameID, int userID, String gameName) throws NoSuchAlgorithmException
 	{
 		String base = gameName + gameID + userID;
@@ -131,6 +179,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 	private AtomicBoolean saveRequestUnresolved = new AtomicBoolean(false);
 	private AtomicBoolean saveRequestAccepted = new AtomicBoolean(false);
 
+	/**
+	 * Initializes a {@code ClientConnection} instance with a {@code Socket}
+	 * @param sock The {@code Socket}
+	 * @throws IOException Thrown when one of the socket's streams could not be accessed
+	 */
     ClientConnection(Socket sock) throws IOException
     {
         this.sock = sock;
@@ -140,6 +193,9 @@ public class ClientConnection extends Thread implements GameClockEventListener
         writer = new CHESCOWriter(sock.getOutputStream());
     }
 
+	/**
+	 * Closes the {@code Socket} associated with this instance
+	 */
     private void closeSocket()
     {
         SLog.write("Closing socket...");
@@ -225,6 +281,10 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		}
     }
 
+	/**
+	 * Reads requests from the input stream of the {@code Socket} associated with this instance
+	 * passes each to {@code handleRequest()}
+	 */
     private void listen()
     {
 		while (running)
@@ -274,6 +334,12 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		}
     }
 
+	/**
+	 * Creates and returns a {@code HashMap} object with the specified result code
+	 * @param result A constant from the {@code Result} class
+	 * @return A {@code HashMap}
+	 * @see com.kt.api.Result
+	 */
     private HashMap<String, Object> aResponseWithResult(int result)
     {
         HashMap<String, Object> map = new HashMap<String, Object>();
@@ -281,6 +347,12 @@ public class ClientConnection extends Thread implements GameClockEventListener
         return map;
     }
 
+	/**
+	 * Creates and returns a {@code HashMap} object with the specified push event code
+	 * @param event A constant from the {@code Push} class
+	 * @return A {@code HashMap}
+	 * @see com.kt.api.Push
+	 */
     private HashMap<String, Object> aPushWithEvent(int event)
     {
         HashMap<String, Object> map = new HashMap<String, Object>();
@@ -289,6 +361,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
         return map;
     }
 
+	/**
+	 * Removes the a game represented by the specified {@code Game} object from the games list, removes
+	 * the {@code Player} within the game and performs all database queries related to cancelling a game
+	 * @param game The {@code Game}
+	 */
 	private void cancelGame(Game game)
 	{
 		int gID = game.getID();
@@ -328,6 +405,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		}
 	}
 
+	/**
+	 * Removes the a game represented by the specified {@code Game} object from the games list, removes
+	 * the {@code Player}s within the game and performs all database queries related to ending a game
+	 * @param game The {@code Game}
+	 */
 	private void finalizeGame(Game game)
 	{
 		int gameID = game.getID();
@@ -379,6 +461,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		}
 	}
 
+	/**
+	 * Writes a message wrapped in a {@code HashMap} to the output stream of the {@code Socket}
+	 * associated with this instance
+	 * @param message A {@code HashMap}
+	 */
     private synchronized void writeMessage(HashMap message)
     {
         try
@@ -394,6 +481,14 @@ public class ClientConnection extends Thread implements GameClockEventListener
         }
     }
 
+	/**
+	 * Performs basic request message validation and dispatches the request object to appropriate
+	 * handler based on the action. Validation consists of making sure that the request is of the valid
+	 * format, that the user is logged in before doing anything else and that this instance has not disabled
+	 * certain actions
+	 * @param aRequest An {@code Object} representing the request
+	 * @throws ChessHeroException
+	 */
     private void handleRequest(Object aRequest) throws ChessHeroException
     {
 		SLog.write("Request received: " + aRequest);
@@ -486,6 +581,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
         }
     }
 
+	/**
+	 * Handler for the register action
+	 * @param request A {@code HashMap} representing the request
+	 * @throws ChessHeroException
+	 */
     private void handleRegister(HashMap<String, Object> request) throws ChessHeroException
     {
         if (player != null)
@@ -567,6 +667,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
         }
     }
 
+	/**
+	 * Handler for the login action
+	 * @param request A {@code HashMap} representing the request
+	 * @throws ChessHeroException
+	 */
     private void handleLogin(HashMap<String, Object> request) throws ChessHeroException
     {
         if (player != null)
@@ -628,6 +733,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
         }
     }
 
+	/**
+	 * Handler for the create game action
+	 * @param request A {@code HashMap} representing the request
+	 * @throws ChessHeroException
+	 */
     private void handleCreateGame(HashMap<String, Object> request) throws ChessHeroException
     {
         if (player.getGame() != null)
@@ -743,6 +853,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
         }
     }
 
+	/**
+	 * Handler for the cancel game action
+	 * @param request A {@code HashMap} representing the request
+	 * @throws ChessHeroException
+	 */
     private void handleCancelGame(HashMap<String, Object> request) throws ChessHeroException
     {
         Game game = player.getGame();
@@ -793,6 +908,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
         writeMessage(aResponseWithResult(Result.OK));
     }
 
+	/**
+	 * Handler for the fetch games action
+	 * @param request A {@code HashMap} representing the request
+	 * @throws ChessHeroException
+	 */
     private void handleFetchGames(HashMap<String, Object> request) throws ChessHeroException
     {
 		String type = (String)request.get("type");
@@ -844,6 +964,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
         }
     }
 
+	/**
+	 * Handler for the join game action
+	 * @param request A {@code HashMap} representing the request
+	 * @throws ChessHeroException
+	 */
     private void handleJoinGame(HashMap<String, Object> request) throws ChessHeroException
     {
         if (player.getGame() != null)
@@ -967,6 +1092,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		}
     }
 
+	/**
+	 * Handler for the exit game action
+	 * @param request A {@code HashMap} representing the request
+	 * @throws ChessHeroException
+	 */
     private void handleExitGame(HashMap<String, Object> request) throws ChessHeroException
     {
         Game game = player.getGame();
@@ -1034,6 +1164,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		}
     }
 
+	/**
+	 * Handler for the move action
+	 * @param request A {@code HashMap} representing the request
+	 * @throws ChessHeroException
+	 */
 	private void handleMove(HashMap<String, Object> request) throws ChessHeroException
 	{
 		Game game = player.getGame();
@@ -1163,6 +1298,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		}
 	}
 
+	/**
+	 * Handler for the save game action
+	 * @param request A {@code HashMap} representing the request
+	 * @throws ChessHeroException
+	 */
 	private void handleSaveGame(HashMap<String, Object> request) throws ChessHeroException
 	{
 		Game game = player.getGame();
@@ -1317,6 +1457,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		writeMessage(response);
 	}
 
+	/**
+	 * Handler for the delete saved game action
+	 * @param request A {@code HashMap} representing the request
+	 * @throws ChessHeroException
+	 */
 	private void handleDeleteSavedGame(HashMap<String, Object> request) throws ChessHeroException
 	{
 		Integer gameID = (Integer)request.get("gameid");
@@ -1373,6 +1518,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		writeMessage(aResponseWithResult(Result.OK));
 	}
 
+	/**
+	 * Handler for the resume game action
+	 * @param request A {@code HashMap} representing the request
+	 * @throws ChessHeroException
+	 */
 	private void handleResumeGame(HashMap<String, Object> request) throws ChessHeroException
 	{
 		if (player.getGame() != null)

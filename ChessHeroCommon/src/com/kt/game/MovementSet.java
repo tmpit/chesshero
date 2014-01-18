@@ -3,7 +3,11 @@ package com.kt.game;
 import java.util.Collection;
 
 /**
- * Created by Toshko on 12/23/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The MovementSet class reprensents a container for all the directions a certain chess piece
+ * can move in
  */
 public class MovementSet
 {
@@ -34,6 +38,16 @@ public class MovementSet
 	// Calculates the smallest delta between two positions
 	// Only works for positions that are diagonal, horizontal or vertical relative to one another,
 	// so before using this method make sure to use validation methods in Position class
+
+	/**
+	 * Calculates the smallest delta between two positions. Works as expected only for positions that are
+	 * diagonal, horizontal and vertical relative to one another. This method cannot be used to calculate
+	 * a direction for the {@code Knight} chess piece as this chess piece does not move in a certain direction
+	 * @param from A {@code Position} for the starting position
+	 * @param to A {@code Position} for the destination position
+	 * @return A {@code Position} representing the direction in which one has to travel between {@code from} and
+	 * {@code to}
+	 */
 	public static Position directionFromPositions(Position from, Position to)
 	{
 		int dx = to.x - from.x;
@@ -52,26 +66,45 @@ public class MovementSet
 	}
 
 	private Collection<Position> set;
-	private boolean single = false;
+	private boolean recursive = true;
 
+	/**
+	 * Initializes a newly created {@code MovementSet} instance with a collection of {@code Position}
+	 * objects representing directions
+	 * @param set A {@code Collection}
+	 */
 	public MovementSet(Collection<Position> set)
 	{
 		this.set = set;
 	}
 
-	public MovementSet(Collection<Position> set, boolean single)
+	/**
+	 * Initializes a newly created {@code MovementSet} instance with a collection of {@code Position}
+	 * objects representing directions and a flag signifying whether movement in a direction from
+	 * {@code set} is recursive or not
+	 * @param set
+	 */
+	public MovementSet(Collection<Position> set, boolean recursive)
 	{
 		this.set = set;
-		this.single = single;
+		this.recursive = recursive;
 	}
 
+	/**
+	 * Gets the collection containing all directions
+	 * @return A {@code Collection} containing {@code Position} objects
+	 */
 	public Collection<Position> getSet()
 	{
 		return set;
 	}
 
-	public boolean isSingle()
+	/**
+	 * Gets the recursive value of this movement set
+	 * @return A {@code boolean}
+	 */
+	public boolean isRecursive()
 	{
-		return single;
+		return recursive;
 	}
 }

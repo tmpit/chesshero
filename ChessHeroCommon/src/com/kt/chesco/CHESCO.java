@@ -1,8 +1,9 @@
 package com.kt.chesco;
 
 /**
- * Created by Toshko on 12/7/13.
- *
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ * <pre>
  * CHESCO messaging protocol
  * Protocol specifications:
  *
@@ -10,7 +11,8 @@ package com.kt.chesco;
  * All numbers are signed.
  * All strings are UTF-8 encoded.
  *
- * A CHESCO message consists of parameters. Each parameter starts with 1 byte for the type of the parameter.
+ * A CHESCO message consists of parameters. The CHESCO class groups all supported parameter types.
+ * Each parameter starts with 1 byte for the type of the parameter.
  * After the parameter type each parameter should be read as follows:
  *
  * NULL
@@ -43,6 +45,7 @@ package com.kt.chesco;
  * The first two bytes contain the number of parameters following. The parameters can be of any type
  *
  * Each message starts with either an ARR parameter type or MAP parameter type.
+ * </pre>
  */
 
 public class CHESCO

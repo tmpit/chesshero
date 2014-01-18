@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Created by Toshko on 12/23/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class Rook extends ChessPiece
 {
@@ -17,6 +18,11 @@ public class Rook extends ChessPiece
 			MovementSet.UP, MovementSet.LEFT, MovementSet.DOWN, MovementSet.RIGHT
 	)));
 
+	/**
+	 * Initializes a newly created {@code Rook} object with a position and color
+	 * @param position A {@code Position}
+	 * @param color A {@code Color}
+	 */
 	public Rook(Position position, Color color)
 	{
 		super(Tag.ROOK, position, color, set);

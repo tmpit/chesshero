@@ -1,13 +1,15 @@
 package com.kt;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Toshko
- * Date: 11/7/13
- * Time: 12:00 AM
- * To change this template use File | Settings | File Templates.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The Config class is used to group and configuration options for the project
  */
 public class Config
 {
+	/**
+	 * Flags whether the project is compiled in debug mode
+	 */
     public final static boolean DEBUG = true;
 }

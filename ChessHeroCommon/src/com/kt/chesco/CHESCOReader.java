@@ -12,17 +12,31 @@ import java.util.HashMap;
 import java.util.InputMismatchException;
 
 /**
- * Created by Toshko on 12/7/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The CHESCOReader class is used to read raw data from an input stream and parse it as per the CHESCO messaging protocol
+ * @see com.kt.chesco.CHESCO
  */
 public class CHESCOReader
 {
     private CHESCOStreamReader reader;
 
+	/**
+	 * Initializes a newly created {@code CHESCOReader} object with an {@code InputStream} object it can read from
+	 * @param stream An {@code InputStream} object this reader can read from
+	 */
     public CHESCOReader(InputStream stream)
     {
         reader = new CHESCOStreamReader(stream);
     }
 
+	/**
+	 * Reads and parses a CHESCO message from this reader's input stream
+	 * @return {@code Object} that can be either a {@code HashMap} or a {@code ArrayList}
+	 * @throws InputMismatchException Thrown when the format of the received data does not conform to CHESCO
+	 * @throws IOException
+	 */
     public Object read() throws InputMismatchException, IOException
     {
         int type = reader.get();
@@ -80,15 +94,31 @@ public class CHESCOReader
     }
 }
 
+/**
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The CHESCOStreamReader class is used to conveniently read bytes from an input stream
+ */
 class CHESCOStreamReader
 {
     private InputStream istream;
 
+	/**
+	 * Initializes a newly created {@code CHESCOStreamReader} object with an {@code InputStream}
+	 * object it can read from
+	 * @param stream The {@code InputStream} object this reader can read from
+	 */
     public CHESCOStreamReader(InputStream stream)
     {
         istream = stream;
     }
 
+	/**
+	 * Reads one byte from this reader's input stream
+	 * @return The byte that was read
+	 * @throws IOException
+	 */
     public int get() throws IOException
     {
         int aByte = istream.read();
@@ -101,6 +131,12 @@ class CHESCOStreamReader
         return aByte;
     }
 
+	/**
+	 * Reads {@code count} number of bytes from this reader's input stream
+	 * @param count The number of bytes to read
+	 * @return The array of bytes read. The length of the array is always {@code count}
+	 * @throws IOException
+	 */
     public byte[] get(int count) throws IOException
     {
         byte bytes[] = new byte[count];

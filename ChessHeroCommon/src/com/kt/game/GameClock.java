@@ -5,7 +5,11 @@ import com.kt.utils.SLog;
 import java.util.ArrayList;
 
 /**
- * Created by Toshko on 1/15/14.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The GameClock's job is to keep track of the time each player in a game has played and to signal listeners
+ * when a player has run out of time
  */
 public class GameClock extends Thread
 {
@@ -13,21 +17,38 @@ public class GameClock extends Thread
 	private long startTimeMillis = 0;
 	private ArrayList<GameClockEventListener> listeners = new ArrayList<GameClockEventListener>(2);
 
+	/**
+	 * Initializes a newly created {@code GameClock} instance with a {@code Game} instance which players to
+	 * keep track of
+	 * @param game A {@code Game}
+	 */
 	public GameClock(Game game)
 	{
 		this.game = game;
 	}
 
+	/**
+	 * Adds a game clock event listener
+	 * @param listener An object implementing the {@code GameClockEventListener} interface
+	 */
 	public void addEventListener(GameClockEventListener listener)
 	{
 		listeners.add(listener);
 	}
 
+	/**
+	 * Removes a game clock event listener
+	 * @param listener An object implementing the {@code GameClockEventListener} interface
+	 */
 	public void removeEventListener(GameClockEventListener listener)
 	{
 		listeners.remove(listener);
 	}
 
+	/**
+	 * Gets the unix timestamp of the server time the game has started (in milliseconds)
+	 * @return A {@code long}
+	 */
 	public long getStartTimeMillis()
 	{
 		return startTimeMillis;

@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Created by Toshko on 12/23/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class Knight extends ChessPiece
 {
@@ -24,6 +25,11 @@ public class Knight extends ChessPiece
 			MovementSet.DOWN2_RIGHT
 	)));
 
+	/**
+	 * Initializes a newly created {@code Knight} object with a position and color
+	 * @param position A {@code Position}
+	 * @param color A {@code Color}
+	 */
 	public Knight(Position position, Color color)
 	{
 		super(Tag.KNIGHT, position, color, set);

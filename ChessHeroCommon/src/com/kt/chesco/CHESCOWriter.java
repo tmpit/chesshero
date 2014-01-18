@@ -12,22 +12,39 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by Toshko on 12/7/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The CHESCOWriter class is used to serialize objects to an output stream as per the CHESCO messaging protocol
+ * @see com.kt.chesco.CHESCO
  */
 public class CHESCOWriter
 {
     private OutputStream ostream;
 
+	/**
+	 * Initializes a newly created {@code CHESCOWriter} with an {@code OutputStream} the writer can write to
+	 * @param stream An {@code OutputStream} object this writer can write to
+	 */
     public CHESCOWriter(OutputStream stream)
     {
         this.ostream = stream;
     }
 
+	/**
+	 * Serializes null to the output stream of this writer
+	 * @throws IOException
+	 */
 	private void writeNull() throws IOException
 	{
 		ostream.write(CHESCO.TYPE_NULL);
 	}
 
+	/**
+	 * Serializes a string to the output stream of this writer
+	 * @param str The {@code String} object to serialize
+	 * @throws IOException
+	 */
     private void write(String str) throws IOException
     {
         try
@@ -50,18 +67,34 @@ public class CHESCOWriter
         }
     }
 
+	/**
+	 * Serializes an integer to the output stream of this writer
+	 * @param i The {@code Integer} object to serialize
+	 * @throws IOException
+	 */
     private void write(Integer i) throws IOException
     {
         ostream.write(CHESCO.TYPE_INT);
         ostream.write(Utils.bytesFromInt(i.intValue()), 0, 4);
     }
 
+	/**
+	 * Serializes a boolean to the output stream of this writer
+	 * @param b The {@code Boolean} object to serialize
+	 * @throws IOException
+	 */
     private void write(Boolean b) throws IOException
     {
         ostream.write(CHESCO.TYPE_BOOL);
         ostream.write((b.booleanValue() ? 1 : 0));
     }
 
+	/**
+	 * Serializes a collection to the output stream of this writer
+	 * @param collection The {@code Collection} object to serialize
+	 * @throws InputMismatchException Thrown when the object passed does not conform to CHESCO
+	 * @throws IOException
+	 */
     public void write(Collection collection) throws InputMismatchException, IOException
     {
         int entriesCount = collection.size();
@@ -112,6 +145,12 @@ public class CHESCOWriter
         }
     }
 
+	/**
+	 * Serializes a map to the output stream of this writer
+	 * @param map The{@code Map} object to serialize
+	 * @throws InputMismatchException Thrown when the object passed does not conform to CHESCO
+	 * @throws IOException
+	 */
     public void write(Map map) throws InputMismatchException, IOException
     {
         Set<Map.Entry<String, Object>> entrySet = map.entrySet();

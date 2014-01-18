@@ -7,19 +7,21 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Toshko
- * Date: 11/6/13
- * Time: 11:53 PM
- * To change this template use File | Settings | File Templates.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The Server is a wrapper around a {@code ServerSocket} that also dispatches
+ * {@code ClientConnection} objects with accepted client {@code Socket}s
  */
-
 public class Server
 {
     public final static int SERVER_SOCK_PORT = 4848;
 
     private ServerSocket sock;
 
+	/**
+	 * Creates this instance's {@code ServerSocket} and binds it a port
+	 */
     public Server()
     {
         try
@@ -33,6 +35,9 @@ public class Server
         }
     }
 
+	/**
+	 * Starts accepting sockets. This method never returns
+	 */
     public void listen()
     {
         while (true)

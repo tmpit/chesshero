@@ -1,10 +1,16 @@
 package com.kt.game;
 
 /**
- * Created by Toshko on 12/23/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The ChessPiece class is the base class for all chess pieces in the game of chess
  */
 public abstract class ChessPiece
 {
+	/**
+	 * The Tag class groups unique type identifiers for every type of chess piece
+	 */
 	public class Tag
 	{
 		public static final byte PAWN = 0;
@@ -15,6 +21,12 @@ public abstract class ChessPiece
 		public static final byte KING = 5;
 	}
 
+	/**
+	 * Parses a chess piece from a byte array
+	 * @param data A {@code byte} array
+	 * @return A newly created {@code ChessPiece} instance or null if the data could not be parsed
+	 * due to invalid format
+	 */
 	public static ChessPiece chessPieceFromData(byte data[])
 	{
 		if (data.length != 2)
@@ -46,6 +58,13 @@ public abstract class ChessPiece
 		return piece;
 	}
 
+	/**
+	 * Creates a {@code ChessPiece} instance with the specified tag, position and color
+	 * @param tag A constant from the {@code Tag} class
+	 * @param position A {@code Position}
+	 * @param color A {@code Color}
+	 * @return A newly created {@code ChessPiece} instance or null if the {@code tag} value is invalid
+	 */
 	public static ChessPiece aChessPiece(int tag, Position position, Color color)
 	{
 		switch (tag)
@@ -68,6 +87,13 @@ public abstract class ChessPiece
 
 	private boolean moved = false;
 
+	/**
+	 * Initializes a newly created {@code ChessPiece} instance with a tag, position, color and movement set
+	 * @param tag A constant from the {@code Tag} class
+	 * @param position A {@code Position}
+	 * @param color A {@code Color}
+	 * @param movementSet A {@code MovementSet}
+	 */
 	public ChessPiece(byte tag, Position position, Color color, MovementSet movementSet)
 	{
 		this.tag = tag;
@@ -76,49 +102,98 @@ public abstract class ChessPiece
 		this.movementSet = movementSet;
 	}
 
+	/**
+	 * Gets the position of this chess piece on the chess board
+	 * @return A {@code Position}
+	 */
 	public Position getPosition()
 	{
 		return position;
 	}
 
+	/**
+	 * Sets the position of this chess piece on the chess board
+	 * @param newPos A {@code Position}
+	 */
 	void setPosition(Position newPos)
 	{
 		position = newPos;
 		moved = true;
 	}
 
+	/**
+	 * Gets the color of this chess piece
+	 * @return A {@code Color}
+	 */
 	public Color getColor()
 	{
 		return color;
 	}
 
+	/**
+	 * Gets the owner of this chess piece
+	 * @return A {@code Player}
+	 */
 	public Player getOwner()
 	{
 		return owner;
 	}
 
+	/**
+	 * Sets the owner of this chess piece
+	 * @param owner A {@code Player}
+	 */
 	void setOwner(Player owner)
 	{
 		this.owner = owner;
 	}
 
+	/**
+	 * Gets the movement set of this chess piece
+	 * @return A {@code MovementSet}
+	 */
 	public MovementSet getMovementSet()
 	{
 		return movementSet;
 	}
 
+	/**
+	 * Gets the tag of this chess piece
+	 * @return A constant from the {@code Tag} class
+	 */
 	public byte getTag()
 	{
 		return tag;
 	}
 
+	/**
+	 * Returns true if this chess piece has moved within the game board it is in, false otherwise
+	 * @return true if this chess piece has moved, false otherwise
+	 */
 	public boolean hasMoved()
 	{
 		return moved;
 	}
 
+	/**
+	 * Returns true if this chess piece can move from its current position to the specified position
+	 * considering whether it would be taking another chess piece there or not. In other words this method
+	 * returns true if this chess piece can move in the fashion described by its current position and
+	 * destination position. This method is abstracted from the game board, meaning that the check
+	 * is not performed in the context of a game board, thus the chess piece will return true if it can
+	 * move in the specified fashion even if the destination position is outside of the game board.
+	 * It is up to the calling code to perform additional validation of the destination position
+	 * @param pos A {@code Position} instance representing the destination position
+	 * @param take Pass true if this chess piece would be taking another one with this move
+	 * @return true if this chess piece can move in the fashion described by its current position
+	 * and the destination position, false if not
+	 */
 	protected abstract boolean isMoveValid(Position pos, boolean take);
 
+	/**
+	 * Serializes a {@code ChessPiece} object to a {@code byte} array
+	 * @return The resulting {@code byte} array. The length of the array is always 2
+	 */
 	public byte[] toData()
 	{
 		byte meta = tag;

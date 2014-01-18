@@ -6,7 +6,12 @@ import com.kt.game.King;
 import java.util.ArrayList;
 
 /**
- * Created by Toshko on 12/27/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The ChessPieceSet class represents a set of chess pieces a chess player possesses. An instance of
+ * this class contains two collections of chess pieces - pieces that are still on the chess board
+ * and chess pieces that are taken
  */
 public class ChessPieceSet
 {
@@ -15,11 +20,20 @@ public class ChessPieceSet
 
 	private King king = null;
 
+	/**
+	 * Initializes a newly created {@code ChessPieceSet} object with a list of active pieces and no taken pieces
+	 * @param active An {@code ArrayList} of {@code ChessPiece} instances
+	 */
 	public ChessPieceSet(ArrayList<ChessPiece> active)
 	{
 		this(active, null);
 	}
 
+	/**
+	 * Initializes a newly created {@code ChessPieceSet} object with lists of active and taken pieces
+	 * @param active An {@code ArrayList} of {@code ChessPiece} instances
+	 * @param taken An {@code ArrayList} of {@code ChessPiece} instances
+	 */
 	public ChessPieceSet(ArrayList<ChessPiece> active, ArrayList<ChessPiece> taken)
 	{
 		activePieces.addAll(active);
@@ -30,16 +44,28 @@ public class ChessPieceSet
 		}
 	}
 
+	/**
+	 * Gets the active pieces
+	 * @return An {@code ArrayList} of {@code ChessPiece} instances
+	 */
 	public ArrayList<ChessPiece> getActivePieces()
 	{
 		return activePieces;
 	}
 
+	/**
+	 * Gets the taken pieces
+	 * @return An {@code ArrayList} of {@code ChessPiece} instances
+	 */
 	public ArrayList<ChessPiece> getTakenPieces()
 	{
 		return takenPieces;
 	}
 
+	/**
+	 * Gets the king from the active chess pieces
+	 * @return A {@code King} instance
+	 */
 	public King getKing()
 	{
 		if (null == king)
@@ -57,6 +83,13 @@ public class ChessPieceSet
 		return king;
 	}
 
+	/**
+	 * Moves a {@code ChessPiece} from the active pieces collection to the taken pieces collection
+	 * if it is present in the active pieces collection
+	 * @param piece The {@code ChessPiece} to take
+	 * @return false if the specified chess piece is not in the active pieces collection and was not added
+	 * to the taken pieces collection, true otherwise
+	 */
 	public boolean take(ChessPiece piece)
 	{
 		if (activePieces.remove(piece))
@@ -67,6 +100,10 @@ public class ChessPieceSet
 		return false;
 	}
 
+	/**
+	 * Adds a {@code ChessPiece} to the active pieces collection
+	 * @param piece The {@code ChessPiece} to add
+	 */
 	public void add(ChessPiece piece)
 	{
 		activePieces.add(piece);

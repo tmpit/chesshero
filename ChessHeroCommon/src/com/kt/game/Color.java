@@ -1,11 +1,10 @@
 package com.kt.game;
 
 /**
- * Created with IntelliJ IDEA.
- * User: kiro
- * Date: 11/30/13
- * Time: 12:51 PM
- * To change this template use File | Settings | File Templates.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The Color class is used to represent either the color of a chess piece or a field on the chess board
  */
 public enum Color
 {
@@ -33,8 +32,15 @@ public enum Color
 		return null;
 	}
 
+	/**
+	 * Parses a {@code Color} object from a {@code String}
+	 * @param str A {@code String} object to parse from
+	 * @return A {@code Color} instance
+	 */
 	public static Color fromString(String str)
 	{
+		str = str.toLowerCase();
+
 		if (str.equals("white"))
 		{
 			return Color.WHITE;

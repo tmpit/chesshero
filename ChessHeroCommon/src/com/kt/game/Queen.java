@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Created by Toshko on 12/23/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class Queen extends ChessPiece
 {
@@ -18,6 +19,11 @@ public class Queen extends ChessPiece
 			MovementSet.UP_LEFT, MovementSet.UP_RIGHT, MovementSet.DOWN_LEFT, MovementSet.DOWN_RIGHT
 	)));
 
+	/**
+	 * Initializes a newly created {@code Queen} object with a position and color
+	 * @param position A {@code Position}
+	 * @param color A {@code Color}
+	 */
 	public Queen(Position position, Color color)
 	{
 		super(Tag.QUEEN, position, color, set);

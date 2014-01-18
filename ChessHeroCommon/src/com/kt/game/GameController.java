@@ -6,13 +6,23 @@ import com.kt.utils.SLog;
 import java.util.*;
 
 /**
- * Created by Toshko on 12/23/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
+ *
+ * The GameController class is the class responsible for controlling the game during gameplay.
+ * It operates on a {@code Game} object and works with its chess board to validate and execute
+ * moves. It is also responsible for ending the game
  */
 public class GameController
 {
 	private Game game;
 	private BoardField board[][];
 
+	/**
+	 * Initializes a newly created {@code GameController} instance with a {@code Game} instances
+	 * which to operate on
+	 * @param game a {@code Game}
+	 */
 	public GameController(Game game)
 	{
 		this.game = game;
@@ -20,11 +30,22 @@ public class GameController
 		game.controller = this;
 	}
 
+	/**
+	 * Starts the game by updating the game state, setting the white player as the player who is next
+	 * to make a move, initializing the chess board and activating the game clock if the game has timeout.
+	 * No-op if the game has already started
+	 */
 	public void startGame()
 	{
 		startGame(null);
 	}
 
+	/**
+	 * Starts the game by updating the game state, setting the specified player as the player who is next
+	 * to make a move, initializing the chess board and activating the game clock if the game has timeout.
+	 * No-op if the game has already started
+	 * @param turn A {@code Player} object representing the player who is next to make a move
+	 */
 	public void startGame(Player turn)
 	{
 		if (Game.STATE_ACTIVE == game.getState())
@@ -56,11 +77,24 @@ public class GameController
 		}
 	}
 
+	/**
+	 * Ends the game with the specified player as the winner and flags whether the ending of the game
+	 * is due to a checkmate or not
+	 * @param winner A {@code Player} object for the winner
+	 * @param checkmate True if the ending of the game is due to a checkmate, false if not
+	 */
 	public void endGame(Player winner, boolean checkmate)
 	{
 		endGame(winner, checkmate, false);
 	}
 
+	/**
+	 * Ends the game with the specified player as the winner and flags whether the ending of the game
+	 * is due to a checkmate or due to saving of the game
+	 * @param winner A {@code Player} object for the winner
+	 * @param checkmate True if the ending of the game is due to a checkmate, false if not
+	 * @param saved True if the ending of the game is due to saving of the game, false if not
+	 */
 	public void endGame(Player winner, boolean checkmate, boolean saved)
 	{
 		if (Game.STATE_FINISHED == game.getState())
@@ -87,6 +121,13 @@ public class GameController
 		}
 	}
 
+	/**
+	 * Executes a move performed by a player as per the Pure coordinate notation as described at
+	 * http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
+	 * @param executor A {@code Player} for the player executing the move
+	 * @param move A {@code String} for the move
+	 * @return A constant from the {@code Result} class
+	 */
 	public int execute(Player executor, String move)
 	{
 		if (game.getState() != Game.STATE_ACTIVE)
@@ -479,13 +520,23 @@ public class GameController
 		return Result.OK;
 	}
 
-	// Method validates the move by checking the following:
-	// - can the chess piece at all move to the destination position
-	// - can the chess piece take the other chess piece at the destination position
-	// - can the chess piece move without exposing the king to check
-	// - if the king is moved, would he be safe at the destination position
-	// Returns a Result error code if the move is invalid
-	// Returns Result.OK if the move is valid
+	/**
+	 * Validates whether a player can move the specified chess piece at {@code from} to {@code to}
+	 * and passes back the context of the move to the caller through a {@code MoveContext} object
+	 * The method validates the move by checking the following:
+	 * <pre>
+	 * - can the chess piece at all move to the destination position
+	 * - can the chess piece take the other chess piece at the destination position
+	 * - can the chess piece move without exposing the king to attackers
+	 * - if the king is moved, would he be safe at the destination position
+	 * </pre>
+	 * @param executor The {@code Player} executing the move
+	 * @param movedPiece The {@code ChessPiece} that is being moved
+	 * @param from A {@code Position} representing the starting position
+	 * @param to A {@code Position} representing the destination position
+	 * @param ctx A {@code MoveContext} object
+	 * @return A constant from the {@code Result} class
+	 */
 	private int validateMove(Player executor, ChessPiece movedPiece, Position from, Position to, MoveContext ctx)
 	{
 		ChessPiece toPiece = board[to.x][to.y].getChessPiece(); // The chess piece that is at the destination position
@@ -656,23 +707,43 @@ public class GameController
 		return Result.OK;
 	}
 
+	/**
+	 * Checks whether a path specified by two positions is intercepted by a chess piece.
+	 * The path does not include the {@code from} and {@code to} positions
+	 * @param from The starting {@code Position}
+	 * @param to The destination {@code Position}
+	 * @return True if the path is intercepted by a chess piece, false if not
+	 */
 	private boolean isPathIntercepted(Position from, Position to)
 	{
 		Position direction = MovementSet.directionFromPositions(from, to);
 		return firstChessPieceInDirection(from, direction, to) != null;
 	}
 
-	// Returns the first chess piece in a direction starting from a position
-	// Search starts at 'from' + 'direction'
-	// Search ends when a chess piece is found or the end of the board is reached
+	/**
+	 * Returns the first chess piece in a direction starting from a position. The search starts at
+	 * {@code from} + {@code direction} and ends when a chess piece is found or the end of the board
+	 * is reached
+	 * @param from The starting {@code Position}
+	 * @param direction A {@code Position} representing the direction
+	 * @return The first {@code ChessPiece} found or null if no chess piece can be found in the specified
+	 * direction
+	 */
 	private ChessPiece firstChessPieceInDirection(Position from, Position direction)
 	{
 		return firstChessPieceInDirection(from, direction, null);
 	}
 
-	// Returns the first chess piece in a direction starting from a position
-	// Search starts at 'from' + 'direction'
-	// Search ends when a chess piece is found, 'end' is reached (if specified) or when the end of the board is reached, the 'end' position is not checked for a chess piece
+	/**
+	 * Returns the first chess piece in a direction starting from a position. The search starts at
+	 * {@code from} + {@code direction} and ends when a chess piece is found, the end of the board
+	 * is reached or {@code end} is reached (if specified). {@code end} is not checked for a chess piece,
+	 * so if the path is clear up to {@code end} and there is a chess piece at {@code end}, it will not be returned
+	 * @param from The starting {@code Position}
+	 * @param direction A {@code Position} representing the direction
+	 * @return The first {@code ChessPiece} found or null if no chess piece can be found in the specified
+	 * direction
+	 */
 	private ChessPiece firstChessPieceInDirection(Position from, Position direction, Position end)
 	{
 		Position cursor = from.clone();
@@ -699,8 +770,12 @@ public class GameController
 		return piece;
 	}
 
-	// Returns the first chess piece out of the list that attacks the specified position
-	// Important: bare in mind that before actually executing a move, this method might not return accurate results
+	/**
+	 * Returns the first chess piece out of the specified list that attacks the specified position
+	 * @param pos A {@code Position} to check against
+	 * @param pieces An {@code ArrayList} of {@code ChessPiece} instances
+	 * @return The first {@code ChessPiece} that attacks {@code pos}
+	 */
 	private ChessPiece positionAttacker(Position pos, ArrayList<ChessPiece> pieces)
 	{
 		for (ChessPiece piece : pieces)
@@ -745,6 +820,10 @@ public class GameController
 		return null;
 	}
 
+	/**
+	 * The MoveContext class is used to transfer special-move-related information between the validation
+	 * and execution methods
+	 */
 	private class MoveContext
 	{
 		public ChessPiece take = null;

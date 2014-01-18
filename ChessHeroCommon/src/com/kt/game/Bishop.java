@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Created by Toshko on 12/23/13.
+ * @author Todor Pitekov
+ * @author Kiril Tabakov
  */
 public class Bishop extends ChessPiece
 {
@@ -17,6 +18,11 @@ public class Bishop extends ChessPiece
 			MovementSet.UP_LEFT, MovementSet.UP_RIGHT, MovementSet.DOWN_LEFT, MovementSet.DOWN_RIGHT
 	)));
 
+	/**
+	 * Initializes a newly created {@code Bishop} object with a position and color
+	 * @param position A {@code Position}
+	 * @param color A {@code Color}
+	 */
 	public Bishop(Position position, Color color)
 	{
 		super(Tag.BISHOP, position, color, set);
