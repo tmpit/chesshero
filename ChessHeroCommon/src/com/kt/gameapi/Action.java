@@ -1,4 +1,4 @@
-package com.kt.api;
+package com.kt.gameapi;
 
 /**
  * Created by Toshko on 12/8/13.

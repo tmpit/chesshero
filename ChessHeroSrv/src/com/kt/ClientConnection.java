@@ -1,13 +1,13 @@
 package com.kt;
 
-import com.kt.api.Action;
-import com.kt.api.Push;
+import com.kt.gameapi.Action;
+import com.kt.gameapi.Push;
 import com.kt.chesco.CHESCOReader;
 import com.kt.chesco.CHESCOWriter;
 import com.kt.game.*;
 import com.kt.game.ChessPiece;
 import com.kt.utils.ChessHeroException;
-import com.kt.api.Result;
+import com.kt.gameapi.Result;
 import com.kt.utils.SLog;
 
 import java.io.EOFException;
