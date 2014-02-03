@@ -12,12 +12,11 @@ public class ChessHeroChatSrv {
 		try {
 			socket = new ServerSocket(PORT);
 			System.out.println("Server is started!");
-			String token = "tk3";
 			
 			while (true) {
 				Socket incoming = socket.accept();
+				new ClientHandler(incoming, threadPool).start();
 				System.out.println("New client connected!");
-				new ClientHandler(incoming, threadPool, token).start();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
