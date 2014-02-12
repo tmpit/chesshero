@@ -15,8 +15,8 @@ import java.util.*;
  */
 public class GameController
 {
-	private Game game;
-	private BoardField board[][];
+	public Game game;
+	public BoardField board[][];
 
 	/**
 	 * Initializes a newly created {@code GameController} instance with a {@code Game} instances

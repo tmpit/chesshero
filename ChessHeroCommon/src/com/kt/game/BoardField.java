@@ -48,6 +48,16 @@ public class BoardField
 		return chessPiece;
 	}
 
+    public Position getPosition()
+    {
+        return position;
+    }
+
+    public Color getColor()
+    {
+        return color;
+    }
+
 	/**
 	 * Sets the chess piece that is "standing" on this field
 	 * @param aPiece An instance of {@code ChessPiece} or null if you wish to remove the current chess piece

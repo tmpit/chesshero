@@ -1,12 +1,9 @@
 package Client.Pages.PlayGameVisualization;
 
-import Client.Game.BoardField;
-import Client.Game.BoardPosition;
-import Client.Game.ChessColor;
-import Client.Game.ChessPieces.ChessPiece;
-import Client.Game.ChessPieces.ChessPieceType;
-import Client.Game.Game;
 import Client.Pages.PlayGamePage;
+import com.kt.game.BoardField;
+import com.kt.game.ChessPiece;
+import com.kt.game.Position;
 import javafx.util.Pair;
 
 import javax.swing.*;
@@ -35,29 +32,29 @@ public class ChessBoardPanel extends JPanel {
         this.redrawBoard();
     }
 
-    public ChessBoardPanel(Game game, int pieceSize){
+    public ChessBoardPanel(BoardField[][] board, int pieceSize){
 
-        for (int i = 0; i<game.board.length;i++){
-            for (int j = 0; j<game.board[i].length;j++){
+        for (int i = 0; i<board.length;i++){
+            for (int j = 0; j<board[i].length;j++){
                 ChessBoardFieldPanel currentGameBoardFieldPanel = this.chessBoardFields[i][j];
-                BoardField currentGameBoardField = game.board[i][j];
-                BoardPosition currFieldPos = currentGameBoardField.getFieldPosition();
-                ChessPiece currOccupyingPiece = currentGameBoardField.getOccupyingPiece();
+                BoardField currentGameBoardField = board[i][j];
+                Position currFieldPos = currentGameBoardField.getPosition();
+                ChessPiece currOccupyingPiece = currentGameBoardField.getChessPiece();
 
                 if (currOccupyingPiece != null){
-                    this.chessBoardFields[currFieldPos.row][currFieldPos.col] =
+                    this.chessBoardFields[currFieldPos.getY()][currFieldPos.getX()] =
                             new ChessBoardFieldPanel(
-                                    currentGameBoardField.getFieldColor(),
+                                    currentGameBoardField.getColor(),
                                     currFieldPos,
                                     pieceSize,
-                                    PlayGamePage.ChessPieceImages.get(new Pair<ChessPieceType, ChessColor>(
-                                            currOccupyingPiece.type, currOccupyingPiece.owner.getPlayerColor()
+                                    PlayGamePage.ChessPieceImages.get(new Pair<Byte, com.kt.game.Color>(
+                                            currOccupyingPiece.getTag(), currOccupyingPiece.getOwner().getColor()
                                     )));
                 }
                 else{
-                    this.chessBoardFields[currFieldPos.row][currFieldPos.col] =
+                    this.chessBoardFields[currFieldPos.getY()][currFieldPos.getX()] =
                             new ChessBoardFieldPanel(
-                                    currentGameBoardField.getFieldColor(),
+                                    currentGameBoardField.getColor(),
                                     currFieldPos,
                                     pieceSize
                             );
@@ -204,10 +201,10 @@ public class ChessBoardPanel extends JPanel {
 
         for(ChessBoardFieldPanel[] chessBoardFieldRow : this.chessBoardFields){
             for (ChessBoardFieldPanel chessBoardField : chessBoardFieldRow){
-                if (isBoardReversed == false) GridOpt.gridx = (chessBoardField.fieldPosition.col+1);
-                else GridOpt.gridx = 9 - (chessBoardField.fieldPosition.col+1);
-                if (isBoardReversed == false) GridOpt.gridy = 9 - (chessBoardField.fieldPosition.row+1);
-                else GridOpt.gridy = (chessBoardField.fieldPosition.row+1);
+                if (isBoardReversed == false) GridOpt.gridx = (chessBoardField.fieldPosition.getX()+1);
+                else GridOpt.gridx = 9 - (chessBoardField.fieldPosition.getX()+1);
+                if (isBoardReversed == false) GridOpt.gridy = 9 - (chessBoardField.fieldPosition.getY()+1);
+                else GridOpt.gridy = (chessBoardField.fieldPosition.getY()+1);
                 this.add(chessBoardField,GridOpt);
             }
         }

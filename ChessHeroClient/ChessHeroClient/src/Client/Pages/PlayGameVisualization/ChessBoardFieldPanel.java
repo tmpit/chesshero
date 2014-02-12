@@ -1,7 +1,6 @@
 package Client.Pages.PlayGameVisualization;
 
-import Client.Game.BoardPosition;
-import Client.Game.ChessColor;
+import com.kt.game.Position;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,18 +15,18 @@ import java.awt.image.BufferedImage;
  */
 public class ChessBoardFieldPanel extends ChessFieldPanel {
 //    public ChessColor fieldColor = null;
-    public BoardPosition fieldPosition = null;
+    public Position fieldPosition = null;
 //    public BufferedImage fieldImage = null;
 
 //    public Color getDisplayColor(){
 //        return this.fieldColor == ChessColor.White ? new Color(230,198,167): new Color(90,45,45);
 //    }
 
-    public ChessBoardFieldPanel(ChessColor fieldColor, BoardPosition fieldPosition,int size){
+    public ChessBoardFieldPanel(com.kt.game.Color fieldColor, Position fieldPosition,int size){
         this(fieldColor, fieldPosition,size , null);
     }
 
-    public ChessBoardFieldPanel(ChessColor fieldColor, BoardPosition fieldPosition,int size, BufferedImage fieldImage){
+    public ChessBoardFieldPanel(com.kt.game.Color fieldColor, Position fieldPosition,int size, BufferedImage fieldImage){
         super(fieldColor,size,fieldImage);
         //super(new ImageIcon (fieldImage));
         //this.setHorizontalAlignment(SwingConstants.CENTER);

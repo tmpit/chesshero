@@ -1,14 +1,23 @@
 package Client.Pages;
 
+import Client.Communication.Request;
 import com.kt.Credentials;
+import com.kt.api.*;
+import com.kt.api.Action;
+import com.kt.game.*;
+import com.kt.utils.SLog;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Vector;
 
 /**
@@ -21,28 +30,34 @@ import java.util.Vector;
 public class LobbyPage extends ChessHeroPage{
 
     public static final Vector<String> LOBBY_TABLE_COLUMNS = new Vector<String>(Arrays.asList(
-            "ID#", "Game Name", "Created By")
+            "Game Name", "Created By", "Opponent Color" )
     );
 
-    public Vector<LobbyTableEntry> gameList = null;
+    public ArrayList<LobbyTableEntry> gameList = null;
     public JTable table = null;
 
     // HELPER INNER CLASSES
 
     class LobbyTableEntry {
-        public String gameID = null;
+        public Integer gameID = null;
         public String gameName = null;
         public String createdBy = null;
+        public String playerColor = null;
+        public Integer playerID = null;
 
-        public LobbyTableEntry(String gameID, String gameName, String createdBy){
+//        public LobbyTableEntry(String gameID, String gameName, String createdBy){
+        public LobbyTableEntry(Integer gameID, String gameName, String createdBy,String playerColor,Integer playerID)
+        {
             this.gameID = gameID;
             this.gameName = gameName;
             this.createdBy = createdBy;
+            this.playerColor = playerColor;
+            this.playerID = playerID;
         }
 
         @Override
         public String toString(){
-            return this.gameID +"|"+ this.gameName +"|"+ this.createdBy;
+            return this.gameName +"|"+ this.createdBy +"|"+ this.playerColor ;
         }
     }
 
@@ -175,7 +190,7 @@ public class LobbyPage extends ChessHeroPage{
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the REFRESH GAME button");
+                SLog.write("You clicked the REFRESH GAME button");
                 handleRefreshGameButton();
             }
         });
@@ -184,9 +199,14 @@ public class LobbyPage extends ChessHeroPage{
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the JOIN GAME button");
-                LobbyTableEntry SelectedGame = gameList.get(table.getSelectedRow());
-                handleJoinGameButton(SelectedGame);
+                SLog.write("You clicked the JOIN GAME button");
+                int rowCount = table.getSelectedRowCount();
+                if (rowCount == 1)
+                {
+                    int selectedRow = table.getSelectedRow();
+                    LobbyTableEntry SelectedGame = gameList.get(selectedRow);
+                    handleJoinGameButton(SelectedGame);
+                }
             }
         });
 
@@ -194,7 +214,7 @@ public class LobbyPage extends ChessHeroPage{
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the CREATE GAME button");
+                SLog.write("You clicked the CREATE GAME button");
                 handleCreateGameButton();
             }
         });
@@ -202,7 +222,7 @@ public class LobbyPage extends ChessHeroPage{
         logoutButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                System.out.println("You clicked the LOGOUT button");
+                SLog.write("You clicked the LOGOUT button");
                 handleLogoutButton();
             }
         });
@@ -211,7 +231,7 @@ public class LobbyPage extends ChessHeroPage{
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the HALL OF FAME button");
+                SLog.write("You clicked the HALL OF FAME button");
                 handleHallOfFameButton();
             }
         });
@@ -220,80 +240,120 @@ public class LobbyPage extends ChessHeroPage{
 
 
     //Handle Buttons
-    private void handleRefreshGameButton() {
-        gameList = new Vector<LobbyTableEntry>(Arrays.asList(
-                new LobbyTableEntry(
-                        "867954","game1","user1"
-                ),new LobbyTableEntry(
-                "522532", "game2", "user2"
-                ), new LobbyTableEntry(
-                        "4213532", "game3","user3"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                ),new LobbyTableEntry(
-                        "5135132", "game4","user4"
-                )
-            )
-        );
-        table.setModel(new LobbyTableModel(transformTableData(gameList), LOBBY_TABLE_COLUMNS));
-
+    private void handleRefreshGameButton()
+    {
+        Request request = new Request(com.kt.api.Action.FETCH_GAMES);
+        this.getConnection().sendRequest(request);
     }
 
-    private void handleHallOfFameButton() {
-        System.out.println("Entered HALL OF FAME button HANDLER");
+    private void handleHallOfFameButton()
+    {
+        SLog.write("Entered HALL OF FAME button HANDLER");
         holder.NavigateToPage(new HallOfFamePage());
     }
 
+    private void handleJoinGameButton(LobbyTableEntry selectedGame)
+    {
+        SLog.write("Entered Join Game with Name " + selectedGame.gameName + " ID " + selectedGame.gameID);
+        Request request = new Request(Action.JOIN_GAME);
+        request.addParameter("gameid", selectedGame.gameID);
+//        request.addParameter("playercolor",selectedGame.playerColor);
+//        request.addParameter("playerid",selectedGame.playerID);
 
-    private void handleJoinGameButton(LobbyTableEntry selectedGame) {
-        System.out.println("Entered Join Game with Name " + selectedGame.gameName);
+        this.getConnection().sendRequest(request);
     }
 
-    public void handleCreateGameButton(){
+    public void handleCreateGameButton()
+    {
         this.holder.NavigateToPage(new CreateGamePage());
-        //System.out.println(new String(this.passwordTextBox.getPassword()));
-//        Credentials credentials = new Credentials(
-//                this.usernameTextBox.getText(),
-//                new String(this.passwordTextBox.getPassword())
-//        );
-//
-//        AuthMessage authMsg = new AuthMessage(Message.ACTION_REGISTER, credentials);
-        //holder.getConnection().writeMessage(authMsg);
     }
 
     public void handleLogoutButton(){
+        player = null;
+        this.getConnection().disconnect();
         this.holder.NavigateToPage(new LoginPage());
     }
 
 
     //HELPER METHODS
-    private Vector<Vector<String>> transformTableData(Vector<LobbyTableEntry> data){
+    private Vector<Vector<String>> transformTableData(ArrayList<LobbyTableEntry> data){
         Vector<Vector<String>> transformedData = new Vector<Vector<String>>();
         for (LobbyTableEntry entry : data){
             transformedData.add(new Vector<String>(Arrays.asList(entry.toString().split("\\|"))));
         }
         return  transformedData;
+    }
+
+    private ArrayList<LobbyTableEntry> getGamesFromFetchGamesList(ArrayList<HashMap> availableGames)
+    {
+        ArrayList<LobbyTableEntry> resultGames = new ArrayList<LobbyTableEntry>(availableGames.size());
+        for (HashMap game : availableGames)
+        {
+
+            Integer gameId = (Integer)game.get("gameid");
+            String gameName = (String)game.get("gamename");
+            String playerName = (String)game.get("username");
+            String playerColor = (String)game.get("usercolor");
+            Integer playerID = (Integer)game.get("userid");
+
+            LobbyTableEntry newTableEntry = new LobbyTableEntry(
+                    gameId,
+                    gameName,
+                    playerName,
+                    playerColor,
+                    playerID
+            );
+
+            resultGames.add(newTableEntry);
+        }
+        return resultGames;
+    }
+
+    @Override
+    public void requestDidComplete(boolean success, Request request, HashMap<String, Object> response){
+        super.requestDidComplete(success, request, response);
+        int resultCode = (Integer)response.get("result");
+        int requestActionCode = request.getAction();
+
+        switch (requestActionCode)
+        {
+            case Action.FETCH_GAMES:
+                if (Result.OK == resultCode)
+                {
+                    gameList = getGamesFromFetchGamesList((ArrayList<HashMap>)response.get("games"));
+
+                    table.setModel(new LobbyTableModel(transformTableData(gameList), LOBBY_TABLE_COLUMNS));
+                }
+                break;
+            case Action.JOIN_GAME:
+                if (Result.OK == resultCode)
+                {
+                    com.kt.game.Color opponentColor = com.kt.game.Color.NONE;
+                    Player opponent = null;
+
+                    LobbyTableEntry SelectedGame = gameList.get(table.getSelectedRow());
+
+                    if(SelectedGame != null)
+                    {
+                        opponentColor = (SelectedGame.playerColor.equals("white") ? com.kt.game.Color.WHITE : com.kt.game.Color.BLACK);
+                        opponent = new Player(SelectedGame.playerID, SelectedGame.createdBy);
+                    }
+
+                    if (com.kt.game.Color.NONE == opponentColor || null == opponent)
+                    {
+                        SLog.write("Cannot start game as opponent info could not be found");
+
+                    }
+
+                    Game theGame = new Game(SelectedGame.gameID, SelectedGame.gameName, Game.NO_TIMEOUT);
+                    player.join(theGame, opponentColor.Opposite);
+                    opponent.join(theGame, opponentColor);
+
+                    GameController gameContr = new GameController(theGame);
+//                    gameContr.startGame();
+                    this.getHolder().NavigateToPage(new PlayGamePage(gameContr));
+                }
+        }
+
     }
 }

@@ -2,9 +2,13 @@ package Client.Pages;
 
 import Client.Communication.Request;
 import com.kt.*;
+import com.kt.api.*;
+import com.kt.api.Action;
+import com.kt.game.Player;
 import com.kt.utils.SLog;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,8 +27,20 @@ public class RegisterPage extends ChessHeroPage {
     public JPasswordField passwordTextBox;
     public JPasswordField confirmPasswordTextBox;
 
+    public JLabel errorLabel;
+
+    public Border defaultBorder;
+
     public  RegisterPage(){
         super();
+
+        errorLabel = new JLabel(" ");
+
+        errorLabel.setHorizontalAlignment(JLabel.CENTER);
+        errorLabel.setHorizontalTextPosition(JLabel.CENTER);
+        errorLabel.setFont(new Font("Serif", Font.BOLD, 12));
+        errorLabel.setForeground(Color.red);
+
         this.setPageTitle("Register Page");
         //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
         //Initialize Components
@@ -115,6 +131,12 @@ public class RegisterPage extends ChessHeroPage {
         gridOpt.weighty = 0.5;
         mainPanel.add(backButton, gridOpt);
 
+        gridOpt.gridy = 6;
+        gridOpt.insets = new Insets(0,200,20,200);
+        mainPanel.add(errorLabel, gridOpt);
+
+        defaultBorder = usernameTextBox.getBorder();
+
         this.setPagePanel(mainPanel);
 
         //this.add(mainPanel);
@@ -146,33 +168,87 @@ public class RegisterPage extends ChessHeroPage {
     //Handle Buttons
 
      public void handleRegister(){
+
+         errorLabel.setText(" ");
+         usernameTextBox.setBorder(defaultBorder);
+         passwordTextBox.setBorder(defaultBorder);
+         confirmPasswordTextBox.setBorder(defaultBorder);
+
          //System.out.println(new String(this.passwordTextBox.getPassword()));
          String username = this.usernameTextBox.getText();
          String password = new String(this.passwordTextBox.getPassword());
          String confirmPassword = new String(this.confirmPasswordTextBox.getPassword());
-         Credentials credentials = null;
-         if(username != null && password != null && confirmPassword != null && confirmPassword == password)
+
+         if(username != null && password != null && confirmPassword != null && confirmPassword.equals(password))
          {
              if(Credentials.isNameValid(username) && Credentials.isPassValid(password))
              {
-                 //credentials = new Credentials(username, password);
-             }
-         }
+                 Request request = new Request(Action.REGISTER);
+                 request.addParameter("username",username);
+                 request.addParameter("password",password);
 
-         if (credentials != null){
-             //AuthMessage authMsg = new AuthMessage(Message.TYPE_REGISTER, credentials);
-             if (isConnected){
-                 //this.getConnection().sendRequest(authMsg);
+                 this.getConnection().sendRequest(request);
              }
          }
-         //holder.getConnection().writeMessage(authMsg);
+         if(username == null || !Credentials.isNameValid(username)){
+             usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+         }
+         if(password == null || !Credentials.isPassValid(password) || !confirmPassword.equals(password)){
+             passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+             confirmPasswordTextBox.setBorder(BorderFactory.createLineBorder(Color.red, 2));
+         }
      }
 
     @Override
     public void requestDidComplete(boolean success, Request request, HashMap<String, Object> response){
-        //Logic to handle if the message is successful
+        super.requestDidComplete(success, request, response);
         SLog.write("in request did complete in" + this.getPageTitle());
-        this.getHolder().NavigateToPage(new LobbyPage());
+
+        int resultCode = (Integer)response.get("result");
+
+        if (Result.OK == resultCode)
+        {
+            player = new Player((Integer)response.get("userid"), (String)response.get("username"));
+            this.holder.NavigateToPage(new LobbyPage());
+        }
+        else if (Result.INVALID_NAME == resultCode)
+        {
+            usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            errorLabel.setText("Invalid username");
+        }
+        else if (Result.INVALID_PASS == resultCode)
+        {
+            passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red, 2));
+            confirmPasswordTextBox.setBorder(BorderFactory.createLineBorder(Color.red, 2));
+            errorLabel.setText("Invalid password");
+
+        }
+        else if (Result.BAD_USER == resultCode)
+        {
+            usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red, 2));
+            confirmPasswordTextBox.setBorder(BorderFactory.createLineBorder(Color.red, 2));
+            errorLabel.setText("GET LOST!");
+
+        }
+        else if (Result.INVALID_CREDENTIALS == resultCode)
+        {
+            usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            confirmPasswordTextBox.setBorder(BorderFactory.createLineBorder(Color.red, 2));
+            errorLabel.setText("Invalid name or password");
+        }
+        else if (Result.ALREADY_LOGGEDIN == resultCode)
+        {
+            usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            errorLabel.setText("You are already logged in");
+        }
+        else if (Result.USER_EXISTS == resultCode)
+        {
+            usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            errorLabel.setText("There is already a user with that username");
+        }
     }
 
     public void handleBackButton(){

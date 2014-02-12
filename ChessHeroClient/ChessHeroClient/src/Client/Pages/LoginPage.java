@@ -1,12 +1,19 @@
 package Client.Pages;
 
+import Client.Communication.Request;
 import com.kt.Credentials;
+import com.kt.api.*;
+import com.kt.api.Action;
+import com.kt.game.Player;
+import com.kt.utils.SLog;
 import com.sun.org.apache.regexp.internal.StreamCharacterIterator;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,9 +26,20 @@ public class LoginPage extends ChessHeroPage {
 
     public JTextField usernameTextBox;
     public JPasswordField passwordTextBox;
+    public JLabel errorLabel;
+
+    public Border defaultBorder;
 
     public  LoginPage(){
         super();
+
+        errorLabel = new JLabel(" ");
+
+        errorLabel.setHorizontalAlignment(JLabel.CENTER);
+        errorLabel.setHorizontalTextPosition(JLabel.CENTER);
+        errorLabel.setFont(new Font("Serif", Font.BOLD, 12));
+        errorLabel.setForeground(Color.red);
+
         this.setPageTitle("Login Page");
         //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
         //Initialize Components
@@ -105,6 +123,11 @@ public class LoginPage extends ChessHeroPage {
         gridOpt.weighty = 0.5;
         mainPanel.add(registerButton, gridOpt);
 
+        gridOpt.gridy = 6;
+        gridOpt.insets = new Insets(0,200,20,200);
+        mainPanel.add(errorLabel, gridOpt);
+
+        defaultBorder = usernameTextBox.getBorder();
 
         this.setPagePanel(mainPanel);
 
@@ -139,28 +162,71 @@ public class LoginPage extends ChessHeroPage {
     public void handleLogin(){
         //System.out.println(new String(this.passwordTextBox.getPassword()));
 
-        this.holder.NavigateToPage(new LobbyPage());
+//        this.holder.NavigateToPage(new LobbyPage());
+
+        errorLabel.setText(" ");
+        usernameTextBox.setBorder(defaultBorder);
+        passwordTextBox.setBorder(defaultBorder);
 
         String username = this.usernameTextBox.getText();
         String password = new String(this.passwordTextBox.getPassword());
-        Credentials credentials = null;
+
         if(username != null && password != null)
         {
             if(Credentials.isNameValid(username) && Credentials.isPassValid(password))
             {
-                //credentials = new Credentials(username, password);
+                Request request = new Request(Action.LOGIN);
+                request.addParameter("username",username);
+                request.addParameter("password",password);
+
+                this.getConnection().sendRequest(request);
             }
         }
-        if (credentials != null){
-            //AuthMessage authMsg = new AuthMessage(Message.TYPE_LOGIN, credentials);
-            if (isConnected){
-                //this.getConnection().sendRequest(authMsg);
-            }
+        if(username == null || !Credentials.isNameValid(username)){
+            usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
         }
-        //holder.getConnection().writeMessage(authMsg);
+        if(password == null || !Credentials.isPassValid(password)){
+            passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+        }
     }
 
     public void handleRegister(){
         this.holder.NavigateToPage(new RegisterPage());
+    }
+
+    @Override
+    public void requestDidComplete(boolean success, Request request, HashMap<String, Object> response){
+        super.requestDidComplete(success, request, response);
+        int resultCode = (Integer)response.get("result");
+
+        if (Result.OK == resultCode)
+        {
+            player = new Player((Integer)response.get("userid"), (String)response.get("username"));
+            this.holder.NavigateToPage(new LobbyPage());
+        }
+        else if (Result.INVALID_NAME == resultCode)
+        {
+            usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            errorLabel.setText("Invalid username");
+        }
+        else if (Result.INVALID_PASS == resultCode)
+        {
+            passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red, 2));
+            errorLabel.setText("Invalid password");
+
+        }
+        else if (Result.INVALID_CREDENTIALS == resultCode)
+        {
+            usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            errorLabel.setText("Invalid name or password");
+        }
+        else if (Result.ALREADY_LOGGEDIN == resultCode)
+        {
+            usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
+            errorLabel.setText("You are already logged in");
+        }
+
     }
 }

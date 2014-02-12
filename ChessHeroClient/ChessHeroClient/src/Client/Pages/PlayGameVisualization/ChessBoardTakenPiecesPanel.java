@@ -1,10 +1,7 @@
 package Client.Pages.PlayGameVisualization;
 
-import Client.Game.ChessColor;
-import Client.Game.ChessPieces.ChessPiece;
-import Client.Game.ChessPieces.ChessPieceType;
-import Client.Game.Game;
 import Client.Pages.PlayGamePage;
+import com.kt.game.*;
 import javafx.util.Pair;
 
 import javax.swing.*;
@@ -21,11 +18,11 @@ import java.util.ArrayList;
  */
 public class ChessBoardTakenPiecesPanel extends JPanel {
     public ChessFieldPanel [] takenPiecesFields  = new ChessFieldPanel[16];
-    private ChessColor playerColor;
+    private com.kt.game.Color playerColor;
     private int fieldSize;
     private Game game;
 
-    public ChessBoardTakenPiecesPanel(Game game ,ChessColor playerColor, int fieldSize){
+    public ChessBoardTakenPiecesPanel(Game game ,com.kt.game.Color playerColor, int fieldSize){
         this.playerColor = playerColor;
         this.fieldSize = fieldSize;
         this.game = game;
@@ -40,8 +37,8 @@ public class ChessBoardTakenPiecesPanel extends JPanel {
         for (int i = 0; i < takenPieces.size(); i++){
             //this.takenPiecesFields[i].setpi
             if(takenPieces.get(i) != null){
-                BufferedImage bufferedImage = PlayGamePage.TakenChessPieceImages.get(new Pair<ChessPieceType, ChessColor>(
-                        takenPieces.get(i).type, takenPieces.get(i).owner.getPlayerColor()));
+                BufferedImage bufferedImage = PlayGamePage.TakenChessPieceImages.get(new Pair<Byte, com.kt.game.Color>(
+                        takenPieces.get(i).getTag(), takenPieces.get(i).getOwner().getColor()));
 
                 this.takenPiecesFields[i].setIcon(new ImageIcon(bufferedImage));
             }
@@ -56,14 +53,14 @@ public class ChessBoardTakenPiecesPanel extends JPanel {
         for (int i = 0; i<takenPiecesFields.length; i++){
             takenPiecesFields[i] = new ChessFieldPanel(this.playerColor,this.fieldSize);
         }
-        if(this.playerColor == ChessColor.White){
-            ArrayList<ChessPiece> takenPieces = new ArrayList<ChessPiece>(this.game.getWhitePlayer().getTakenPieces());
+        if(this.playerColor == com.kt.game.Color.WHITE){
+            ArrayList<ChessPiece> takenPieces = new ArrayList<ChessPiece>(this.game.getPlayer1().getChessPieceSet().getTakenPieces());
 
             if(takenPieces != null && takenPieces.size() > 0)
                 setTakenPiecesFields(takenPieces);
         }
-        else if(playerColor == ChessColor.Black){
-            ArrayList<ChessPiece> takenPieces = new ArrayList<ChessPiece>(this.game.getBlackPlayer().getTakenPieces());
+        else if(playerColor == com.kt.game.Color.BLACK){
+            ArrayList<ChessPiece> takenPieces = new ArrayList<ChessPiece>(this.game.getPlayer2().getChessPieceSet().getTakenPieces());
 
             if(takenPieces != null && takenPieces.size() > 0)
                 setTakenPiecesFields(takenPieces);

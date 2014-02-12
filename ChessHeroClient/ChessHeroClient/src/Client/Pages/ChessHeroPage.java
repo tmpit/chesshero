@@ -4,6 +4,7 @@ import Client.ClientMain;
 import Client.Communication.Connection;
 import Client.Communication.ConnectionListener;
 import Client.Communication.Request;
+import com.kt.game.Player;
 import com.kt.utils.SLog;
 
 import javax.swing.*;
@@ -19,6 +20,8 @@ import java.util.HashMap;
 public abstract class ChessHeroPage extends JPanel implements ConnectionListener{
 
     public static final String MAIN_TITLE = "Chess Hero";
+
+    public static Player player;
 
     protected ClientMain holder = null;
     private Connection con = null;

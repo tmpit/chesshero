@@ -1,14 +1,14 @@
 package Client.Pages;
 
-import Client.Game.*;
-import Client.Game.ChessPieces.ChessPieceType;
 import Client.Pages.PlayGameVisualization.ChessBoardPanel;
 import Client.Pages.PlayGameVisualization.ChessBoardTakenPiecesPanel;
+import com.kt.game.*;
 import javafx.util.Pair;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -46,11 +46,11 @@ public class PlayGamePage extends ChessHeroPage{
     private JToggleButton flipBoardButton = new JToggleButton("Flip Board", false);
     //private JPanel opponentTakenPanel = new JPanel();
 
-    public static Map<Pair<ChessPieceType, ChessColor>, BufferedImage> ChessPieceImages =
-            new HashMap<Pair<ChessPieceType, ChessColor>,BufferedImage>();
+    public static Map<Pair<Byte, com.kt.game.Color>, BufferedImage> ChessPieceImages =
+            new HashMap<Pair<Byte, com.kt.game.Color>,BufferedImage>();
 
-    public static Map<Pair<ChessPieceType, ChessColor>, BufferedImage> TakenChessPieceImages =
-            new HashMap<Pair<ChessPieceType, ChessColor>,BufferedImage>();
+    public static Map<Pair<Byte, com.kt.game.Color>, BufferedImage> TakenChessPieceImages =
+            new HashMap<Pair<Byte, com.kt.game.Color>,BufferedImage>();
 
     public boolean getIsBoardReversed() {
         return isBoardReversed;
@@ -94,18 +94,19 @@ public class PlayGamePage extends ChessHeroPage{
             e.printStackTrace();
         }
         this.gameController = gameController;
+        this.gameController.startGame();
         //this.gameController.game.blackPlayer = new GamePlayer(ChessColor.Black);
         //this.gameController.game.whitePlayer = new GamePlayer(ChessColor.White);
         //this.gameController.game.startNewGame(
         //        this.gameController.game.getWhitePlayer(),
         //        this.gameController.game.getBlackPlayer()
         //);
-        chessBoardPanel = new ChessBoardPanel(this.gameController.game, PIECE_SIZE);
+        chessBoardPanel = new ChessBoardPanel(this.gameController.board, PIECE_SIZE);
         playerTakenPanel = new ChessBoardTakenPiecesPanel(
-               this.gameController.game, this.gameController.player.getGamePlayer().getPlayerColor(),TAKEN_PIECE_SIZE);
+               this.gameController.game, this.gameController.game.getPlayer2().getColor(),TAKEN_PIECE_SIZE);
         opponentTakenPanel = new ChessBoardTakenPiecesPanel(
-                this.gameController.game, this.gameController.opponent.getGamePlayer().getPlayerColor(),TAKEN_PIECE_SIZE);
-        this.setIsBoardReversed((this.gameController.player.getGamePlayer().getPlayerColor() == ChessColor.White) ? false: true);
+                this.gameController.game, this.gameController.game.getPlayer1().getColor(),TAKEN_PIECE_SIZE);
+        this.setIsBoardReversed((this.gameController.game.getPlayer1().getColor() == com.kt.game.Color.WHITE) ? false: true);
         //chessBoardPanel.setIsBoardReversed(this.isBoardReversed);
         RearrangeLayout();
         //mainPanel.setLayout(new GridBagLayout());
@@ -261,36 +262,36 @@ public class PlayGamePage extends ChessHeroPage{
         //public BufferedImage buffImg = new BufferedImage(240, 240, BufferedImage.TYPE_INT_ARGB);
 
         //Resize Chess Board Pieces
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Pawn,ChessColor.Black),resizeImage(BlackPawn,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.King,ChessColor.Black),resizeImage(BlackKing,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Knight,ChessColor.Black),resizeImage(BlackKnight,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Queen,ChessColor.Black),resizeImage(BlackQueen,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Rook,ChessColor.Black),resizeImage(BlackRook,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Bishop,ChessColor.Black),resizeImage(BlackBishop,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.PAWN,com.kt.game.Color.BLACK),resizeImage(BlackPawn,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KING,com.kt.game.Color.BLACK),resizeImage(BlackKing,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KNIGHT,com.kt.game.Color.BLACK),resizeImage(BlackKnight,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.QUEEN,com.kt.game.Color.BLACK),resizeImage(BlackQueen,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.ROOK,com.kt.game.Color.BLACK),resizeImage(BlackRook,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.BISHOP,com.kt.game.Color.BLACK),resizeImage(BlackBishop,this.PIECE_SIZE));
 
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Pawn,ChessColor.White),resizeImage(WhitePawn,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.King,ChessColor.White),resizeImage(WhiteKing,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Knight,ChessColor.White),resizeImage(WhiteKnight,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Queen,ChessColor.White),resizeImage(WhiteQueen,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Rook,ChessColor.White),resizeImage(WhiteRook,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Bishop,ChessColor.White),resizeImage(WhiteBishop,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.PAWN,com.kt.game.Color.WHITE),resizeImage(WhitePawn,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KING,com.kt.game.Color.WHITE),resizeImage(WhiteKing,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KNIGHT,com.kt.game.Color.WHITE),resizeImage(WhiteKnight,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.QUEEN,com.kt.game.Color.WHITE),resizeImage(WhiteQueen,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.ROOK,com.kt.game.Color.WHITE),resizeImage(WhiteRook,this.PIECE_SIZE));
+        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.BISHOP,com.kt.game.Color.WHITE),resizeImage(WhiteBishop,this.PIECE_SIZE));
 
 
         //Resize Taken Chess Pieces Images
 
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Pawn,ChessColor.Black),resizeImage(BlackPawn,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.King,ChessColor.Black),resizeImage(BlackKing,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Knight,ChessColor.Black),resizeImage(BlackKnight,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Queen,ChessColor.Black),resizeImage(BlackQueen,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Rook,ChessColor.Black),resizeImage(BlackRook,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Bishop,ChessColor.Black),resizeImage(BlackBishop,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.PAWN,com.kt.game.Color.BLACK),resizeImage(BlackPawn,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KING,com.kt.game.Color.BLACK),resizeImage(BlackKing,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KNIGHT,com.kt.game.Color.BLACK),resizeImage(BlackKnight,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.QUEEN,com.kt.game.Color.BLACK),resizeImage(BlackQueen,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.ROOK,com.kt.game.Color.BLACK),resizeImage(BlackRook,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.BISHOP,com.kt.game.Color.BLACK),resizeImage(BlackBishop,this.TAKEN_PIECE_SIZE));
 
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Pawn,ChessColor.White),resizeImage(WhitePawn,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.King,ChessColor.White),resizeImage(WhiteKing,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Knight,ChessColor.White),resizeImage(WhiteKnight,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Queen,ChessColor.White),resizeImage(WhiteQueen,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Rook,ChessColor.White),resizeImage(WhiteRook,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Bishop,ChessColor.White),resizeImage(WhiteBishop,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.PAWN,com.kt.game.Color.WHITE),resizeImage(WhitePawn,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KING,com.kt.game.Color.WHITE),resizeImage(WhiteKing,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KNIGHT,com.kt.game.Color.WHITE),resizeImage(WhiteKnight,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.QUEEN,com.kt.game.Color.WHITE),resizeImage(WhiteQueen,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.ROOK,com.kt.game.Color.WHITE),resizeImage(WhiteRook,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.BISHOP,com.kt.game.Color.WHITE),resizeImage(WhiteBishop,this.TAKEN_PIECE_SIZE));
 
 //        this.chessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Pawn,ChessColor.White),WhitePawn);
 //        this.chessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Pawn,ChessColor.White),WhitePawn);

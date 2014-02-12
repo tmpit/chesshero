@@ -1,22 +1,16 @@
 package Client.Pages;
 
-import Client.Game.ChessColor;
-import Client.Game.ChessPieces.ChessPiece;
-import Client.Game.Game;
-import Client.Game.GameController;
-import Client.Game.NetworkPlayer;
+import Client.Communication.Request;
+import com.kt.api.*;
+import com.kt.api.Action;
+import com.kt.game.*;
+import com.kt.utils.SLog;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.text.DateFormatter;
-import javax.swing.text.DefaultFormatterFactory;
-import javax.swing.text.NumberFormatter;
 import java.awt.*;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Time;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -29,6 +23,12 @@ import java.util.*;
 public class CreateGamePage extends ChessHeroPage {
 
     public static GameSettings createGameSettings;//new CreateGameSettings();
+    public JLabel infoLabel;
+    public static boolean gameCreated;
+    public static Game createdGame;
+    private JButton createGameButton;
+    private JButton lobbyPageButton;
+
     private JTextField  gameNameTextBox;
     private ButtonGroup radioButtonGroup;
     private JRadioButton toggleButtonWhite;
@@ -36,6 +36,7 @@ public class CreateGamePage extends ChessHeroPage {
     private JSpinner gameTimeLimitSpinbox;
     private JSpinner minimumOpponentLevelSpinbox;
     private JSpinner maximumOpponentLevelSpinbox;
+
 
     private int playerLevel;
 
@@ -84,6 +85,15 @@ public class CreateGamePage extends ChessHeroPage {
 
         public  CreateGamePage(){
             super();
+
+            infoLabel = new JLabel(" ");
+
+            infoLabel.setHorizontalAlignment(JLabel.CENTER);
+            infoLabel.setHorizontalTextPosition(JLabel.CENTER);
+            infoLabel.setFont(new Font("Serif", Font.BOLD, 12));
+            infoLabel.setForeground(Color.green);
+
+
             this.setPageTitle("Create Game Page");
             //Initialize Components
             JPanel mainPanel = new JPanel();
@@ -112,8 +122,8 @@ public class CreateGamePage extends ChessHeroPage {
 //            gameNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
 //            gameNameTextBox.setHorizontalAlignment(SwingConstants.CENTER);
 
-            JButton lobbyPageButton = new JButton("Back To Lobby");
-            JButton createGameButton = new JButton("Create Game");
+            lobbyPageButton = new JButton("Back To Lobby");
+            createGameButton = new JButton("Create Game");
 
             toggleButtonWhite = new JRadioButton("Play With White");
             toggleButtonWhite.setSelected(true);
@@ -205,6 +215,10 @@ public class CreateGamePage extends ChessHeroPage {
             gridOpt.weighty = 0.5;
             mainPanel.add(lobbyPageButton, gridOpt);
 
+            gridOpt.gridy = 6;
+            gridOpt.insets = new Insets(0,200,20,200);
+            mainPanel.add(infoLabel, gridOpt);
+
             this.setPagePanel(mainPanel);
 
             createGameSettings = new GameSettings();
@@ -233,22 +247,33 @@ public class CreateGamePage extends ChessHeroPage {
     //Handle Buttons
 
     private void handleLobbyPageButton() {
-        System.out.println("Entered Lobby button HANDLER");
+        SLog.write("Entered Lobby button HANDLER");
         getHolder().NavigateToPage(new LobbyPage());
     }
 
     private void handleCreateGameButton() {
-        System.out.println("Entered Create Game button HANDLER");
-        createGameSettings = getCreateGameSettings();
-        System.out.println(createGameSettings.toString());
-//        holder.NavigateToPage(new LobbyPage());
+        SLog.write("Entered Create Game button HANDLER");
+        if(gameCreated == true)
+        {
+            Request request = new Request(Action.CANCEL_GAME);
+            request.addParameter("gameid",createdGame.getID());
 
-        GameController newGameController = new GameController(new Game(),new NetworkPlayer(1), ChessColor.White, new NetworkPlayer(2),ChessColor.Black);
-        newGameController.game.startNewGame(newGameController.game.getWhitePlayer(), newGameController.game.getBlackPlayer());
+            this.getConnection().sendRequest(request);
+        }
+        else
+        {
+            createGameSettings = getCreateGameSettings();
+            SLog.write(createGameSettings.toString());
 
-        newGameController.game.setTakenPieces(newGameController.game.getPlayerStartingPieceSet(newGameController.player.getGamePlayer()),newGameController.opponent.getGamePlayer());
+            String color = createGameSettings.IsWithWhite ? "white" : "black";
 
-        getHolder().NavigateToPage(new PlayGamePage(newGameController));
+            Request request = new Request(Action.CREATE_GAME);
+            request.addParameter("gamename", createGameSettings.GameName);
+            request.addParameter("timeout", createGameSettings.GameTimeLimit);
+            request.addParameter("color", color);
+
+            this.getConnection().sendRequest(request);
+        }
     }
 
 
@@ -274,4 +299,78 @@ public class CreateGamePage extends ChessHeroPage {
 //            }
 //            return  transformedData;
 //        }
+
+
+    @Override
+    public void didReceiveMessage(HashMap<String, Object> message)
+    {
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        super.didReceiveMessage(message);
+        SLog.write("In Push Event");
+
+        String opponentName = (String)message.get("opponentname");
+        Integer opponentId = (Integer)message.get("opponentid");
+
+        Player opponent = new Player(opponentId, opponentName);
+
+        opponent.join(createdGame,opponent.getColor());
+
+        GameController gameContr = new GameController(createdGame);
+
+        this.getHolder().NavigateToPage(new PlayGamePage(gameContr));
+    }
+
+
+    @Override
+    public void requestDidComplete(boolean success, Request request, HashMap<String, Object> response)
+    {
+        super.requestDidComplete(success, request, response);
+        int resultCode = (Integer)response.get("result");
+        int requestActionCode = request.getAction();
+
+        switch (requestActionCode)
+        {
+            case Action.CANCEL_GAME:
+                if (Result.OK == resultCode)
+                {
+                    gameCreated = false;
+                    createdGame = null;
+                    createGameButton.setText("Create Game");
+                    lobbyPageButton.setEnabled(true);
+                }
+                break;
+            case Action.CREATE_GAME:
+                if (Result.OK == resultCode)
+                {
+                    String color = createGameSettings.IsWithWhite ? "white" : "black";
+                    Integer gameID = (Integer)response.get("gameid");
+                    createdGame = new Game(gameID, createGameSettings.GameName, createGameSettings.GameTimeLimit);
+                    player.join(createdGame, (createGameSettings.IsWithWhite ? com.kt.game.Color.WHITE : com.kt.game.Color.BLACK));
+
+                    gameCreated = true;
+                    createGameButton.setText("Cancel Game");
+                    lobbyPageButton.setEnabled(false);
+                    infoLabel.setText("Game successfully created, waiting for another player to join...");
+                }
+                break;
+        }
+    }
+//        GameController newGameController = new GameController(new Game(),new NetworkPlayer(1), ChessColor.White, new NetworkPlayer(2),ChessColor.Black);
+//        newGameController.game.startNewGame(newGameController.game.getWhitePlayer(), newGameController.game.getBlackPlayer());
+//
+//        newGameController.game.setTakenPieces(newGameController.game.getPlayerStartingPieceSet(newGameController.player.getGamePlayer()),newGameController.opponent.getGamePlayer());
+
+//        getHolder().NavigateToPage(new PlayGamePage(newGameController));
+
+
+
+
+
+
+
+
     }

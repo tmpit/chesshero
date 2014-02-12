@@ -1,9 +1,10 @@
 package Client.Pages.PlayGameVisualization;
 
-import Client.Game.ChessColor;
+import com.kt.game.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 
 /**
@@ -14,18 +15,18 @@ import java.awt.image.BufferedImage;
  * To change this template use File | Settings | File Templates.
  */
 public class ChessFieldPanel extends JLabel {
-    public ChessColor fieldColor = null;
+    public com.kt.game.Color fieldColor = null;
     public BufferedImage fieldImage = null;
 
     public Color getDisplayColor(){
-        return this.fieldColor == ChessColor.White ? new Color(230,198,167): new Color(90,45,45);
+        return this.fieldColor == com.kt.game.Color.WHITE ? new Color(230,198,167): new Color(90,45,45);
     }
 
-    public ChessFieldPanel(ChessColor fieldColor,int size){
+    public ChessFieldPanel(com.kt.game.Color fieldColor,int size){
         this(fieldColor,size , null);
     }
 
-    public ChessFieldPanel(ChessColor fieldColor ,int size, BufferedImage fieldImage){
+    public ChessFieldPanel(com.kt.game.Color fieldColor ,int size, BufferedImage fieldImage){
         //super(new ImageIcon (fieldImage));
         this.setHorizontalAlignment(SwingConstants.CENTER);
         this.setOpaque(true);
