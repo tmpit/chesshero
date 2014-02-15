@@ -155,15 +155,16 @@ public class LoginPage extends ChessHeroPage {
                 handleRegister();
             }
         });
+
+        //MOCK LOGIN
+        this.usernameTextBox.setText("kiro");
+        this.passwordTextBox.setText("asd");
     }
 
     //Handle Buttons
 
-    public void handleLogin(){
-        //System.out.println(new String(this.passwordTextBox.getPassword()));
-
-//        this.holder.NavigateToPage(new LobbyPage());
-
+    public void handleLogin()
+    {
         errorLabel.setText(" ");
         usernameTextBox.setBorder(defaultBorder);
         passwordTextBox.setBorder(defaultBorder);
@@ -201,7 +202,7 @@ public class LoginPage extends ChessHeroPage {
 
         if (Result.OK == resultCode)
         {
-            player = new Player((Integer)response.get("userid"), (String)response.get("username"));
+            this.getHolder().player = new Player((Integer)response.get("userid"), (String)response.get("username"));
             this.holder.NavigateToPage(new LobbyPage());
         }
         else if (Result.INVALID_NAME == resultCode)

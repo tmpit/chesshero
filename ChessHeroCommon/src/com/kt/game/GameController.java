@@ -537,7 +537,7 @@ public class GameController
 	 * @param ctx A {@code MoveContext} object
 	 * @return A constant from the {@code Result} class
 	 */
-	private int validateMove(Player executor, ChessPiece movedPiece, Position from, Position to, MoveContext ctx)
+	public int validateMove(Player executor, ChessPiece movedPiece, Position from, Position to, MoveContext ctx)
 	{
 		ChessPiece toPiece = board[to.x][to.y].getChessPiece(); // The chess piece that is at the destination position
 		ChessPiece take = toPiece;
@@ -820,11 +820,17 @@ public class GameController
 		return null;
 	}
 
+    public MoveContext getNewMoveContext ()
+    {
+        MoveContext context = new MoveContext();
+        return context;
+    }
+
 	/**
 	 * The MoveContext class is used to transfer special-move-related information between the validation
 	 * and execution methods
 	 */
-	private class MoveContext
+	public class MoveContext
 	{
 		public ChessPiece take = null;
 

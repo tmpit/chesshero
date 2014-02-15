@@ -1,10 +1,16 @@
 package Client.Pages.PlayGameVisualization;
 
 import com.kt.game.Position;
+import com.kt.utils.SLog;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,6 +22,10 @@ import java.awt.image.BufferedImage;
 public class ChessBoardFieldPanel extends ChessFieldPanel {
 //    public ChessColor fieldColor = null;
     public Position fieldPosition = null;
+    private boolean isSelected = false;
+    private boolean isHighlighted = false;
+
+    private static Border defaultBorder;
 //    public BufferedImage fieldImage = null;
 
 //    public Color getDisplayColor(){
@@ -28,21 +38,61 @@ public class ChessBoardFieldPanel extends ChessFieldPanel {
 
     public ChessBoardFieldPanel(com.kt.game.Color fieldColor, Position fieldPosition,int size, BufferedImage fieldImage){
         super(fieldColor,size,fieldImage);
-        //super(new ImageIcon (fieldImage));
-        //this.setHorizontalAlignment(SwingConstants.CENTER);
-        //this.setOpaque(true);
-        //if(fieldImage != null){
-        //    this.setIcon(new ImageIcon(fieldImage));
-        //}
-        //else{
-        //    this.setIcon(new ImageIcon());
-        //}
-        //this.setPreferredSize(new Dimension(size,size));
-        //this.fieldColor = fieldColor;
-        this.fieldPosition = fieldPosition;
-        //this.fieldImage = fieldImage;
-        //this.setBackground(this.getDisplayColor());
-        //this.setBounds(new Rectangle(0, 0, 50, 50));
+        if (defaultBorder == null) this.defaultBorder = this.getBorder();
 
+        this.fieldPosition = fieldPosition;
+
+//        this.addMouseListener(this);
+    }
+
+
+    public void toggleIsHighlighted()
+    {
+        this.setIsHighlighted(!this.getIsHighlighted());
+    }
+
+    public void toggleIsSelected()
+    {
+        this.setIsSelected(!this.getIsSelected());
+    }
+
+    public boolean getIsHighlighted()
+    {
+        return this.isHighlighted;
+    }
+
+    public boolean getIsSelected()
+    {
+        return this.isSelected;
+    }
+
+    private void setIsHighlighted (boolean isHighlighted)
+    {
+        //firePropertyChange("isSelected",this.isSelected, isSelected);
+        //this.propertyChange(new PropertyChangeEvent(this,"isSelected",this.isSelected, isSelected));
+        this.isHighlighted = isHighlighted;
+        if(this.isHighlighted == true)
+        {
+            this.setBorder(BorderFactory.createLineBorder(Color.ORANGE,2));
+        }
+        else
+        {
+            this.setBorder(defaultBorder);
+        }
+    }
+
+    private void setIsSelected (boolean isSelected)
+    {
+        //firePropertyChange("isSelected",this.isSelected, isSelected);
+        //this.propertyChange(new PropertyChangeEvent(this,"isSelected",this.isSelected, isSelected));
+        this.isSelected = isSelected;
+        if(this.isSelected == true)
+        {
+            this.setBorder(BorderFactory.createLineBorder(Color.MAGENTA,2));
+        }
+        else
+        {
+            this.setBorder(defaultBorder);
+        }
     }
 }

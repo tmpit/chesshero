@@ -3,11 +3,20 @@ package Client.Pages.PlayGameVisualization;
 import Client.Pages.PlayGamePage;
 import com.kt.game.BoardField;
 import com.kt.game.ChessPiece;
+import com.kt.game.GameController;
 import com.kt.game.Position;
+import com.kt.utils.SLog;
 import javafx.util.Pair;
+import sun.awt.CustomCursor;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageProducer;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.EventListener;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,20 +25,35 @@ import java.awt.*;
  * Time: 3:27 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ChessBoardPanel extends JPanel {
+public class ChessBoardPanel extends JPanel{
 
-    ChessBoardFieldPanel [][] chessBoardFields  = new ChessBoardFieldPanel[8][8];
+    public ChessBoardFieldPanel [][] chessBoardFields  = new ChessBoardFieldPanel[8][8];
     String[] colLabels = new String[]{"A","B","C","D","E","F","G","H"};
     String[] rowLabels = new String[]{"1","2","3","4","5","6","7","8"};
     private boolean isBoardReversed = false;
 
     public boolean getIsBoardReversed() {
-        return isBoardReversed;
+        return this.isBoardReversed;
     }
 
     public void setIsBoardReversed(boolean isBoardReversed) {
         this.isBoardReversed = isBoardReversed;
-        this.redrawBoard();
+    }
+
+    public ChessBoardFieldPanel getField(Position position)
+    {
+        for (ChessBoardFieldPanel[] subList : this.chessBoardFields)
+        {
+            for (ChessBoardFieldPanel field : subList)
+            {
+                if (position.getX() == field.fieldPosition.getX() &&
+                        position.getY() == field.fieldPosition.getY())
+                {
+                    return field;
+                }
+            }
+        }
+        return null;
     }
 
     public ChessBoardPanel(BoardField[][] board, int pieceSize){
@@ -66,84 +90,37 @@ public class ChessBoardPanel extends JPanel {
         this.redrawBoard();
     }
 
-    private void redrawBoard() {
+    public void updateBoard(BoardField[][] board){
+//        for (BoardField[] sublist : board){
+//            for (BoardField field : sublist){
+//
+//            }
+//        }
+        for (ChessBoardFieldPanel[] sublist : this.chessBoardFields){
+            for (ChessBoardFieldPanel field : sublist){
+                BoardField correspondingField =  board[field.fieldPosition.getX()][field.fieldPosition.getY()];
+                ChessPiece currOccupyingPiece = correspondingField.getChessPiece();
+
+                if (currOccupyingPiece != null){
+                    field.setFiledImage(PlayGamePage.ChessPieceImages.get(new Pair<Byte, com.kt.game.Color>(
+                            currOccupyingPiece.getTag(), currOccupyingPiece.getOwner().getColor()
+                    )));
+                }
+                else {
+                    field.setFiledImage(null);
+                }
+
+            }
+        }
+
+    }
+
+    public void redrawBoard() {
         this.setLayout(new GridBagLayout());
         clearBoard();
         drawBoardFields();
         drawLabels();
     }
-
-//        private void drawBoardDownTop() {
-//            //GridBagConstraints GridOpt = new GridBagConstraints();
-//
-//            this.setLayout(new GridLayout(10,10));
-//
-//            for(int row = 8; row >= -1; row--){
-//                for (int col = -1; col <= 8; col++){
-//                    if ((row == -1 || row == 8) || (col == -1 || col == 8)){
-//                        JLabel label = new JLabel();
-//                        label.setHorizontalAlignment(SwingConstants.CENTER);
-//                        if ((col == -1 || col == 8) && (row != -1 && row != 8)){
-//                            label.setText(rowLabels[row]);
-//                            this.add(label);
-//                        }
-//                        else if ((row == -1 || row == 8) && (col != -1 && col != 8)){
-//                            label.setText(colLabels[col]);
-//                            this.add(label);
-//                        }
-//                        else {
-//                            this.add(label);
-//                        }
-//                    }
-//                    else {
-//                        this.add(this.chessBoardFields[row][col]);
-//
-//                    }
-//                }
-//            }
-//        }
-
-//        private void drawBoardTopDown() {
-//            //GridBagConstraints GridOpt = new GridBagConstraints();
-////            GridOpt.gridwidth = 50;
-////            GridOpt.gridheight = 50;
-////            GridOpt.weightx = 1;
-////            GridOpt.weighty = 1;
-////            GridOpt.fill = GridBagConstraints.RELATIVE;
-//
-//
-//            this.setLayout(new GridLayout(10,10));
-//
-//            for(int row = -1; row <= 8; row++){
-//                for (int col = -1; col <= 8; col++){
-////                    GridOpt.gridx = col;
-////                    GridOpt.gridy = row;
-//                    //this.add(this.chessBoardFields[row][col],GridOpt);
-//                    if ((row == -1 || row == 8) || (col == -1 || col == 8)){
-//                        JLabel label = new JLabel();
-//                        label.setHorizontalTextPosition(SwingConstants.CENTER);
-//
-//                        if ((col == -1 || col == 8) && (row != -1 && row != 8)){
-//                            label.setText(rowLabels[row]);
-//                            this.add(label);
-//                        }
-//                        else if ((row == -1 || row == 8) && (col != -1 && col != 8)){
-//                            label.setText(colLabels[col]);
-//                            this.add(label);
-//                        }
-//                        else {
-//                            this.add(label);
-//                        }
-//                    }
-//                    else {
-//                        this.add(this.chessBoardFields[row][col]);
-//
-//                    }
-//                }
-//            }
-//            //
-////                    this.add(this.chessBoardFields[i][j],GridOpt);
-//        }
 
     private void drawLabels(){
         GridBagConstraints GridOpt = new GridBagConstraints();
@@ -188,8 +165,34 @@ public class ChessBoardPanel extends JPanel {
             this.add(labelFirstRows,GridOpt);
             GridOpt.gridx = 9;
             this.add(labelSecondRows,GridOpt);
+
+            //this.setVisible(true);
         }
     }
+
+//    public void testShit() {
+//        Component[] components = getComponents();
+//        SLog.write(components.length);
+//        for (Component comp : components){
+//
+//            SLog.write(comp);
+//            SLog.write(comp.getBounds());
+//            SLog.write("x " + comp.getX());
+//            SLog.write("y " + comp.getY());
+//        }
+//
+//        for (int k = 0; k< 1500; k++)
+//        {
+//            for (int j = 0; j< 1500; j++)
+//            {
+//                Component component = getComponentAt(k,j);
+//                if (component != null){
+//                    SLog.write(k + ":"+j+"\n"+component);
+//                }
+//            }
+//
+//        }
+//    }
 
     private void drawBoardFields(){
         GridBagConstraints GridOpt = new GridBagConstraints();

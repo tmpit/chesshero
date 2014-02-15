@@ -108,16 +108,16 @@ public class Connection
                 {
                     listen();
 
-                    for (ConnectionListener listener : listeners)
+                    for (int i = 0; i < listeners.size(); i++)
                     {
-                        listener.socketConnected();
+                        listeners.get(i).socketConnected();
                     }
                 }
                 else
                 {
-                    for (ConnectionListener listener : listeners)
+                    for (int i = 0; i < listeners.size(); i++)
                     {
-                        listener.socketFailedToConnect();
+                        listeners.get(i).socketFailedToConnect();
                     }
                 }
             }
@@ -234,9 +234,9 @@ public class Connection
                 {
                     if (msg.containsKey("push"))
                     {   // This message is pushed
-                        for (ConnectionListener listener : listeners)
+                        for (int i = 0; i < listeners.size(); i++)
                         {
-                            listener.didReceiveMessage(msg);
+                            listeners.get(i).didReceiveMessage(msg);
                         }
                     }
                     else
@@ -358,16 +358,16 @@ public class Connection
 
                 if (this.response != null)
                 {
-                    for (ConnectionListener listener : listeners)
+                    for (int i = 0; i < listeners.size(); i++)
                     {
-                        listener.requestDidComplete(true, this.request, this.response);
+                        listeners.get(i).requestDidComplete(true, this.request, this.response);
                     }
                 }
                 else
                 {
-                    for (ConnectionListener listener : listeners)
+                    for (int i = 0; i < listeners.size(); i++)
                     {
-                        listener.requestDidComplete(false, this.request, null);
+                        listeners.get(i).requestDidComplete(false, this.request, null);
                     }
                 }
 
@@ -402,9 +402,9 @@ public class Connection
 
     private void notifySocketDisconnected(boolean error)
     {
-        for (ConnectionListener listener : listeners)
+        for (int i = 0; i < listeners.size(); i++)
         {
-            listener.socketDisconnected(error);
+            listeners.get(i).socketDisconnected(error);
         }
     }
 

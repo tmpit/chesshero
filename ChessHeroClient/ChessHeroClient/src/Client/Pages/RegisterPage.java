@@ -208,7 +208,7 @@ public class RegisterPage extends ChessHeroPage {
 
         if (Result.OK == resultCode)
         {
-            player = new Player((Integer)response.get("userid"), (String)response.get("username"));
+            this.getHolder().player = new Player((Integer)response.get("userid"), (String)response.get("username"));
             this.holder.NavigateToPage(new LobbyPage());
         }
         else if (Result.INVALID_NAME == resultCode)

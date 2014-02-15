@@ -242,6 +242,10 @@ public class CreateGamePage extends ChessHeroPage {
                     handleCreateGameButton();
                 }
             });
+
+            //MOCK create game
+            this.gameNameTextBox.setText("asd");
+            handleCreateGameButton();
         }
 
     //Handle Buttons
@@ -304,11 +308,6 @@ public class CreateGamePage extends ChessHeroPage {
     @Override
     public void didReceiveMessage(HashMap<String, Object> message)
     {
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
         super.didReceiveMessage(message);
         SLog.write("In Push Event");
 
@@ -317,11 +316,15 @@ public class CreateGamePage extends ChessHeroPage {
 
         Player opponent = new Player(opponentId, opponentName);
 
-        opponent.join(createdGame,opponent.getColor());
+        opponent.join(createdGame,this.getHolder().player.getColor().Opposite);
 
         GameController gameContr = new GameController(createdGame);
 
         this.getHolder().NavigateToPage(new PlayGamePage(gameContr));
+
+//                    break;
+//            }
+//        }
     }
 
 
@@ -348,8 +351,8 @@ public class CreateGamePage extends ChessHeroPage {
                 {
                     String color = createGameSettings.IsWithWhite ? "white" : "black";
                     Integer gameID = (Integer)response.get("gameid");
-                    createdGame = new Game(gameID, createGameSettings.GameName, createGameSettings.GameTimeLimit);
-                    player.join(createdGame, (createGameSettings.IsWithWhite ? com.kt.game.Color.WHITE : com.kt.game.Color.BLACK));
+                    createdGame = new Game(gameID, createGameSettings.GameName, Game.NO_TIMEOUT);
+                    this.getHolder().player.join(createdGame, (createGameSettings.IsWithWhite ? com.kt.game.Color.WHITE : com.kt.game.Color.BLACK));
 
                     gameCreated = true;
                     createGameButton.setText("Cancel Game");

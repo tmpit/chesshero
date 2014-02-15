@@ -54,13 +54,13 @@ public class ChessBoardTakenPiecesPanel extends JPanel {
             takenPiecesFields[i] = new ChessFieldPanel(this.playerColor,this.fieldSize);
         }
         if(this.playerColor == com.kt.game.Color.WHITE){
-            ArrayList<ChessPiece> takenPieces = new ArrayList<ChessPiece>(this.game.getPlayer1().getChessPieceSet().getTakenPieces());
+            ArrayList<ChessPiece> takenPieces = new ArrayList<ChessPiece>(this.game.getWhitePlayer().getChessPieceSet().getTakenPieces());
 
             if(takenPieces != null && takenPieces.size() > 0)
                 setTakenPiecesFields(takenPieces);
         }
-        else if(playerColor == com.kt.game.Color.BLACK){
-            ArrayList<ChessPiece> takenPieces = new ArrayList<ChessPiece>(this.game.getPlayer2().getChessPieceSet().getTakenPieces());
+        else if(this.playerColor == com.kt.game.Color.BLACK){
+            ArrayList<ChessPiece> takenPieces = new ArrayList<ChessPiece>(this.game.getBlackPlayer().getChessPieceSet().getTakenPieces());
 
             if(takenPieces != null && takenPieces.size() > 0)
                 setTakenPiecesFields(takenPieces);

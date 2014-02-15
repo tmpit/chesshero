@@ -21,8 +21,6 @@ public abstract class ChessHeroPage extends JPanel implements ConnectionListener
 
     public static final String MAIN_TITLE = "Chess Hero";
 
-    public static Player player;
-
     protected ClientMain holder = null;
     private Connection con = null;
     protected static boolean isConnected = false;

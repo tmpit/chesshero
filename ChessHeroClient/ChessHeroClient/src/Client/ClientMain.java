@@ -11,6 +11,7 @@ import Client.Communication.Connection;
 import Client.Communication.ConnectionListener;
 import Client.Pages.ChessHeroPage;
 import Client.Pages.LoginPage;
+import com.kt.game.Player;
 import com.kt.utils.SLog;
 
 import javax.swing.*;
@@ -23,6 +24,8 @@ public class ClientMain extends JFrame {
     public static final int VERTICAL_SIZE = 720;
 
     public static ChessHeroPage currentPage = null;
+
+    public static Player player;
 
     public ClientMain() {
 
@@ -44,7 +47,8 @@ public class ClientMain extends JFrame {
         this.setContentPane(currentPage.getPagePanel());
         this.setTitle(ChessHeroPage.MAIN_TITLE + currentPage.getPageTitle());
         currentPage.setHolder(this);
-
+        super.pack();
+        super.validate();
         this.setVisible(true);
     }
 

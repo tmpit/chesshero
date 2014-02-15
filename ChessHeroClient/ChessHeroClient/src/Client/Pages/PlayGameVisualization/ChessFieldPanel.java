@@ -15,11 +15,31 @@ import java.awt.image.BufferedImage;
  * To change this template use File | Settings | File Templates.
  */
 public class ChessFieldPanel extends JLabel {
-    public com.kt.game.Color fieldColor = null;
-    public BufferedImage fieldImage = null;
+    private com.kt.game.Color fieldColor = null;
+    private BufferedImage fieldImage = null;
+
+    public com.kt.game.Color getFieldColor()
+    {
+        return this.fieldColor;
+    }
+    public BufferedImage getFiledImage()
+    {
+        return this.fieldImage;
+    }
+    public void setFiledImage(BufferedImage newImage)
+    {
+        this.fieldImage = newImage;
+        if(fieldImage != null){
+            this.setIcon(new ImageIcon(fieldImage));
+        }
+        else{
+            this.setIcon(new ImageIcon());
+        }
+    }
 
     public Color getDisplayColor(){
-        return this.fieldColor == com.kt.game.Color.WHITE ? new Color(230,198,167): new Color(90,45,45);
+//        return this.fieldColor == com.kt.game.Color.WHITE ? new Color(230,198,167): new Color(90,45,45);
+        return this.fieldColor == com.kt.game.Color.WHITE ? new Color(207,178,150): new Color(99,50,50);
     }
 
     public ChessFieldPanel(com.kt.game.Color fieldColor,int size){

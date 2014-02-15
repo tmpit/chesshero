@@ -107,6 +107,8 @@ public class Game
 
 	protected Player player1;
 	protected Player player2;
+    private Player whitePlayer;
+    private Player blackPlayer;
 
 	private BoardField board[][] = new BoardField[BOARD_SIDE][BOARD_SIDE];
 
@@ -254,6 +256,36 @@ public class Game
 		return player2;
 	}
 
+    public Player getWhitePlayer()
+    {
+        if (null == player1 || null == player2)
+        {
+            return null;
+        }
+
+        if (null == whitePlayer)
+        {
+            whitePlayer = player1.getColor().equals(Color.WHITE) ? player1 : player2;
+        }
+
+        return whitePlayer;
+    }
+
+    public Player getBlackPlayer()
+    {
+        if (null == player1 || null == player2)
+        {
+            return null;
+        }
+
+        if (null == blackPlayer)
+        {
+            blackPlayer = player1.getColor().equals(Color.BLACK) ? player1 : player2;
+        }
+
+        return blackPlayer;
+    }
+
 	/**
 	 * Gets the player whose turn it is
 	 * @return A {@code Player}
@@ -271,6 +303,11 @@ public class Game
 	{
 		return winner;
 	}
+
+    public BoardField getField(Position position)
+    {
+        return this.board[position.getX()][position.getY()];
+    }
 
 	/**
 	 * True if the game has ended due to a checkmate, false if not. Used to determine how to finalize a game after
@@ -334,7 +371,7 @@ public class Game
 	 * Gets the chess board
 	 * @return A two-dimensional array of {@code BoardField} instances
 	 */
-	protected BoardField[][] getBoard()
+	public BoardField[][] getBoard()
 	{
 		return board;
 	}

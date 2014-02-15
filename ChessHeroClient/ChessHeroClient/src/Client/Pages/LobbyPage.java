@@ -78,7 +78,7 @@ public class LobbyPage extends ChessHeroPage{
         }
     }
 
-    public  LobbyPage(){
+    public LobbyPage(){
         super();
         this.setPageTitle("Lobby Page");
         //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
@@ -235,6 +235,17 @@ public class LobbyPage extends ChessHeroPage{
                 handleHallOfFameButton();
             }
         });
+
+        //MOCK CREATE
+//        if (this.getHolder().player.getName().equals("kiro"))
+//        {
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//            }
+//            handleCreateGameButton();
+//        }
     }
 
 
@@ -269,7 +280,7 @@ public class LobbyPage extends ChessHeroPage{
     }
 
     public void handleLogoutButton(){
-        player = null;
+        this.getHolder().player = null;
         this.getConnection().disconnect();
         this.holder.NavigateToPage(new LoginPage());
     }
@@ -346,7 +357,7 @@ public class LobbyPage extends ChessHeroPage{
                     }
 
                     Game theGame = new Game(SelectedGame.gameID, SelectedGame.gameName, Game.NO_TIMEOUT);
-                    player.join(theGame, opponentColor.Opposite);
+                    this.getHolder().player.join(theGame, opponentColor.Opposite);
                     opponent.join(theGame, opponentColor);
 
                     GameController gameContr = new GameController(theGame);
