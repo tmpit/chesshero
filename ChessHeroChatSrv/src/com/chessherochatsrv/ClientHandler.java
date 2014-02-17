@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ClientHandler extends Thread {
+
 	private static String DB_URL = "jdbc:mysql://localhost:3306/";
 	private static String DB_NAME = "srv_db";
 	private static String DB_USER = "root";
@@ -34,17 +35,18 @@ public class ClientHandler extends Thread {
 
 	protected Socket socket;
 	protected Vector threadPool;
-	
+
 	private Connection conn = null;
-	private boolean keepAlive = false;
 	private boolean isOpen = false;
-	
+
+	private boolean isAuthenticated = false;
 	private boolean isValidToken = false;
 	private String token;
 	private int gid;
 	private int uid;
 
 	public ClientHandler(Socket socket, Vector threadPool) {
+
 		this.socket = socket;
 		this.threadPool = threadPool;
 		threadPool.add(this);
@@ -73,7 +75,7 @@ public class ClientHandler extends Thread {
 	}
 
 	private void checkFromDB(String token) {
-		
+
 		try {
 			connectToDB();
 			PreparedStatement stmt = null;
@@ -83,25 +85,24 @@ public class ClientHandler extends Thread {
 					.prepareStatement("SELECT gid,uid FROM chat_auth WHERE token = ?");
 			stmt.setString(1, token);
 			set = stmt.executeQuery();
+
 			if (set.next()) {
-				disconnectFromDB();
 				this.gid = set.getInt(1);
 				this.uid = set.getInt(2);
 				isValidToken = true;
-				System.out.println("gid=" + set.getInt(1) + " uid="
-						+ set.getInt(2));
+				isAuthenticated = true;
+				System.out.println("gid=" + this.gid + " uid=" + this.uid);
+				disconnectFromDB();
 			} else {
 				disconnectFromDB();
-				isValidToken = false;
 			}
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 
 	private void disconnectFromDB() {
-		
+
 		if (null == conn) {
 			return;
 		}
@@ -124,34 +125,41 @@ public class ClientHandler extends Thread {
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(
 					socket.getOutputStream()));
 
-			out.println("Token required\n");
-			out.flush();
-
-			String outString;
-			
-			// start a 30 second timeout
-			
 			while (true) {
-				String inString = in.readLine();
-				System.out.println("Client sent: " + inString);
 
-				outString = "command received";
-				out.println(outString);
-				out.flush();
+				String inString = in.readLine();
 				
-				// if some data is received, check if it is valid token
-				// if the token is valid fetch the gid and the uid from database for the specified token
-				checkFromDB(inString);
-				if (!isValidToken) {
-					break;
+				if (!isAuthenticated) {
+					// If there is some incoming data, remove the timeout
+					if (inString.trim().length() > 0) {
+						socket.setSoTimeout(0);
+					}
+
+					// Check if the token is valid
+					checkFromDB(inString);
+
+					if (!isValidToken) {
+						out.println("Not a valid token!");
+						out.flush();
+						break;
+					} else {
+						isAuthenticated = true;
+						out.println("Ready");
+						out.flush();
+					}
+				} else {
+					// Start chatting
+					out.println("");
+					out.flush();
 				}
 				
 				if (inString.trim().equals("q")) {
 					break;
 				}
+				
+				System.out.println("Client sent: " + inString);
 			}
 			socket.close();
-
 		} catch (IOException e) {
 			System.out.println("Client disconnected!");
 		} finally {

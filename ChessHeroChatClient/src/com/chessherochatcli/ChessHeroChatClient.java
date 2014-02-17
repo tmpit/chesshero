@@ -28,7 +28,7 @@ public class ChessHeroChatClient extends Frame {
 	private Label empty = new Label("");
 
 	ChessHeroChatClient() {
-		
+
 		setTitle("ChessHero Chat Client");
 		setLocationRelativeTo(null);
 		setSize(500, 500);
@@ -88,24 +88,31 @@ public class ChessHeroChatClient extends Frame {
 	}
 
 	private void connect() {
-		
+
 		try {
 			// Connect to the chat server in order to chat
 			chatSocket = new Socket("127.0.0.1", PORT_NUMBER);
 			// Connect to the game server in order to get the token
-			gameSocket = new Socket("127.0.0.1", PORT_NUMBER);
+			// gameSocket = new Socket("127.0.0.1", PORT_NUMBER);
 
 			in = new BufferedReader(new InputStreamReader(
 					chatSocket.getInputStream()));
 			ou = new PrintWriter(new OutputStreamWriter(
 					chatSocket.getOutputStream()));
+			String inLine;
 
-			textArea.append(in.readLine() + "\n");
-			textArea.append(in.readLine() + "\n");
-
+			ou.println("tk3");
+			ou.flush();
+			
+			inLine = in.readLine();
+			textArea.append(inLine + "\n");
+			
 			buttonConnect.setEnabled(false);
-			buttonSend.setEnabled(true);
 			buttonDisconnect.setEnabled(true);
+			
+			if (inLine.trim().equals("Ready")) {
+				buttonSend.setEnabled(true);
+			}
 		} catch (IOException ioe) {
 			System.out.println(ioe.getMessage());
 			ioe.printStackTrace();
@@ -113,7 +120,7 @@ public class ChessHeroChatClient extends Frame {
 	}
 
 	private void send(BufferedReader in, PrintWriter ou) {
-		
+
 		String inLine;
 
 		try {
@@ -129,11 +136,10 @@ public class ChessHeroChatClient extends Frame {
 	}
 
 	private void disconnect(BufferedReader in, PrintWriter ou) {
-		
-		ou.println("Bye!");
-		ou.flush();
 
 		try {
+			ou.println("q");
+			ou.flush();
 			in.close();
 			ou.close();
 
