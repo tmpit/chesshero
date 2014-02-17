@@ -34,12 +34,15 @@ public class ClientHandler extends Thread {
 
 	protected Socket socket;
 	protected Vector threadPool;
-
+	
 	private Connection conn = null;
-	private String token;
-
 	private boolean keepAlive = false;
 	private boolean isOpen = false;
+	
+	private boolean isValidToken = false;
+	private String token;
+	private int gid;
+	private int uid;
 
 	public ClientHandler(Socket socket, Vector threadPool) {
 		this.socket = socket;
@@ -70,19 +73,26 @@ public class ClientHandler extends Thread {
 	}
 
 	private void checkFromDB(String token) {
+		
 		try {
 			connectToDB();
-
 			PreparedStatement stmt = null;
 			ResultSet set = null;
 
 			stmt = conn
-					.prepareStatement("SELECT * FROM chat_auth WHERE token = ?");
+					.prepareStatement("SELECT gid,uid FROM chat_auth WHERE token = ?");
 			stmt.setString(1, token);
 			set = stmt.executeQuery();
 			if (set.next()) {
+				disconnectFromDB();
+				this.gid = set.getInt(1);
+				this.uid = set.getInt(2);
+				isValidToken = true;
 				System.out.println("gid=" + set.getInt(1) + " uid="
 						+ set.getInt(2));
+			} else {
+				disconnectFromDB();
+				isValidToken = false;
 			}
 
 		} catch (SQLException e) {
@@ -91,7 +101,7 @@ public class ClientHandler extends Thread {
 	}
 
 	private void disconnectFromDB() {
-
+		
 		if (null == conn) {
 			return;
 		}
@@ -118,7 +128,9 @@ public class ClientHandler extends Thread {
 			out.flush();
 
 			String outString;
-
+			
+			// start a 30 second timeout
+			
 			while (true) {
 				String inString = in.readLine();
 				System.out.println("Client sent: " + inString);
@@ -127,7 +139,12 @@ public class ClientHandler extends Thread {
 				out.println(outString);
 				out.flush();
 				
+				// if some data is received, check if it is valid token
+				// if the token is valid fetch the gid and the uid from database for the specified token
 				checkFromDB(inString);
+				if (!isValidToken) {
+					break;
+				}
 				
 				if (inString.trim().equals("q")) {
 					break;
