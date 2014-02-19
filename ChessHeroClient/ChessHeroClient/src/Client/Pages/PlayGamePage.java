@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.SwitchPoint;
 import java.text.FieldPosition;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -190,6 +191,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         //mainPanel.add(pageTitle,gridOpt);
 
         chessBoardPanel.redrawBoard();
+
         mainPanel.add(chessBoardPanel, gridOpt);
 
         gridOpt.fill = GridBagConstraints.HORIZONTAL;
@@ -295,14 +297,18 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         gridOpt.gridy = 5;
         gridOpt.gridx = 1;
         gridOpt.weighty = 1;
-        gridOpt.weightx = 1;
+        gridOpt.weightx = 3;
         gridOpt.gridwidth = 1;
         gridOpt.gridheight = 1;
-        gridOpt.insets = new Insets(0,200,20,200);
-
+        gridOpt.fill = GridBagConstraints.HORIZONTAL;
+//        errorLabel.setBorder(BorderFactory.createLineBorder(Color.black,1));
         mainPanel.add(errorLabel, gridOpt);
 
         gridOpt.gridy = 6;
+        gridOpt.fill = GridBagConstraints.HORIZONTAL;
+//        menuPanel.setBorder(BorderFactory.createLineBorder(Color.black,1));
+
+
         mainPanel.add(menuPanel, gridOpt);
 
         this.mainPanel.updateUI();
@@ -397,33 +403,77 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if(e.getButton() == 3){
-            ChessBoardFieldPanel component = (ChessBoardFieldPanel)e.getSource();
-            Position position = component.fieldPosition;
-            Position oldPosition = null;
-            if (selectedField != null)
-            {
-                oldPosition = selectedField.getPosition();
-                ChessBoardFieldPanel selectedFieldView = chessBoardPanel.getField(selectedField.getPosition());
-                if(selectedFieldView.getIsSelected() == true) selectedFieldView.toggleIsSelected();
-
-                selectedField = null;
-            }
-
-            if(oldPosition == null ||
-                    oldPosition.getX() != position.getX() ||
-                    oldPosition.getY() != position.getY())
-            {
-                if (isSelectionValid(gameController.game.getField(position),ClientMain.player))
-                {
-                    this.selectedField = gameController.game.getField(position);
-                    if(component.getIsHighlighted() == true) component.toggleIsHighlighted();
-                    component.toggleIsSelected();
-                }
-            }
-
-        }
+//        if(e.getButton() == 3){
+//            ChessBoardFieldPanel component = (ChessBoardFieldPanel)e.getSource();
+//            Position position = component.fieldPosition;
+//            Position oldPosition = null;
+//            if (selectedField != null)
+//            {
+//                oldPosition = selectedField.getPosition();
+//                ChessBoardFieldPanel selectedFieldView = chessBoardPanel.getField(selectedField.getPosition());
+//                if(selectedFieldView.getIsSelected() == true) selectedFieldView.toggleIsSelected();
+//
+//                selectedField = null;
+//            }
+//
+//            if(oldPosition == null ||
+//                    oldPosition.getX() != position.getX() ||
+//                    oldPosition.getY() != position.getY())
+//            {
+//                if (isSelectionValid(gameController.game.getField(position),ClientMain.player))
+//                {
+//                    this.selectedField = gameController.game.getField(position);
+//                    if(component.getIsHighlighted() == true) component.toggleIsHighlighted();
+//                    component.toggleIsSelected();
+//                }
+//            }
+//
+//        }
         SLog.write("clicked at: " + ((ChessBoardFieldPanel) e.getSource()).fieldPosition);
+    }
+
+
+    private void selectField (ChessBoardFieldPanel fieldViewToSelect)
+    {
+        BoardField correspondingField  = gameController.game.getField(fieldViewToSelect.fieldPosition);
+        selectField(correspondingField, fieldViewToSelect);
+
+    }
+    private void selectField (BoardField fieldToSelect)
+    {
+        ChessBoardFieldPanel correspondingFieldView = this.chessBoardPanel.getField(fieldToSelect.getPosition());
+        selectField(fieldToSelect, correspondingFieldView);
+    }
+    private void selectField (BoardField fieldToSelect, ChessBoardFieldPanel fieldViewToSelect)
+    {
+        fieldViewToSelect.setIsHighlighted(false);
+        fieldViewToSelect.setIsSelected(true);
+        this.selectedField = fieldToSelect;
+    }
+    private void highLightField (BoardField fieldToSelect)
+    {
+        ChessBoardFieldPanel correspondingFieldView = this.chessBoardPanel.getField(fieldToSelect.getPosition());
+
+        if (correspondingFieldView.getIsSelected() == false)
+        {
+            correspondingFieldView.setIsHighlighted(true);
+        }
+    }
+    private void highLightField (ChessBoardFieldPanel fieldToSelect)
+    {
+
+        if (fieldToSelect.getIsSelected() == false)
+        {
+            fieldToSelect.setIsHighlighted(true);
+        }
+    }
+
+    private void deselectField ()
+    {
+        ChessBoardFieldPanel selectedFieldView = chessBoardPanel.getField(selectedField.getPosition());
+        selectedFieldView.setIsHighlighted(false);
+        selectedFieldView.setIsSelected(false);
+        selectedField = null;
     }
 
     @Override
@@ -433,34 +483,20 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             inMousePressedEvent = true;
             if (selectedField != null)
             {
-                ChessBoardFieldPanel selectedFieldView = chessBoardPanel.getField(selectedField.getPosition());
-                if(selectedFieldView.getIsHighlighted() == true) selectedFieldView.toggleIsHighlighted();
-                if(selectedFieldView.getIsSelected() == true) selectedFieldView.toggleIsSelected();
-                selectedField = null;
+                deselectField();
             }
 
             ChessBoardFieldPanel component = (ChessBoardFieldPanel)e.getSource();
             Position position = component.fieldPosition;
-            if (isSelectionValid(gameController.game.getField(position),ClientMain.player))
+            BoardField correspondingField  = gameController.game.getField(position);
+            if (isSelectionValid(correspondingField, ClientMain.player))
             {
-                if(component.getIsHighlighted() == true) component.toggleIsHighlighted();
-                if(component.getIsSelected() != true) component.toggleIsSelected();
+                selectField(correspondingField, component);
 
-
-                this.selectedField = gameController.game.getField(position);
+                setCursorToChessPiece(component);
 
                 SLog.write("source pos = " + position);
                 SLog.write("source field = " + selectedField);
-
-                Toolkit toolkit = Toolkit.getDefaultToolkit();
-                Point cursorHotSpot = new Point(0,0);
-                BufferedImage image = component.getFiledImage();
-                if(image != null){
-
-                    Cursor customCursor = toolkit.createCustomCursor( component.getFiledImage(), cursorHotSpot, "Cursor");
-                    this.chessBoardPanel.setCursor(customCursor);
-                }
-                //this.setCursor(customCursor);
             }
             else
             {
@@ -470,6 +506,18 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         else
         {
             inMousePressedEvent = false;
+        }
+    }
+
+    private void setCursorToChessPiece(ChessBoardFieldPanel boardFieldView)
+    {
+        BufferedImage image = boardFieldView.getFiledImage();
+        if(image != null)
+        {
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            Point cursorHotSpot = new Point(0,0);
+            Cursor customCursor = toolkit.createCustomCursor( boardFieldView.getFiledImage(), cursorHotSpot, "Cursor");
+            this.chessBoardPanel.setCursor(customCursor);
         }
     }
 
@@ -484,10 +532,9 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             {
                 ChessBoardFieldPanel component = (ChessBoardFieldPanel)e.getSource();
 
-                if (component.getIsSelected() == true)  component.toggleIsSelected();
-                if (component.getIsHighlighted() == true)  component.toggleIsHighlighted();
+                component.setIsHighlighted(false);
+                component.setIsSelected(false);
 
-                //Position position = ((ChessBoardFieldPanel)e.getSource()).fieldPosition;
                 Position position = selectedField.getPosition();
 
                 SLog.write("source pos = " + position);
@@ -501,7 +548,6 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                 if (targetComponent != null)
                 {
                     ChessBoardFieldPanel targetComponentAsChessBoardField = (ChessBoardFieldPanel)targetComponent;
-                    //SLog.write(targetComponentAsChessBoardField);
 
                     Position targetPosition = targetComponentAsChessBoardField.fieldPosition;
                     if(isTargetMoveValid(ClientMain.player,selectedField,gameController.game.getField(targetPosition)))
@@ -510,8 +556,9 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
 
                         SLog.write("target pos = " + targetPosition);
                         SLog.write("target field = " + targetField);
-                        if(targetComponentAsChessBoardField.getIsHighlighted() != true) targetComponentAsChessBoardField.toggleIsHighlighted();
-                        if(targetComponentAsChessBoardField.getIsSelected() == true) targetComponentAsChessBoardField.toggleIsSelected();
+
+                        targetComponentAsChessBoardField.setIsSelected(false);
+                        targetComponentAsChessBoardField.setIsHighlighted(true);
 
                         this.currentMoveString = createMoveStringFromPositions(
                                 selectedField.getPosition(),
@@ -526,14 +573,14 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                     }
                 }
 
-                this.selectedField = null;
+                deselectField();
                 this.targetField = null;
 
                 this.chessBoardPanel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
             else
             {
-                SLog.write("Error selected field shouldnt be null here");
+                SLog.write("Error selected field shouldn't be null here");
             }
         }
     }
@@ -545,7 +592,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
 //        {
         if(component.getIsSelected() == false)
         {
-            component.toggleIsHighlighted();
+            component.setIsHighlighted(true);
         }
 //        }
     }
@@ -557,32 +604,45 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
 //        {
         if(component.getIsSelected() == false)
         {
-            component.toggleIsHighlighted();
+            component.setIsHighlighted(false);
         }
 //        }
     }
 
     private boolean isSelectionValid(BoardField selectedField, Player me)
     {
+        boolean result = false;
         if (this.gameController.game.getTurn().equals(me))
         {
             ChessPiece chessPiece = selectedField.getChessPiece();
             if (chessPiece != null)
             {
-                return chessPiece.getOwner().equals(me);
+                result = chessPiece.getOwner().equals(me);
+                if(result == true)
+                {
+                    errorLabel.setText("  ");
+                }
+                else
+                {
+                    SLog.write("Not your chess piece (client)");
+                    errorLabel.setText("Not your chess piece");
+                }
             }
             else
             {
-                SLog.write("Not your chess piece (client)");
-                return false;
+                SLog.write("No chess piece to select (client)");
+                errorLabel.setText("No chess piece to select");
             }
         }
         else
         {
             SLog.write("Not your turn (client)");
-            return false;
+            errorLabel.setText("Not your turn");
         }
+        return result;
     }
+
+
 
     private boolean isTargetMoveValid(Player executor, BoardField from, BoardField to)
     {
@@ -596,6 +656,28 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                     to.getPosition(),
                     this.gameController.getNewMoveContext()
             );
+
+            if (resCode == Result.WRONG_MOVE)
+            {
+                errorLabel.setText("Invalid move - your king will be in chess!");
+                return true;
+            }
+            else if (resCode == Result.INVALID_MOVE)
+            {
+                errorLabel.setText("Invalid move");
+            }
+            else if (resCode == Result.OK)
+            {
+//                if (gameController.game.getIsInCheck(ClientMain.player) == false)
+//                {
+                    errorLabel.setText("Valid move");
+//                }
+//                else
+//                {
+//                    errorLabel.setText("Invalid move - your king will be in chess!");
+//                    return false;
+//                }
+            }
 
             return resCode == 0 ? true : false;
         }
@@ -623,6 +705,30 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             case Push.GAME_MOVE:
                 String opponentMove = (String)message.get("move");
                 this.gameController.execute(this.gameController.game.getPlayer2(), opponentMove);
+
+                if (message.containsKey("attackers"))
+                {
+                    ArrayList<Object> attackersList = (ArrayList<Object>)message.get("attackers");
+                    SLog.write(attackersList.size());
+                    if (attackersList.size() > 0)
+                    {
+                        for (Object piece : attackersList)
+                        {
+                            Position piecePosition =  Position.positionFromBoardPosition(piece.toString());
+                            highLightField(this.chessBoardPanel.getField(piecePosition));
+                        }
+                        if( gameController.game.getIsInCheck(ClientMain.player))
+                        {
+                            errorLabel.setText("You are in Check!");
+                        }
+                        else
+                        {
+                            errorLabel.setText("Error in in check state!");
+                        }
+                    }
+
+                }
+
                 this.chessBoardPanel.updateBoard(gameController.board);
                 this.RearrangeLayout();
                 break;
@@ -639,66 +745,42 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         super.requestDidComplete(success, request, response);
         int resultCode = (Integer)response.get("result");
 
-        if (Result.OK == resultCode)
+        switch (resultCode)
         {
-            this.errorLabel.setText("move sucessfull :P");
-            this.gameController.execute(ClientMain.player, currentMoveString);
-            this.chessBoardPanel.updateBoard(gameController.board);
-            this.RearrangeLayout();
+            case Result.OK :
+                this.errorLabel.setText("move successfully executed");
+                this.gameController.execute(ClientMain.player, currentMoveString);
+                if(this.gameController.game.getIsInCheck(gameController.game.getPlayer2()) == true)
+                {
+                    errorLabel.setText("Check!");
+                }
+                this.chessBoardPanel.updateBoard(gameController.board);
+                this.RearrangeLayout();
+                break;
+            case Result.MOVE_NA :
+                errorLabel.setText("Not applicable move");
+                break;
+            case Result.INVALID_MOVE_FORMAT :
+                errorLabel.setText("Invalid move format");
+                break;
+            case Result.NOT_YOUR_TURN :
+                errorLabel.setText("It is not your turn");
+                break;
+            case Result.NO_CHESSPIECE :
+                errorLabel.setText("No chess piece at that position");
+                break;
+            case Result.NOT_YOUR_CHESSPIECE :
+                errorLabel.setText("Attempting to move your opponent's chess piece");
+                break;
+            case Result.INVALID_MOVE :
+                errorLabel.setText("Invalid move");
+                break;
+            case Result.WRONG_MOVE :
+                errorLabel.setText("Invalid move - your king will be in chess!");
+                break;
+            case Result.MISSING_PROMOTION :
+                errorLabel.setText("You are moving a pawn to its highest rank but you have not specified promotion.");
+                break;
         }
-        else if (Result.MOVE_NA == resultCode)
-        {
-            errorLabel.setText("Not aplicable move");
-        }
-//        else if (Result.INVALID_PASS == resultCode)
-//        {
-//            passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red, 2));
-//            errorLabel.setText("Invalid password");
-//
-//        }
-//        else if (Result.INVALID_CREDENTIALS == resultCode)
-//        {
-//            usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
-//            passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
-//            errorLabel.setText("Invalid name or password");
-//        }
-//        else if (Result.ALREADY_LOGGEDIN == resultCode)
-//        {
-//            usernameTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
-//            passwordTextBox.setBorder(BorderFactory.createLineBorder(Color.red,2));
-//            errorLabel.setText("You are already logged in");
-//        }
     }
 }
-//
-//public static final int INVALID_MOVE_FORMAT = 200;
-//
-///**
-// * It is not your turn to make a move. Can be returned on: move
-// */
-//public static final int NOT_YOUR_TURN = 201;
-//
-///**
-// * There is no chess piece at the specified starting position. Can be returned on: move
-// */
-//public static final int NO_CHESSPIECE = 202;
-//
-///**
-// * Attempting to move a chess piece that is not yours. Can be returned on: move
-// */
-//public static final int NOT_YOUR_CHESSPIECE = 203;
-//
-///**
-// * The chess piece you are attempting to move cannot move to the specified position. Can be returned on: move
-// */
-//public static final int INVALID_MOVE = 204;
-//
-///**
-// * The king is in check and this move would not save him or the king would be in check if this move is executed. Can be returned on: move
-// */
-//public static final int WRONG_MOVE = 205;
-//
-///**
-// * You are moving a pawn to its highest rank but you have not specified promotion. Can be returned on: move
-// */
-//public static final int MISSING_PROMOTION = 206;

@@ -787,7 +787,10 @@ public class GameController
 
 			if (piece.isMoveValid(pos, true) && (piece instanceof Knight || !isPathIntercepted(piece.getPosition(), pos)))
 			{	// Position is threatened by this chess piece
-				return piece;
+                if (!pos.equals(piece.getPosition()))
+                {
+				    return piece;
+                }
 			}
 		}
 

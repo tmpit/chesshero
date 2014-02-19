@@ -66,7 +66,7 @@ public class ChessBoardFieldPanel extends ChessFieldPanel {
         return this.isSelected;
     }
 
-    private void setIsHighlighted (boolean isHighlighted)
+    public void setIsHighlighted (boolean isHighlighted)
     {
         //firePropertyChange("isSelected",this.isSelected, isSelected);
         //this.propertyChange(new PropertyChangeEvent(this,"isSelected",this.isSelected, isSelected));
@@ -81,7 +81,7 @@ public class ChessBoardFieldPanel extends ChessFieldPanel {
         }
     }
 
-    private void setIsSelected (boolean isSelected)
+    public void setIsSelected (boolean isSelected)
     {
         //firePropertyChange("isSelected",this.isSelected, isSelected);
         //this.propertyChange(new PropertyChangeEvent(this,"isSelected",this.isSelected, isSelected));

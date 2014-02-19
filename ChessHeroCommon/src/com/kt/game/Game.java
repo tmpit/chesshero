@@ -304,6 +304,19 @@ public class Game
 		return winner;
 	}
 
+    public boolean getIsInCheck(Player player)
+    {
+        Player playerInCheck = this.inCheck;
+        if (player == null || playerInCheck == null)
+        {
+            return false;
+        }
+        else
+        {
+            return player.equals(playerInCheck);
+        }
+    }
+
     public BoardField getField(Position position)
     {
         return this.board[position.getX()][position.getY()];
