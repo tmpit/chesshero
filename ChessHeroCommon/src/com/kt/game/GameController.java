@@ -356,7 +356,7 @@ public class GameController
 			game.attackers.add(movedPiece);
 		}
 
-		ChessPiece discovery = firstChessPieceInDirection(opponentKingPosition, from);
+		ChessPiece discovery = firstChessPieceInDirection(opponentKingPosition, MovementSet.directionFromPositions(opponentKingPosition, from));
 
 		// Ignore knights - they cannot be a threat if they are positioned horizontally, vertically or diagonally relative to the king
 		if (discovery != null && discovery.getOwner().equals(executor) && !(discovery instanceof Knight) &&
