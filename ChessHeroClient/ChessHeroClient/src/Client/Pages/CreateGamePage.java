@@ -244,8 +244,8 @@ public class CreateGamePage extends ChessHeroPage {
             });
 
             //MOCK create game
-            this.gameNameTextBox.setText("asd");
-            handleCreateGameButton();
+//            this.gameNameTextBox.setText("asd");
+//            handleCreateGameButton();
         }
 
     //Handle Buttons

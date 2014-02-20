@@ -934,14 +934,14 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                     exit = true;
                     if(winner == true)
                     {
-                        finalMessage = "You win because your opponent have surrendered";
+                        finalMessage = "You win because your opponent has surrendered";
                     }
                     else
                     {
                         finalMessage = "You loose because you've surrendered";
                     }
                 }
-                else if (message.containsKey("disconnected"))
+                else if (message.containsKey("disconnect"))
                 {
                     disconnected = true;
                     if(winner == true)

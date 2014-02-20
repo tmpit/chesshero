@@ -156,9 +156,9 @@ public class LoginPage extends ChessHeroPage {
             }
         });
 
-        //MOCK LOGIN
-        this.usernameTextBox.setText("kiro");
-        this.passwordTextBox.setText("asd");
+//        //MOCK LOGIN
+//        this.usernameTextBox.setText("kiro");
+//        this.passwordTextBox.setText("asd");
     }
 
     //Handle Buttons
