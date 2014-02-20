@@ -5,13 +5,11 @@ import Client.Communication.Request;
 import Client.Pages.PlayGameVisualization.ChessBoardFieldPanel;
 import Client.Pages.PlayGameVisualization.ChessBoardPanel;
 import Client.Pages.PlayGameVisualization.ChessBoardTakenPiecesPanel;
-import com.kt.api.Push;
-import com.kt.api.Result;
+import com.kt.api.*;
+import com.kt.api.Action;
 import com.kt.game.*;
 import com.kt.utils.SLog;
-import com.sun.org.apache.xml.internal.security.utils.JavaUtils;
 import javafx.util.Pair;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -23,12 +21,7 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.invoke.SwitchPoint;
-import java.text.FieldPosition;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -44,12 +37,69 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
     public int PIECE_SIZE = 50;
     public int TAKEN_PIECE_SIZE = 40;
     private boolean isBoardReversed = false;
+    private int currentTurnNumber = 0;
 
     private BoardField selectedField = null;
     private BoardField targetField = null;
     private boolean inMousePressedEvent = false;
     private String currentMoveString = null;
 
+    private static Vector<LogEntry> movesLogDataB;
+    private static Vector<LogEntry> movesLogDataW;
+
+    class LogEntry
+    {
+        private int turnNumber;
+        private String playerColor;
+        private String playerTurn;
+
+        public LogEntry()
+        {
+
+        }
+        public LogEntry(int turnNumber)
+        {
+            this.turnNumber = turnNumber;
+            this.playerColor = "";
+            this.playerTurn = "";
+        }
+        public LogEntry(int turnNumber, String playerColor)
+        {
+            this(turnNumber);
+            this.playerColor = playerColor;
+        }
+        public LogEntry(int turnNumber, String playerColor,String playerTurn)
+        {
+            this(turnNumber, playerColor);
+            this.playerTurn = playerTurn;
+        }
+
+        public String getTurnNumber ()
+        {
+            if (this.turnNumber == 0)
+            {
+                return "turn";
+            }
+            return Integer.toString(this.turnNumber);
+        }
+        public String getPlayerColor ()
+        {
+            return this.playerColor;
+        }
+        public String getPlayerTurn ()
+        {
+            return this.playerTurn;
+        }
+
+        @Override
+        public String toString()
+        {
+            String result = this.getTurnNumber() + "# " +
+                    //this.getPlayerColor() + " - " +
+                    this.getPlayerTurn();
+            return result;
+        }
+    }
 
     //Control references
     private JLabel errorLabel;
@@ -57,6 +107,10 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
     private JPanel mainPanel = new JPanel();
     private JPanel chatPanel = new JPanel();
     private JPanel logPanel = new JPanel();
+    private JList<LogEntry> logTurnsW = new JList<LogEntry>();
+    private JList<LogEntry> logTurnsB = new JList<LogEntry>();
+//    private JList<String> logWhite = new JList<String>();
+//    private JList<String> logBlack = new JList<String>();
     private JPanel playerPanel = new JPanel();
     private JPanel opponentPanel = new JPanel();
     private JLabel playerPanelLabel = new JLabel();
@@ -66,6 +120,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
     //Menu controls
     private JPanel menuPanel = new JPanel();
     private JToggleButton flipBoardButton = new JToggleButton("Flip Board", false);
+    private JButton exitGameButton = new JButton("Exit Game");
     //private JPanel opponentTakenPanel = new JPanel();
 
     private String playerName = "";
@@ -118,6 +173,44 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             e.printStackTrace();
         }
 
+        movesLogDataW = new Vector<LogEntry>();
+        movesLogDataB = new Vector<LogEntry>();
+
+        logTurnsW = new JList<LogEntry>(movesLogDataW);
+        logTurnsB = new JList<LogEntry>(movesLogDataB);
+        logTurnsB.setFixedCellHeight(20);
+        logTurnsW.setFixedCellHeight(20);
+        logTurnsB.setFixedCellWidth(115);
+        logTurnsW.setFixedCellWidth(115);
+        logTurnsB.setBackground(new Color(99, 50, 50));
+        logTurnsW.setForeground(Color.white);
+        logTurnsW.setBackground(new Color(207,178,150));
+        logTurnsB.setForeground(Color.black);
+
+
+        logTurnsB.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        logTurnsB.setLayoutOrientation(JList.VERTICAL);
+        logTurnsW.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        logTurnsW.setLayoutOrientation(JList.VERTICAL);
+
+        logTurnsB.setVisibleRowCount(-1);
+        logTurnsW.setVisibleRowCount(-1);
+
+        JScrollPane listScrollerB = new JScrollPane(logTurnsB);
+        JScrollPane listScrollerW = new JScrollPane(logTurnsW);
+
+        listScrollerB.setPreferredSize(new Dimension(120, 300));
+        listScrollerW.setPreferredSize(new Dimension(120, 300));
+
+        logPanel.add(listScrollerW);
+        logPanel.add(listScrollerB);
+
+
+//        jScrollPane.add(logTurnsW);
+//        jScrollPane.add(logTurnsB);
+//        logPanel.add(logTurnsW);
+//        logPanel.add(logTurnsB);
+
         errorLabel = new JLabel(" ");
 
         errorLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -127,16 +220,17 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
 
         this.gameController = gameController;
         this.gameController.startGame();
+
         playerName = "Player - " + this.gameController.game.getPlayer1().getName();
         opponentName = "Opponent - " + this.gameController.game.getPlayer2().getName();
 
         chessBoardPanel = new ChessBoardPanel(this.gameController.board, PIECE_SIZE);
 
         playerTakenPanel = new ChessBoardTakenPiecesPanel(
-               this.gameController.game, this.gameController.game.getPlayer2().getColor(),TAKEN_PIECE_SIZE);
+               this.gameController.game, this.gameController.game.getPlayer1().getColor(),TAKEN_PIECE_SIZE);
 
         opponentTakenPanel = new ChessBoardTakenPiecesPanel(
-                this.gameController.game, this.gameController.game.getPlayer1().getColor(),TAKEN_PIECE_SIZE);
+                this.gameController.game, this.gameController.game.getPlayer2().getColor(),TAKEN_PIECE_SIZE);
 
 
         com.kt.game.Color playerColor = (this.gameController.game.getPlayer1().getColor());
@@ -148,6 +242,12 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         //this.setIsBoardReversed(test);
         this.chessBoardPanel.setIsBoardReversed(test);
 
+        LogEntry logLegendW = new LogEntry(currentTurnNumber,"","white");
+        LogEntry logLegendB = new LogEntry(currentTurnNumber,"","black");
+        movesLogDataB.add(logLegendB);
+        movesLogDataW.add(logLegendW);
+        currentTurnNumber++;
+
         RearrangeLayout();
         //mainPanel.setLayout(new GridBagLayout());
         flipBoardButton.addActionListener(new ActionListener() {
@@ -155,6 +255,13 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             public void actionPerformed(ActionEvent e)
             {
                 handleFlipBoard();
+            }
+        });
+
+        exitGameButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleExitGame();
             }
         });
 
@@ -166,15 +273,6 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         this.removeAll();
         mainPanel.setLayout(new GridBagLayout());
 
-        //mainPanel.setBackground(new Color(255,0,0));
-        chatPanel.setBackground(new Color(255,0,0));
-        logPanel.setBackground(new Color(0,255,0));
-        //playerPanel.setBackground(new Color(0,0,255));
-        //opponentPanel.setBackground(new Color(255,255,0));
-        //playerTakenPanel.setBackground(new Color(255,0,255));
-        //opponentTakenPanel.setBackground(new Color(0,255,255));
-        //chessBoardPanel.setBackground(new Color(255,0,0));
-
         playerPanelLabel.setText(playerName);
         opponentPanelLabel.setText(opponentName);
         playerPanel.add(playerPanelLabel);
@@ -183,7 +281,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         GridBagConstraints gridOpt = new GridBagConstraints();
         gridOpt.fill = GridBagConstraints.BOTH;
         gridOpt.gridy = 2;
-        gridOpt.gridx = 1;
+        gridOpt.gridx = 0;
         gridOpt.weighty = 1;
         gridOpt.weightx = 1;
         gridOpt.gridwidth = 1;
@@ -191,10 +289,11 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         //mainPanel.add(pageTitle,gridOpt);
 
         chessBoardPanel.redrawBoard();
-
+        gridOpt.insets = new Insets(0,40,0,40);
         mainPanel.add(chessBoardPanel, gridOpt);
+        gridOpt.insets = new Insets(0,0,0,0);
 
-        gridOpt.fill = GridBagConstraints.HORIZONTAL;
+        //gridOpt.fill = GridBagConstraints.HORIZONTAL;
 
 //        gridOpt.gridy = 0;
 //        gridOpt.gridx = 0;
@@ -205,14 +304,16 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             gridOpt.gridy = CHPlayGameLayoutConstants.OpponentTakenPiecesLayoutTableRow;
 
         if(getIsBoardReversed() == true)
-            gridOpt.gridx = CHPlayGameLayoutConstants.ReversedOpponentTakenPiecesLayoutTableCol;
+            gridOpt.gridx = CHPlayGameLayoutConstants.ReversedOpponentTakenPiecesLayoutTableCol-1;
         else
-            gridOpt.gridx = CHPlayGameLayoutConstants.OpponentTakenPiecesLayoutTableCol;
+            gridOpt.gridx = CHPlayGameLayoutConstants.OpponentTakenPiecesLayoutTableCol-1;
 
         gridOpt.weighty = 1;
-        gridOpt.weightx = 3;
-        gridOpt.gridwidth = 3;
+        gridOpt.weightx = 1;
+        gridOpt.gridwidth = 1;
         gridOpt.gridheight = 1;
+        //gridOpt.insets = new Insets(0,20,0,20);
+        //opponentTakenPanel.setAlignmentX(SwingConstants.CENTER);
 
         mainPanel.add(opponentTakenPanel, gridOpt);
 
@@ -224,35 +325,48 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             gridOpt.gridy =CHPlayGameLayoutConstants.PlayerTakenPiecesLayoutTableRow;
 
         if(getIsBoardReversed() == true)
-            gridOpt.gridx =CHPlayGameLayoutConstants.ReversedPlayerTakenPiecesLayoutTableCol;
+            gridOpt.gridx =CHPlayGameLayoutConstants.ReversedPlayerTakenPiecesLayoutTableCol-1;
         else
-            gridOpt.gridx =CHPlayGameLayoutConstants.PlayerTakenPiecesLayoutTableCol;
+            gridOpt.gridx =CHPlayGameLayoutConstants.PlayerTakenPiecesLayoutTableCol-1;
 
         gridOpt.weighty = 1;
-        gridOpt.weightx = 3;
-        gridOpt.gridwidth = 3;
+        gridOpt.weightx = 1;
+        gridOpt.gridwidth = 1;
         gridOpt.gridheight = 1;
+        //gridOpt.insets = new Insets(0,20,0,20);
+        //playerTakenPanel.setAlignmentX(SwingConstants.CENTER);
+
         mainPanel.add(playerTakenPanel, gridOpt);
+
+
+//        gridOpt.gridy = 1;
+//        gridOpt.gridx = 0;
+//        gridOpt.weighty = 3;
+//        gridOpt.weightx = 1;
+//        gridOpt.gridwidth = 1;
+//        gridOpt.gridheight = 3;
+//        mainPanel.add(chatPanel, gridOpt);
+
+        gridOpt.gridy = 1;
+        gridOpt.gridx = 1;
+        gridOpt.weighty = 3;
+        gridOpt.weightx = 1;
+        gridOpt.gridwidth = 1;
+        gridOpt.gridheight = 3;
+        //gridOpt.fill = GridBagConstraints.BOTH;
         gridOpt.fill = GridBagConstraints.VERTICAL;
-
-        gridOpt.gridy = 1;
-        gridOpt.gridx = 0;
-        gridOpt.weighty = 3;
-        gridOpt.weightx = 1;
-        gridOpt.gridwidth = 1;
-        gridOpt.gridheight = 3;
-        mainPanel.add(chatPanel, gridOpt);
-
-        gridOpt.gridy = 1;
-        gridOpt.gridx = 2;
-        gridOpt.weighty = 3;
-        gridOpt.weightx = 1;
-        gridOpt.gridwidth = 1;
-        gridOpt.gridheight = 3;
+        gridOpt.insets = new Insets(0,0,0,20);
         mainPanel.add(logPanel, gridOpt);
 
+        gridOpt.insets = new Insets(0,0,0,0);
+        logPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
         gridOpt.fill = GridBagConstraints.HORIZONTAL;
-
+//        errorLabel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+//        chessBoardPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+//        playerTakenPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+//        opponentTakenPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+//        opponentPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+//        playerPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
 //        gridOpt.gridy = 1;
 //        gridOpt.gridx = 1;
 
@@ -262,9 +376,9 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             gridOpt.gridy = CHPlayGameLayoutConstants.PlayerNameLayoutTableRow;
 
         if(getIsBoardReversed() == true)
-            gridOpt.gridx = CHPlayGameLayoutConstants.ReversedPlayerNameLayoutTableCol;
+            gridOpt.gridx = CHPlayGameLayoutConstants.ReversedPlayerNameLayoutTableCol-1;
         else
-            gridOpt.gridx = CHPlayGameLayoutConstants.PlayerNameLayoutTableCol;
+            gridOpt.gridx = CHPlayGameLayoutConstants.PlayerNameLayoutTableCol-1;
 
         gridOpt.weighty = 1;
         gridOpt.weightx = 1;
@@ -280,9 +394,9 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             gridOpt.gridy = CHPlayGameLayoutConstants.OpponentNameLayoutTableRow;
 
         if(getIsBoardReversed() == true)
-            gridOpt.gridx = CHPlayGameLayoutConstants.ReversedOpponentNameLayoutTableCol;
+            gridOpt.gridx = CHPlayGameLayoutConstants.ReversedOpponentNameLayoutTableCol-1;
         else
-            gridOpt.gridx = CHPlayGameLayoutConstants.OpponentNameLayoutTableCol;
+            gridOpt.gridx = CHPlayGameLayoutConstants.OpponentNameLayoutTableCol-1;
 
         gridOpt.weighty = 1;
         gridOpt.weightx = 1;
@@ -293,18 +407,21 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         //Menu and Buttons
         menuPanel.setLayout(new GridLayout());
         menuPanel.add(flipBoardButton);
+        menuPanel.add(exitGameButton);
 
         gridOpt.gridy = 5;
-        gridOpt.gridx = 1;
+        gridOpt.gridx = 0;
         gridOpt.weighty = 1;
-        gridOpt.weightx = 3;
-        gridOpt.gridwidth = 1;
+        gridOpt.weightx = 2;
+        gridOpt.gridwidth = 2;
         gridOpt.gridheight = 1;
         gridOpt.fill = GridBagConstraints.HORIZONTAL;
 //        errorLabel.setBorder(BorderFactory.createLineBorder(Color.black,1));
         mainPanel.add(errorLabel, gridOpt);
 
         gridOpt.gridy = 6;
+        gridOpt.weightx = 2;
+        gridOpt.gridwidth = 2;
         gridOpt.fill = GridBagConstraints.HORIZONTAL;
 //        menuPanel.setBorder(BorderFactory.createLineBorder(Color.black,1));
 
@@ -389,6 +506,20 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         this.chessBoardPanel.setIsBoardReversed(!this.chessBoardPanel.getIsBoardReversed());
         RearrangeLayout();
         //this.chessBoardPanel.testShit();
+    }
+
+    private void handleExitGame(){
+        String ObjButtons[] = {"Yes (Concede defeat)","No (Keep playing)"};
+        int PromptResult = JOptionPane.showOptionDialog(null,
+                "Are you sure you want to exit?", "Exit Game",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null,
+                ObjButtons, ObjButtons[1]);
+        if(PromptResult==0)
+        {
+            Request request = new Request(com.kt.api.Action.EXIT_GAME);
+            request.addParameter("gameid", this.gameController.game.getID());
+            this.getConnection().sendRequest(request);
+        }
     }
 
     public void AddEventListenersToFields(){
@@ -704,7 +835,27 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         {
             case Push.GAME_MOVE:
                 String opponentMove = (String)message.get("move");
-                this.gameController.execute(this.gameController.game.getPlayer2(), opponentMove);
+                Player yourOpponent = this.gameController.game.getPlayer2();
+
+                String pieceTag = gameController.game.getField(Position.positionFromBoardPosition(opponentMove.substring(0,2))).getChessPiece().getShortName();
+                this.gameController.execute(yourOpponent, opponentMove);
+
+                LogEntry logEntry = new LogEntry(
+                        currentTurnNumber,
+                        yourOpponent.getColor().toString(),
+                        pieceTag + " " + opponentMove);
+                if (currentTurnNumber%2==0){
+                    movesLogDataB.add(logEntry);
+                    logTurnsB.updateUI();
+                } else {
+                    movesLogDataW.add(logEntry);
+                    logTurnsW.updateUI();
+
+                }
+                currentTurnNumber++;
+
+
+                errorLabel.setText("Your opponent has moved!");
 
                 if (message.containsKey("attackers"))
                 {
@@ -730,9 +881,83 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                 }
 
                 this.chessBoardPanel.updateBoard(gameController.board);
+                this.playerTakenPanel.updateTakenPieces();
+                this.opponentTakenPanel.updateTakenPieces();
                 this.RearrangeLayout();
                 break;
             case Push.GAME_END:
+                Integer winnerID = (Integer)message.get("winner");
+                boolean winner = false;
+                if (this.gameController.game.getPlayer1().getUserID() == winnerID){
+                    winner = true;
+                }
+                else if (this.gameController.game.getPlayer2().getUserID() == winnerID){
+                    winner = false;
+                }
+                else {
+                    SLog.write("WTF");
+                }
+
+                boolean suddenDeath = false;
+                boolean checkmate = false;
+                boolean exit = false;
+                boolean disconnected = false;
+
+                String finalMessage = "";
+
+                if (message.containsKey("suddendeath"))
+                {
+                    suddenDeath = true;
+                    if(winner == true)
+                    {
+                        finalMessage = "You win by Sudden death";
+                    }
+                    else
+                    {
+                        finalMessage = "You loose by Sudden death";
+                    }
+                }
+                else if (message.containsKey("checkmate"))
+                {
+                    checkmate = true;
+                    if(winner == true)
+                    {
+                        finalMessage = "You win by Checkmate";
+                    }
+                    else
+                    {
+                        finalMessage = "You loose by Checkmate";
+                    }
+                }
+                else if (message.containsKey("exit"))
+                {
+                    exit = true;
+                    if(winner == true)
+                    {
+                        finalMessage = "You win because your opponent have surrendered";
+                    }
+                    else
+                    {
+                        finalMessage = "You loose because you've surrendered";
+                    }
+                }
+                else if (message.containsKey("disconnected"))
+                {
+                    disconnected = true;
+                    if(winner == true)
+                    {
+                        finalMessage = "You win because your opponent have disconnected";
+                    }
+                    else
+                    {
+                        finalMessage = "You loose because you are disconnected";
+                    }
+                }
+                JOptionPane.showMessageDialog(null,
+                        finalMessage, winner?"Winner":"Defeated",
+                        JOptionPane.PLAIN_MESSAGE);
+                SLog.write("Successful finish game");
+                this.getHolder().NavigateToPage(new LobbyPage());
                 break;
             case Push.GAME_SAVE:
                 break;
@@ -743,44 +968,81 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
     public void requestDidComplete(boolean success, Request request, HashMap<String, Object> response)
     {
         super.requestDidComplete(success, request, response);
+        int requestCodeType = request.getAction();
         int resultCode = (Integer)response.get("result");
-
-        switch (resultCode)
+        if (requestCodeType == Action.MOVE)
         {
-            case Result.OK :
-                this.errorLabel.setText("move successfully executed");
-                this.gameController.execute(ClientMain.player, currentMoveString);
-                if(this.gameController.game.getIsInCheck(gameController.game.getPlayer2()) == true)
-                {
-                    errorLabel.setText("Check!");
-                }
-                this.chessBoardPanel.updateBoard(gameController.board);
-                this.RearrangeLayout();
-                break;
-            case Result.MOVE_NA :
-                errorLabel.setText("Not applicable move");
-                break;
-            case Result.INVALID_MOVE_FORMAT :
-                errorLabel.setText("Invalid move format");
-                break;
-            case Result.NOT_YOUR_TURN :
-                errorLabel.setText("It is not your turn");
-                break;
-            case Result.NO_CHESSPIECE :
-                errorLabel.setText("No chess piece at that position");
-                break;
-            case Result.NOT_YOUR_CHESSPIECE :
-                errorLabel.setText("Attempting to move your opponent's chess piece");
-                break;
-            case Result.INVALID_MOVE :
-                errorLabel.setText("Invalid move");
-                break;
-            case Result.WRONG_MOVE :
-                errorLabel.setText("Invalid move - your king will be in chess!");
-                break;
-            case Result.MISSING_PROMOTION :
-                errorLabel.setText("You are moving a pawn to its highest rank but you have not specified promotion.");
-                break;
+            switch (resultCode)
+            {
+                case Result.OK :
+                    this.errorLabel.setText("move successfully executed");
+
+                    String pieceTag = gameController.game.getField(Position.positionFromBoardPosition(currentMoveString.substring(0,2))).getChessPiece().getShortName();
+
+                    this.gameController.execute(ClientMain.player, currentMoveString);
+                    LogEntry logEntry = new LogEntry(
+                            currentTurnNumber,
+                            ClientMain.player.getColor().toString(),
+                            pieceTag + " " + currentMoveString);
+                    if (currentTurnNumber%2==0){
+                        movesLogDataB.add(logEntry);
+                        logTurnsB.updateUI();
+                    } else {
+                        movesLogDataW.add(logEntry);
+                        logTurnsW.updateUI();
+                    }
+                    currentTurnNumber++;
+
+                    if(this.gameController.game.getIsInCheck(gameController.game.getPlayer2()) == true)
+                    {
+                        errorLabel.setText("Check!");
+                    }
+                    this.chessBoardPanel.updateBoard(gameController.board);
+                    this.playerTakenPanel.updateTakenPieces();
+                    this.opponentTakenPanel.updateTakenPieces();
+                    this.RearrangeLayout();
+                    break;
+                case Result.MOVE_NA :
+                    errorLabel.setText("Not applicable move");
+                    break;
+                case Result.INVALID_MOVE_FORMAT :
+                    errorLabel.setText("Invalid move format");
+                    break;
+                case Result.NOT_YOUR_TURN :
+                    errorLabel.setText("It is not your turn");
+                    break;
+                case Result.NO_CHESSPIECE :
+                    errorLabel.setText("No chess piece at that position");
+                    break;
+                case Result.NOT_YOUR_CHESSPIECE :
+                    errorLabel.setText("Attempting to move your opponent's chess piece");
+                    break;
+                case Result.INVALID_MOVE :
+                    errorLabel.setText("Invalid move");
+                    break;
+                case Result.WRONG_MOVE :
+                    errorLabel.setText("Invalid move - your king will be in chess!");
+                    break;
+                case Result.MISSING_PROMOTION :
+                    errorLabel.setText("You are moving a pawn to its highest rank but you have not specified promotion.");
+                    break;
+
+            }
+        }
+        else if (requestCodeType == Action.EXIT_GAME)
+        {
+            switch (resultCode)
+            {
+                case Result.OK:
+                    JOptionPane.showMessageDialog(null,
+                    "You've lost, " + this.gameController.game.getPlayer2().getName() + " is victorious!", "Defeated",
+                    JOptionPane.PLAIN_MESSAGE);
+                    SLog.write("Successful exit");
+                    this.getHolder().NavigateToPage(new LobbyPage());
+                    break;
+                default:
+                    SLog.write("Unsuccessful exit");
+            }
         }
     }
 }

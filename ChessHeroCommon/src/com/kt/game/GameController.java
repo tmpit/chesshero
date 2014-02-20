@@ -353,7 +353,10 @@ public class GameController
 		{	// The opponent's king is in check by the chess piece we just moved
 			SLog.write("opponent's king is in check by: " + movedPiece + " at position: " + to);
 			game.inCheck = opponent;
-			game.attackers.add(movedPiece);
+            if(!game.attackers.contains(movedPiece))
+            {
+			    game.attackers.add(movedPiece);
+            }
 		}
 
 		ChessPiece discovery = firstChessPieceInDirection(opponentKingPosition, MovementSet.directionFromPositions(opponentKingPosition, from));
@@ -364,7 +367,10 @@ public class GameController
 		{	// The opponent's king is in check by a chess piece discovered by the move
 			SLog.write("opponent's king is in check by discovery by: " + discovery + " at position: " + discovery.getPosition());
 			game.inCheck = opponent;
-			game.attackers.add(discovery);
+            if(!game.attackers.contains(discovery))
+            {
+			    game.attackers.add(discovery);
+            }
 		}
 
 		// Check whether this is a checkmate

@@ -58,6 +58,26 @@ public abstract class ChessPiece
 		return piece;
 	}
 
+    public String getShortName()
+    {
+        switch(this.tag)
+        {
+            case Tag.PAWN:
+                return "P";
+            case Tag.ROOK:
+                return "R";
+            case Tag.KNIGHT:
+                return "N";
+            case Tag.BISHOP:
+                return "B";
+            case Tag.QUEEN:
+                return "Q";
+            case Tag.KING:
+                return "K";
+        }
+        return "X";
+    }
+
 	/**
 	 * Creates a {@code ChessPiece} instance with the specified tag, position and color
 	 * @param tag A constant from the {@code Tag} class

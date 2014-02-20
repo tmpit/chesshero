@@ -2,6 +2,7 @@ package Client.Pages.PlayGameVisualization;
 
 import Client.Pages.PlayGamePage;
 import com.kt.game.*;
+import com.kt.game.Color;
 import javafx.util.Pair;
 
 import javax.swing.*;
@@ -51,7 +52,7 @@ public class ChessBoardTakenPiecesPanel extends JPanel {
 
     private void initializeTakenPiecesFields() {
         for (int i = 0; i<takenPiecesFields.length; i++){
-            takenPiecesFields[i] = new ChessFieldPanel(this.playerColor,this.fieldSize);
+            takenPiecesFields[i] = new ChessFieldPanel(this.playerColor.Opposite,this.fieldSize);
         }
         if(this.playerColor == com.kt.game.Color.WHITE){
             ArrayList<ChessPiece> takenPieces = new ArrayList<ChessPiece>(this.game.getWhitePlayer().getChessPieceSet().getTakenPieces());
@@ -73,12 +74,14 @@ public class ChessBoardTakenPiecesPanel extends JPanel {
 
     private void reDrawBoard(){
         clearBoard();
+        initializeTakenPiecesFields();
         drawFields();
     }
 
     private void drawFields(){
         //Draw Fields
         for (int i = 0; i < this.takenPiecesFields.length;i++){
+
             this.add(takenPiecesFields[i]);
         }
     }

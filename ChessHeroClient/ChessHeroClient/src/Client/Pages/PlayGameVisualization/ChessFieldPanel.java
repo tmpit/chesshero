@@ -57,6 +57,8 @@ public class ChessFieldPanel extends JLabel {
             this.setIcon(new ImageIcon());
         }
         this.setPreferredSize(new Dimension(size,size));
+        this.setMaximumSize(new Dimension(size,size));
+        this.setMinimumSize(new Dimension(size,size));
         this.fieldColor = fieldColor;
         this.fieldImage = fieldImage;
         this.setBackground(this.getDisplayColor());

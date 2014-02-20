@@ -3,20 +3,11 @@ package Client.Pages.PlayGameVisualization;
 import Client.Pages.PlayGamePage;
 import com.kt.game.BoardField;
 import com.kt.game.ChessPiece;
-import com.kt.game.GameController;
 import com.kt.game.Position;
-import com.kt.utils.SLog;
 import javafx.util.Pair;
-import sun.awt.CustomCursor;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageProducer;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.EventListener;
 
 /**
  * Created with IntelliJ IDEA.
@@ -91,11 +82,6 @@ public class ChessBoardPanel extends JPanel{
     }
 
     public void updateBoard(BoardField[][] board){
-//        for (BoardField[] sublist : board){
-//            for (BoardField field : sublist){
-//
-//            }
-//        }
         for (ChessBoardFieldPanel[] sublist : this.chessBoardFields){
             for (ChessBoardFieldPanel field : sublist){
                 BoardField correspondingField =  board[field.fieldPosition.getX()][field.fieldPosition.getY()];
@@ -124,8 +110,8 @@ public class ChessBoardPanel extends JPanel{
 
     private void drawLabels(){
         GridBagConstraints GridOpt = new GridBagConstraints();
-        GridOpt.weightx = 0.5;
-        GridOpt.weighty = 0.5;
+        GridOpt.weightx = 1;
+        GridOpt.weighty = 1;
         GridOpt.gridwidth = 1;
         GridOpt.gridheight = 1;
         GridOpt.fill = GridBagConstraints.BOTH;
