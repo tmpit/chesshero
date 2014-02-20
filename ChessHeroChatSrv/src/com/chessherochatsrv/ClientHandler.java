@@ -8,6 +8,7 @@ ToDo:
 6. If auth token is not provided, close connection
 7. If auth token is provided, fetch gid and uid from database for the specified token
 8. If no row exists with that token, close connection (maybe send back an error message before that, up to you)
+
 9. If the gid is already used by a pair of players, close connection
 10. If the gid is used by one player and that player’s uid is the same as the uid of the player connecting now, close connection
 11. If the gid is used by one player and that player’s uid is not the same as the uid of the player connection now, pair the two players
@@ -82,7 +83,7 @@ public class ClientHandler extends Thread {
 			ResultSet set = null;
 
 			stmt = conn
-					.prepareStatement("SELECT gid,uid FROM chat_auth WHERE token = ?");
+					.prepareStatement("SELECT * FROM chat_auth WHERE token = ?");
 			stmt.setString(1, token);
 			set = stmt.executeQuery();
 
@@ -90,8 +91,11 @@ public class ClientHandler extends Thread {
 				this.gid = set.getInt(1);
 				this.uid = set.getInt(2);
 				isValidToken = true;
-				isAuthenticated = true;
-				System.out.println("gid=" + this.gid + " uid=" + this.uid);
+				
+				System.out.println("gid=" + set.getInt(1) + " uid=" + set.getInt(2));
+				
+				//isAuthenticated = true;
+				
 				disconnectFromDB();
 			} else {
 				disconnectFromDB();
@@ -148,16 +152,15 @@ public class ClientHandler extends Thread {
 						out.flush();
 					}
 				} else {
-					// Start chatting
-					out.println("");
-					out.flush();
+					// Pairing
+					
 				}
 				
 				if (inString.trim().equals("q")) {
 					break;
 				}
 				
-				System.out.println("Client sent: " + inString);
+				System.out.println(inString);
 			}
 			socket.close();
 		} catch (IOException e) {

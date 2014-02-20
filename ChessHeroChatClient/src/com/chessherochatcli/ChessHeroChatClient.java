@@ -4,14 +4,18 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.*;
 import java.io.*;
+import javax.swing.JOptionPane; 
 
 public class ChessHeroChatClient extends Frame {
 
 	// Communication elements
 	private Socket chatSocket, gameSocket;
-	private BufferedReader in;
-	private PrintWriter ou;
-	final int PORT_NUMBER = 333;
+	private BufferedReader chatIn, gameIn;
+	private PrintWriter chatOu;
+	final String CHAT_SERVER = "127.0.0.1";
+	final String GAME_SERVER = "127.0.0.1";
+	final int GAME_SERVER_PORT = 333;
+	final int CHAT_SERVER_PORT = 333;
 
 	// GUI elements
 	private TextField textSend = new TextField(20);
@@ -26,6 +30,9 @@ public class ChessHeroChatClient extends Frame {
 	private Panel rightPanel = new Panel();
 
 	private Label empty = new Label("");
+	
+	// User nickname
+	private String nickName;
 
 	ChessHeroChatClient() {
 
@@ -70,13 +77,13 @@ public class ChessHeroChatClient extends Frame {
 
 		buttonSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				send(in, ou);
+				send(chatIn, chatOu);
 			}
 		});
 
 		buttonDisconnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				disconnect(in, ou);
+				disconnect(chatIn, chatOu);
 			}
 		});
 
@@ -91,20 +98,24 @@ public class ChessHeroChatClient extends Frame {
 
 		try {
 			// Connect to the chat server in order to chat
-			chatSocket = new Socket("127.0.0.1", PORT_NUMBER);
+			chatSocket = new Socket(CHAT_SERVER, CHAT_SERVER_PORT);
 			// Connect to the game server in order to get the token
-			// gameSocket = new Socket("127.0.0.1", PORT_NUMBER);
+			gameSocket = new Socket(GAME_SERVER, GAME_SERVER_PORT);
 
-			in = new BufferedReader(new InputStreamReader(
+			gameIn = new BufferedReader(new InputStreamReader(
+					gameSocket.getInputStream()));
+			chatIn = new BufferedReader(new InputStreamReader(
 					chatSocket.getInputStream()));
-			ou = new PrintWriter(new OutputStreamWriter(
+			chatOu = new PrintWriter(new OutputStreamWriter(
 					chatSocket.getOutputStream()));
-			String inLine;
-
-			ou.println("tk3");
-			ou.flush();
 			
-			inLine = in.readLine();
+			String inLine, token;
+			
+			token = gameIn.readLine();
+			chatOu.println(token);
+			chatOu.flush();
+			
+			inLine = chatIn.readLine();
 			textArea.append(inLine + "\n");
 			
 			buttonConnect.setEnabled(false);
@@ -112,6 +123,7 @@ public class ChessHeroChatClient extends Frame {
 			
 			if (inLine.trim().equals("Ready")) {
 				buttonSend.setEnabled(true);
+				nickName = JOptionPane.showInputDialog(null, "Enter your nickname:");
 			}
 		} catch (IOException ioe) {
 			System.out.println(ioe.getMessage());
@@ -121,18 +133,10 @@ public class ChessHeroChatClient extends Frame {
 
 	private void send(BufferedReader in, PrintWriter ou) {
 
-		String inLine;
-
-		try {
-			ou.println(textSend.getText());
-			ou.flush();
-			textSend.setText("");
-			inLine = in.readLine();
-			textArea.appendText("Server: " + inLine + "\n");
-		} catch (IOException ioe) {
-			System.out.println(ioe.getMessage());
-			ioe.printStackTrace();
-		}
+		ou.println(nickName + ": " + textSend.getText());
+		ou.flush();
+		textArea.appendText(nickName + ": " + textSend.getText() + "\n");
+		textSend.setText("");
 	}
 
 	private void disconnect(BufferedReader in, PrintWriter ou) {
