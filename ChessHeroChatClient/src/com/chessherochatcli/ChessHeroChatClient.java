@@ -1,52 +1,59 @@
 package com.chessherochatcli;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.net.*;
 import java.io.*;
-import javax.swing.JOptionPane; 
+import java.net.*;
 
-public class ChessHeroChatClient extends Frame {
+import java.awt.GridLayout;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
+import javax.swing.*;
+
+public class ChessHeroChatClient extends JFrame {
 	// Communication elements
-	private Socket chatSocket, gameSocket;
-	private BufferedReader chatIn, gameIn;
-	private PrintWriter chatOu;
-	final String CHAT_SERVER = "127.0.0.1";
-	final String GAME_SERVER = "127.0.0.1";
-	final int GAME_SERVER_PORT = 333;
-	final int CHAT_SERVER_PORT = 333;
+	private Socket chatSocket;
+	private BufferedReader chatIn;
+	private PrintWriter chatOut;
+	final String CHAT_SERVER = "localhost";
+	final int CHAT_SERVER_PORT = 1033;
 
 	// GUI elements
-	private TextField textSend = new TextField(20);
-	private TextArea textArea = new TextArea(5, 20);
+	private JTextField textSend = new JTextField(20);
+	private JTextArea textArea = new JTextArea(5, 20);
 
-	private Button buttonConnect = new Button("Connect");
-	private Button buttonSend = new Button("Send");
-	private Button buttonDisconnect = new Button("Disconnect");
-	private Button buttonQuit = new Button("Quit");
+	private JScrollPane scroll = new JScrollPane(textArea);
 
-	private Panel leftPanel = new Panel();
-	private Panel rightPanel = new Panel();
+	private JButton buttonConnect = new JButton("Connect");
+	private JButton buttonSend = new JButton("Send");
+	private JButton buttonDisconnect = new JButton("Disconnect");
+	private JButton buttonQuit = new JButton("Quit");
 
-	private Label empty = new Label("");
-	
-	// User nickname
-	private String nickName;
+	private JPanel leftPanel = new JPanel();
+	private JPanel rightPanel = new JPanel();
+
+	private JLabel empty = new JLabel("");
+
+	// User's nickname
+	private String nickName = "";
 
 	ChessHeroChatClient() {
-
 		setTitle("ChessHero Chat Client");
 		setLocationRelativeTo(null);
 		setSize(500, 500);
 		setResizable(false);
-		this.setBackground(Color.lightGray);
 
 		leftPanel.setLayout(new BorderLayout());
 		rightPanel.setLayout(new GridLayout(6, 1));
 
+		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
 		leftPanel.add(textSend, BorderLayout.NORTH);
-		leftPanel.add(textArea, BorderLayout.CENTER);
+		leftPanel.add(scroll, BorderLayout.EAST);
 
 		rightPanel.add(buttonConnect);
 		rightPanel.add(buttonSend);
@@ -60,14 +67,10 @@ public class ChessHeroChatClient extends Frame {
 		buttonSend.setEnabled(false);
 		buttonDisconnect.setEnabled(false);
 
+		textArea.setEditable(false);
+
 		pack();
 		setVisible(true);
-
-		addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				quit();
-			}
-		});
 
 		buttonConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -77,13 +80,13 @@ public class ChessHeroChatClient extends Frame {
 
 		buttonSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				send(chatIn, chatOu);
+				send(chatOut);
 			}
 		});
 
 		buttonDisconnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				disconnect(chatIn, chatOu);
+				disconnect(chatIn, chatOut);
 			}
 		});
 
@@ -92,75 +95,115 @@ public class ChessHeroChatClient extends Frame {
 				quit();
 			}
 		});
+
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				quit();
+			}
+		});
+
+		textSend.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				send(chatOut);
+			}
+		});
+
+		scroll.getVerticalScrollBar().addAdjustmentListener(
+				new AdjustmentListener() {
+					public void adjustmentValueChanged(AdjustmentEvent e) {
+						e.getAdjustable().setValue(
+								e.getAdjustable().getMaximum());
+					}
+				});
 	}
 
+	/**
+	 * Connects to the server and asks for a nickname. When the connection is
+	 * made, a connection notification is sent to the server. After that a swing
+	 * worker infinitely waits for incoming messages.
+	 */
 	private void connect() {
-
 		try {
-			// Connect to the chat server in order to chat
 			chatSocket = new Socket(CHAT_SERVER, CHAT_SERVER_PORT);
-			// Connect to the game server in order to get the token
-			gameSocket = new Socket(GAME_SERVER, GAME_SERVER_PORT);
 
-			gameIn = new BufferedReader(new InputStreamReader(
-					gameSocket.getInputStream()));
+			if (chatSocket.isConnected()) {
+				do {
+					nickName = JOptionPane.showInputDialog(null,
+							"Enter your nickname:");
+				} while (nickName.trim().equals(""));
+			}
+
 			chatIn = new BufferedReader(new InputStreamReader(
 					chatSocket.getInputStream()));
-			chatOu = new PrintWriter(new OutputStreamWriter(
+			chatOut = new PrintWriter(new OutputStreamWriter(
 					chatSocket.getOutputStream()));
-			
-			String inLine, token;
-			
-			token = gameIn.readLine();
-			chatOu.println(token);
-			chatOu.flush();
-			
-			inLine = chatIn.readLine();
-			textArea.append(inLine + "\n");
-			
+
+			chatOut.println(nickName + " has connected.");
+			chatOut.flush();
+
 			buttonConnect.setEnabled(false);
 			buttonDisconnect.setEnabled(true);
-			
-			if (inLine.trim().equals("Ready")) {
-				buttonSend.setEnabled(true);
-				nickName = JOptionPane.showInputDialog(null, "Enter your nickname:");
-			}
-		} catch (IOException ioe) {
-			System.out.println(ioe.getMessage());
-			ioe.printStackTrace();
+			buttonSend.setEnabled(true);
+
+			SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+				@Override
+				protected Void doInBackground() throws Exception {
+					while (true) {
+						String message = chatIn.readLine();
+						textArea.append(message + "\n");
+					}
+				}
+			};
+
+			worker.execute();
+
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Cannot connect to "
+					+ CHAT_SERVER + " on port " + CHAT_SERVER_PORT, "Error", 2);
 		}
 	}
 
-	private void send(BufferedReader in, PrintWriter ou) {
-
-		ou.println(nickName + ": " + textSend.getText());
-		ou.flush();
-		textArea.appendText(nickName + ": " + textSend.getText() + "\n");
+	/**
+	 * Sends a message to the server and clears the textSend field
+	 */
+	private void send(PrintWriter out) {
+		out.println(nickName + ": " + textSend.getText());
+		out.flush();
 		textSend.setText("");
 	}
 
-	private void disconnect(BufferedReader in, PrintWriter ou) {
-
+	/**
+	 * Disconnects from the server, but before that it sends a disconnect
+	 * notification
+	 */
+	private void disconnect(BufferedReader in, PrintWriter out) {
 		try {
-			ou.println("q");
-			ou.flush();
+			out.println(nickName + " has disconnected.");
+			out.flush();
 			in.close();
-			ou.close();
+			out.close();
+			chatSocket.close();
 
 			buttonConnect.setEnabled(true);
 			buttonSend.setEnabled(false);
 			buttonDisconnect.setEnabled(false);
+
 		} catch (IOException ioe) {
 			System.out.println(ioe.getMessage());
 			ioe.printStackTrace();
 		}
 	}
 
+	/**
+	 * Quits, but before that calls disconnect() in order to properly close the
+	 * connection and notify all other chat clients
+	 */
 	private void quit() {
+		disconnect(chatIn, chatOut);
 		System.exit(0);
 	}
 
 	public static void main(String[] args) {
-		ChessHeroChatClient chessHeroChatClient = new ChessHeroChatClient();
+		new ChessHeroChatClient();
 	}
 }
