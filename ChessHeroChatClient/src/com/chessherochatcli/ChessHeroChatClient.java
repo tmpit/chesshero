@@ -164,7 +164,7 @@ public class ChessHeroChatClient extends JFrame {
 	}
 
 	/**
-	 * Sends a message to the server and clears the textSend field
+	 * Sends a message to the server and clears the textSend field.
 	 */
 	private void send(PrintWriter out) {
 		out.println(nickName + ": " + textSend.getText());
@@ -174,7 +174,7 @@ public class ChessHeroChatClient extends JFrame {
 
 	/**
 	 * Disconnects from the server, but before that it sends a disconnect
-	 * notification
+	 * notification.
 	 */
 	private void disconnect(BufferedReader in, PrintWriter out) {
 		try {
@@ -195,11 +195,13 @@ public class ChessHeroChatClient extends JFrame {
 	}
 
 	/**
-	 * Quits, but before that calls disconnect() in order to properly close the
-	 * connection and notify all other chat clients
+	 * If the socket is initialized calls disconnect() in order to properly
+	 * close the connection and to notify all chat clients before exit.
 	 */
 	private void quit() {
-		disconnect(chatIn, chatOut);
+		if (chatSocket != null) {
+			disconnect(chatIn, chatOut);
+		}
 		System.exit(0);
 	}
 
