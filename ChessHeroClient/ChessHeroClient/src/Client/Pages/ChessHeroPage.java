@@ -25,8 +25,6 @@ public abstract class ChessHeroPage extends JPanel implements ConnectionListener
     private Connection con = null;
     protected static boolean isConnected = false;
 
-    //protected JList<JComponent> pageComponents = new JList<JComponent>();
-
     private JPanel pagePanel = null;
     private String pageTitle = "";
 
@@ -47,11 +45,9 @@ public abstract class ChessHeroPage extends JPanel implements ConnectionListener
     }
 
     public ChessHeroPage(){
-       //getConnection();
         if (isConnected == false){
             getConnection().connect();
         }
-
     }
 
     public JPanel getPagePanel() {
@@ -79,6 +75,7 @@ public abstract class ChessHeroPage extends JPanel implements ConnectionListener
     @Override
     public void socketFailedToConnect() {
         SLog.write("in socked failed to connect event");
+        isConnected = false;
 
     }
 

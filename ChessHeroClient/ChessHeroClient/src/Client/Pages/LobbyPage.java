@@ -1,7 +1,6 @@
 package Client.Pages;
 
 import Client.Communication.Request;
-import com.kt.Credentials;
 import com.kt.api.*;
 import com.kt.api.Action;
 import com.kt.game.*;
@@ -9,12 +8,9 @@ import com.kt.utils.SLog;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,8 +25,9 @@ import java.util.Vector;
  */
 public class LobbyPage extends ChessHeroPage{
 
-    public static final Vector<String> LOBBY_TABLE_COLUMNS = new Vector<String>(Arrays.asList(
-            "Game Name", "Created By", "Opponent Color" )
+    public static final Vector<String> LOBBY_TABLE_COLUMNS =
+            new Vector<String>(Arrays.asList(
+                    "Game Name", "Created By", "Opponent Color")
     );
 
     public ArrayList<LobbyTableEntry> gameList = null;
@@ -38,6 +35,7 @@ public class LobbyPage extends ChessHeroPage{
 
     // HELPER INNER CLASSES
 
+    //Class that describes table entries
     class LobbyTableEntry {
         public Integer gameID = null;
         public String gameName = null;
@@ -45,7 +43,6 @@ public class LobbyPage extends ChessHeroPage{
         public String playerColor = null;
         public Integer playerID = null;
 
-//        public LobbyTableEntry(String gameID, String gameName, String createdBy){
         public LobbyTableEntry(Integer gameID, String gameName, String createdBy,String playerColor,Integer playerID)
         {
             this.gameID = gameID;
@@ -61,6 +58,7 @@ public class LobbyPage extends ChessHeroPage{
         }
     }
 
+    //Class that describes the table model of the lobby page
     class LobbyTableModel extends DefaultTableModel {
 
         public LobbyTableModel(Object[][] tableData, Object[] colNames) {
@@ -81,19 +79,12 @@ public class LobbyPage extends ChessHeroPage{
     public LobbyPage(){
         super();
         this.setPageTitle("Lobby Page");
-        //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
-        //Initialize Components
         JPanel mainPanel = new JPanel();
-        JPanel menuPanel = new JPanel();
-        //mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
-        //mainPanel.setLayout(new BoxLayout(mainPanel, FlowLayout.CENTER));
+        //JPanel menuPanel = new JPanel();
         mainPanel.setLayout(new GridBagLayout());
-//
-//
-//        menuPanel.setLayout(new GridLayout(6,1));
-//
+
         JLabel pageTitle = new JLabel(MAIN_TITLE);
-//
+
         pageTitle.setHorizontalAlignment(JLabel.CENTER);
         pageTitle.setHorizontalTextPosition(JLabel.CENTER);
         pageTitle.setFont(new Font("Serif", Font.BOLD, 48));
@@ -103,19 +94,7 @@ public class LobbyPage extends ChessHeroPage{
         pageSubTitle.setHorizontalAlignment(JLabel.CENTER);
         pageSubTitle.setHorizontalTextPosition(JLabel.CENTER);
         pageSubTitle.setFont(new Font("Serif", Font.BOLD, 32));
-//
-//        JLabel usernameLabel = new JLabel("Username");
-//        JLabel passwordLabel = new JLabel("Password");
-//
-//        this.usernameTextBox = new JTextField();
-//        this.passwordTextBox = new JPasswordField();
-//
-//        pageTitle.setHorizontalAlignment(SwingConstants.CENTER);
-//        usernameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-//        passwordLabel.setHorizontalAlignment(SwingConstants.CENTER);
-//        passwordTextBox.setHorizontalAlignment(SwingConstants.CENTER);
-//        usernameTextBox.setHorizontalAlignment(SwingConstants.CENTER);
-//
+
         JButton joinGameButton = new JButton("Join Game");
         JButton createGameButton = new JButton("Create Game");
         JButton hallOfFameButton = new JButton("Hall Of Fame");
@@ -124,14 +103,9 @@ public class LobbyPage extends ChessHeroPage{
 
         table = new JTable();
         JScrollPane tableHolder = new JScrollPane(table);
-//
-//        //Add Components
-//        menuPanel.add(usernameLabel);
-//        menuPanel.add(usernameTextBox);
-//
-//        menuPanel.add(passwordLabel);
-//        menuPanel.add(passwordTextBox);
-//
+
+        //Add Components
+
         new GridBagConstraints();
         GridBagConstraints gridOpt = new GridBagConstraints();
         gridOpt.fill = GridBagConstraints.BOTH;
@@ -235,22 +209,10 @@ public class LobbyPage extends ChessHeroPage{
                 handleHallOfFameButton();
             }
         });
-
-        //MOCK CREATE
-//        if (this.getHolder().player.getName().equals("kiro"))
-//        {
-//            try {
-//                Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//            }
-//            handleCreateGameButton();
-//        }
     }
 
-
-
     //Handle Buttons
+
     private void handleRefreshGameButton()
     {
         Request request = new Request(com.kt.api.Action.FETCH_GAMES);
@@ -268,8 +230,6 @@ public class LobbyPage extends ChessHeroPage{
         SLog.write("Entered Join Game with Name " + selectedGame.gameName + " ID " + selectedGame.gameID);
         Request request = new Request(Action.JOIN_GAME);
         request.addParameter("gameid", selectedGame.gameID);
-//        request.addParameter("playercolor",selectedGame.playerColor);
-//        request.addParameter("playerid",selectedGame.playerID);
 
         this.getConnection().sendRequest(request);
     }
@@ -284,7 +244,6 @@ public class LobbyPage extends ChessHeroPage{
         this.getConnection().disconnect();
         this.holder.NavigateToPage(new LoginPage());
     }
-
 
     //HELPER METHODS
     private Vector<Vector<String>> transformTableData(ArrayList<LobbyTableEntry> data){
@@ -361,10 +320,8 @@ public class LobbyPage extends ChessHeroPage{
                     opponent.join(theGame, opponentColor);
 
                     GameController gameContr = new GameController(theGame);
-//                    gameContr.startGame();
                     this.getHolder().NavigateToPage(new PlayGamePage(gameContr));
                 }
         }
-
     }
 }

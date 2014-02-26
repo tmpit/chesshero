@@ -8,12 +8,11 @@ import Client.Pages.PlayGameVisualization.ChessBoardTakenPiecesPanel;
 import com.kt.api.*;
 import com.kt.api.Action;
 import com.kt.game.*;
+import com.kt.game.Color;
 import com.kt.utils.SLog;
-import javafx.util.Pair;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -53,10 +52,8 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         private String playerColor;
         private String playerTurn;
 
-        public LogEntry()
-        {
+        public LogEntry(){}
 
-        }
         public LogEntry(int turnNumber)
         {
             this.turnNumber = turnNumber;
@@ -109,28 +106,35 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
     private JPanel logPanel = new JPanel();
     private JList<LogEntry> logTurnsW = new JList<LogEntry>();
     private JList<LogEntry> logTurnsB = new JList<LogEntry>();
-//    private JList<String> logWhite = new JList<String>();
-//    private JList<String> logBlack = new JList<String>();
     private JPanel playerPanel = new JPanel();
     private JPanel opponentPanel = new JPanel();
     private JLabel playerPanelLabel = new JLabel();
     private JLabel opponentPanelLabel = new JLabel();
-    private ChessBoardTakenPiecesPanel playerTakenPanel;// = new ChessBoardTakenPiecesPanel();
-    private ChessBoardTakenPiecesPanel opponentTakenPanel;// = new ChessBoardTakenPiecesPanel();
+    private ChessBoardTakenPiecesPanel playerTakenPanel;
+    private ChessBoardTakenPiecesPanel opponentTakenPanel;
     //Menu controls
     private JPanel menuPanel = new JPanel();
     private JToggleButton flipBoardButton = new JToggleButton("Flip Board", false);
     private JButton exitGameButton = new JButton("Exit Game");
-    //private JPanel opponentTakenPanel = new JPanel();
 
     private String playerName = "";
     private String opponentName = "";
 
-    public static Map<Pair<Byte, com.kt.game.Color>, BufferedImage> ChessPieceImages =
-            new HashMap<Pair<Byte, com.kt.game.Color>,BufferedImage>();
+    private static Map<String, BufferedImage> ChessPieceImages =
+            new HashMap<String,BufferedImage>();
 
-    public static Map<Pair<Byte, com.kt.game.Color>, BufferedImage> TakenChessPieceImages =
-            new HashMap<Pair<Byte, com.kt.game.Color>,BufferedImage>();
+    private static Map<String, BufferedImage> TakenChessPieceImages =
+            new HashMap<String,BufferedImage>();
+
+    public static Map<String, BufferedImage> getChessPieceImages ()
+    {
+        return ChessPieceImages;
+    }
+
+    public static Map<String, BufferedImage> getTakenChessPieceImages ()
+    {
+        return TakenChessPieceImages;
+    }
 
     public boolean getIsBoardReversed() {
         return this.isBoardReversed;
@@ -182,10 +186,10 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         logTurnsW.setFixedCellHeight(20);
         logTurnsB.setFixedCellWidth(115);
         logTurnsW.setFixedCellWidth(115);
-        logTurnsB.setBackground(new Color(99, 50, 50));
-        logTurnsW.setForeground(Color.white);
-        logTurnsW.setBackground(new Color(207,178,150));
-        logTurnsB.setForeground(Color.black);
+        logTurnsB.setBackground(new java.awt.Color(99, 50, 50));
+        logTurnsW.setForeground(java.awt.Color.white);
+        logTurnsW.setBackground(new java.awt.Color(207,178,150));
+        logTurnsB.setForeground(java.awt.Color.black);
 
 
         logTurnsB.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -205,18 +209,12 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         logPanel.add(listScrollerW);
         logPanel.add(listScrollerB);
 
-
-//        jScrollPane.add(logTurnsW);
-//        jScrollPane.add(logTurnsB);
-//        logPanel.add(logTurnsW);
-//        logPanel.add(logTurnsB);
-
         errorLabel = new JLabel(" ");
 
         errorLabel.setHorizontalAlignment(JLabel.CENTER);
         errorLabel.setHorizontalTextPosition(JLabel.CENTER);
         errorLabel.setFont(new Font("Serif", Font.BOLD, 12));
-        errorLabel.setForeground(Color.red);
+        errorLabel.setForeground(java.awt.Color.red);
 
         this.gameController = gameController;
         this.gameController.startGame();
@@ -233,14 +231,14 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                 this.gameController.game, this.gameController.game.getPlayer2().getColor(),TAKEN_PIECE_SIZE);
 
 
-        com.kt.game.Color playerColor = (this.gameController.game.getPlayer1().getColor());
-        boolean test = false;
-        if (playerColor == com.kt.game.Color.WHITE)
-            test = false;
+        Color playerColor = (this.gameController.game.getPlayer1().getColor());
+        boolean isBoardReversed = false;
+        if (playerColor == Color.WHITE)
+            isBoardReversed = false;
         else
-            test = true;
-        //this.setIsBoardReversed(test);
-        this.chessBoardPanel.setIsBoardReversed(test);
+            isBoardReversed = true;
+        //this.setIsBoardReversed(isBoardReversed);
+        this.chessBoardPanel.setIsBoardReversed(isBoardReversed);
 
         LogEntry logLegendW = new LogEntry(currentTurnNumber,"","white");
         LogEntry logLegendB = new LogEntry(currentTurnNumber,"","black");
@@ -249,7 +247,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         currentTurnNumber++;
 
         RearrangeLayout();
-        //mainPanel.setLayout(new GridBagLayout());
+
         flipBoardButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e)
@@ -286,17 +284,11 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         gridOpt.weightx = 1;
         gridOpt.gridwidth = 1;
         gridOpt.gridheight = 1;
-        //mainPanel.add(pageTitle,gridOpt);
 
         chessBoardPanel.redrawBoard();
         gridOpt.insets = new Insets(0,40,0,40);
         mainPanel.add(chessBoardPanel, gridOpt);
         gridOpt.insets = new Insets(0,0,0,0);
-
-        //gridOpt.fill = GridBagConstraints.HORIZONTAL;
-
-//        gridOpt.gridy = 0;
-//        gridOpt.gridx = 0;
 
         if(getIsBoardReversed() == true)
             gridOpt.gridy = CHPlayGameLayoutConstants.ReversedOpponentTakenPiecesLayoutTableRow;
@@ -312,13 +304,9 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         gridOpt.weightx = 1;
         gridOpt.gridwidth = 1;
         gridOpt.gridheight = 1;
-        //gridOpt.insets = new Insets(0,20,0,20);
-        //opponentTakenPanel.setAlignmentX(SwingConstants.CENTER);
 
         mainPanel.add(opponentTakenPanel, gridOpt);
 
-//        gridOpt.gridx = 0;
-//        gridOpt.gridy = 4;
         if(getIsBoardReversed() == true)
             gridOpt.gridy =CHPlayGameLayoutConstants.ReversedPlayerTakenPiecesLayoutTableRow;
         else
@@ -333,8 +321,6 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         gridOpt.weightx = 1;
         gridOpt.gridwidth = 1;
         gridOpt.gridheight = 1;
-        //gridOpt.insets = new Insets(0,20,0,20);
-        //playerTakenPanel.setAlignmentX(SwingConstants.CENTER);
 
         mainPanel.add(playerTakenPanel, gridOpt);
 
@@ -353,22 +339,13 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         gridOpt.weightx = 1;
         gridOpt.gridwidth = 1;
         gridOpt.gridheight = 3;
-        //gridOpt.fill = GridBagConstraints.BOTH;
         gridOpt.fill = GridBagConstraints.VERTICAL;
         gridOpt.insets = new Insets(0,0,0,20);
         mainPanel.add(logPanel, gridOpt);
 
         gridOpt.insets = new Insets(0,0,0,0);
-        logPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+        logPanel.setBorder(BorderFactory.createLineBorder(java.awt.Color.black, 1));
         gridOpt.fill = GridBagConstraints.HORIZONTAL;
-//        errorLabel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-//        chessBoardPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-//        playerTakenPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-//        opponentTakenPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-//        opponentPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-//        playerPanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-//        gridOpt.gridy = 1;
-//        gridOpt.gridx = 1;
 
         if(getIsBoardReversed() == true)
             gridOpt.gridy = CHPlayGameLayoutConstants.ReversedPlayerNameLayoutTableRow;
@@ -386,8 +363,6 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         gridOpt.gridheight = 1;
         mainPanel.add(playerPanel, gridOpt);
 
-//        gridOpt.gridy = 3;
-//        gridOpt.gridx = 1;
         if(getIsBoardReversed() == true)
             gridOpt.gridy = CHPlayGameLayoutConstants.ReversedOpponentNameLayoutTableRow;
         else
@@ -416,15 +391,12 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         gridOpt.gridwidth = 2;
         gridOpt.gridheight = 1;
         gridOpt.fill = GridBagConstraints.HORIZONTAL;
-//        errorLabel.setBorder(BorderFactory.createLineBorder(Color.black,1));
         mainPanel.add(errorLabel, gridOpt);
 
         gridOpt.gridy = 6;
         gridOpt.weightx = 2;
         gridOpt.gridwidth = 2;
         gridOpt.fill = GridBagConstraints.HORIZONTAL;
-//        menuPanel.setBorder(BorderFactory.createLineBorder(Color.black,1));
-
 
         mainPanel.add(menuPanel, gridOpt);
 
@@ -436,8 +408,11 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
     }
 
     private void loadImages() throws IOException {
-        String path = "ChessHeroClient/src/Client/Pages/Pieces/";
+        String path = ".\\Images\\";
+        //String path ="C:\\Users\\kiro\\Documents\\GitHub\\chesshero\\ChessHeroClient\\out\\artifacts\\ChessHeroClient_jar\\images\\";
+        //SLog.write(path);
         //File file = new File(path + "BlackPawn.png");
+        //SLog.write(file.getAbsolutePath());
         BufferedImage BlackPawn = ImageIO.read(new File(path + "BlackPawn.png"));
         BufferedImage BlackKing = ImageIO.read(new File(path + "BlackKing.png"));
         BufferedImage BlackKnight = ImageIO.read(new File(path + "BlackKnight.png"));
@@ -452,43 +427,36 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         BufferedImage WhiteRook = ImageIO.read(new File(path + "WhiteRook.png"));
         BufferedImage WhiteBishop = ImageIO.read(new File(path + "WhiteBishop.png"));
 
-        //BufferedImage newImage = new BufferedImage(in.getWidth(), in.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        //public BufferedImage buffImg = new BufferedImage(240, 240, BufferedImage.TYPE_INT_ARGB);
+        //Resize Chess Board Images
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.PAWN) + Color.BLACK)  ,resizeImage(BlackPawn,this.PIECE_SIZE));
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.KING) + Color.BLACK)  ,resizeImage(BlackKing,this.PIECE_SIZE));
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.KNIGHT) + Color.BLACK),resizeImage(BlackKnight,this.PIECE_SIZE));
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.QUEEN) + Color.BLACK) ,resizeImage(BlackQueen,this.PIECE_SIZE));
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.ROOK) + Color.BLACK)  ,resizeImage(BlackRook,this.PIECE_SIZE));
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.BISHOP) + Color.BLACK),resizeImage(BlackBishop,this.PIECE_SIZE));
 
-        //Resize Chess Board Pieces
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.PAWN,com.kt.game.Color.BLACK),resizeImage(BlackPawn,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KING,com.kt.game.Color.BLACK),resizeImage(BlackKing,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KNIGHT,com.kt.game.Color.BLACK),resizeImage(BlackKnight,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.QUEEN,com.kt.game.Color.BLACK),resizeImage(BlackQueen,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.ROOK,com.kt.game.Color.BLACK),resizeImage(BlackRook,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.BISHOP,com.kt.game.Color.BLACK),resizeImage(BlackBishop,this.PIECE_SIZE));
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.PAWN) + Color.WHITE)  ,resizeImage(WhitePawn,this.PIECE_SIZE));
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.KING) + Color.WHITE)  ,resizeImage(WhiteKing,this.PIECE_SIZE));
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.KNIGHT) + Color.WHITE),resizeImage(WhiteKnight,this.PIECE_SIZE));
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.QUEEN) + Color.WHITE) ,resizeImage(WhiteQueen,this.PIECE_SIZE));
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.ROOK) + Color.WHITE)  ,resizeImage(WhiteRook,this.PIECE_SIZE));
+        ChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.BISHOP) + Color.WHITE),resizeImage(WhiteBishop,this.PIECE_SIZE));
 
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.PAWN,com.kt.game.Color.WHITE),resizeImage(WhitePawn,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KING,com.kt.game.Color.WHITE),resizeImage(WhiteKing,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KNIGHT,com.kt.game.Color.WHITE),resizeImage(WhiteKnight,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.QUEEN,com.kt.game.Color.WHITE),resizeImage(WhiteQueen,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.ROOK,com.kt.game.Color.WHITE),resizeImage(WhiteRook,this.PIECE_SIZE));
-        ChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.BISHOP,com.kt.game.Color.WHITE),resizeImage(WhiteBishop,this.PIECE_SIZE));
+        //Resize Taken Chess Images Images
 
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.PAWN) + Color.BLACK)  ,resizeImage(BlackPawn,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.KING) + Color.BLACK)  ,resizeImage(BlackKing,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.KNIGHT) + Color.BLACK),resizeImage(BlackKnight,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.QUEEN) + Color.BLACK) ,resizeImage(BlackQueen,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.ROOK) + Color.BLACK)  ,resizeImage(BlackRook,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.BISHOP) + Color.BLACK),resizeImage(BlackBishop,this.TAKEN_PIECE_SIZE));
 
-        //Resize Taken Chess Pieces Images
-
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.PAWN,com.kt.game.Color.BLACK),resizeImage(BlackPawn,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KING,com.kt.game.Color.BLACK),resizeImage(BlackKing,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KNIGHT,com.kt.game.Color.BLACK),resizeImage(BlackKnight,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.QUEEN,com.kt.game.Color.BLACK),resizeImage(BlackQueen,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.ROOK,com.kt.game.Color.BLACK),resizeImage(BlackRook,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.BISHOP,com.kt.game.Color.BLACK),resizeImage(BlackBishop,this.TAKEN_PIECE_SIZE));
-
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.PAWN,com.kt.game.Color.WHITE),resizeImage(WhitePawn,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KING,com.kt.game.Color.WHITE),resizeImage(WhiteKing,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.KNIGHT,com.kt.game.Color.WHITE),resizeImage(WhiteKnight,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.QUEEN,com.kt.game.Color.WHITE),resizeImage(WhiteQueen,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.ROOK,com.kt.game.Color.WHITE),resizeImage(WhiteRook,this.TAKEN_PIECE_SIZE));
-        TakenChessPieceImages.put(new Pair<Byte, com.kt.game.Color>(ChessPiece.Tag.BISHOP,com.kt.game.Color.WHITE),resizeImage(WhiteBishop,this.TAKEN_PIECE_SIZE));
-
-//        this.chessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Pawn,ChessColor.White),WhitePawn);
-//        this.chessPieceImages.put(new Pair<ChessPieceType, ChessColor>(ChessPieceType.Pawn,ChessColor.White),WhitePawn);
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.PAWN) + Color.WHITE)  ,resizeImage(WhitePawn,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.KING) + Color.WHITE)  ,resizeImage(WhiteKing,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.KNIGHT) + Color.WHITE),resizeImage(WhiteKnight,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.QUEEN) + Color.WHITE) ,resizeImage(WhiteQueen,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.ROOK) + Color.WHITE)  ,resizeImage(WhiteRook,this.TAKEN_PIECE_SIZE));
+        TakenChessPieceImages.put(new String(Byte.toString(ChessPiece.Tag.BISHOP) + Color.WHITE),resizeImage(WhiteBishop,this.TAKEN_PIECE_SIZE));
 
     }
 
@@ -505,7 +473,6 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         this.setIsBoardReversed(!getIsBoardReversed());
         this.chessBoardPanel.setIsBoardReversed(!this.chessBoardPanel.getIsBoardReversed());
         RearrangeLayout();
-        //this.chessBoardPanel.testShit();
     }
 
     private void handleExitGame(){
@@ -533,36 +500,10 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-//        if(e.getButton() == 3){
-//            ChessBoardFieldPanel component = (ChessBoardFieldPanel)e.getSource();
-//            Position position = component.fieldPosition;
-//            Position oldPosition = null;
-//            if (selectedField != null)
-//            {
-//                oldPosition = selectedField.getPosition();
-//                ChessBoardFieldPanel selectedFieldView = chessBoardPanel.getField(selectedField.getPosition());
-//                if(selectedFieldView.getIsSelected() == true) selectedFieldView.toggleIsSelected();
-//
-//                selectedField = null;
-//            }
-//
-//            if(oldPosition == null ||
-//                    oldPosition.getX() != position.getX() ||
-//                    oldPosition.getY() != position.getY())
-//            {
-//                if (isSelectionValid(gameController.game.getField(position),ClientMain.player))
-//                {
-//                    this.selectedField = gameController.game.getField(position);
-//                    if(component.getIsHighlighted() == true) component.toggleIsHighlighted();
-//                    component.toggleIsSelected();
-//                }
-//            }
-//
-//        }
+    public void mouseClicked(MouseEvent e)
+    {
         SLog.write("clicked at: " + ((ChessBoardFieldPanel) e.getSource()).fieldPosition);
     }
-
 
     private void selectField (ChessBoardFieldPanel fieldViewToSelect)
     {
@@ -570,17 +511,20 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         selectField(correspondingField, fieldViewToSelect);
 
     }
+
     private void selectField (BoardField fieldToSelect)
     {
         ChessBoardFieldPanel correspondingFieldView = this.chessBoardPanel.getField(fieldToSelect.getPosition());
         selectField(fieldToSelect, correspondingFieldView);
     }
+
     private void selectField (BoardField fieldToSelect, ChessBoardFieldPanel fieldViewToSelect)
     {
         fieldViewToSelect.setIsHighlighted(false);
         fieldViewToSelect.setIsSelected(true);
         this.selectedField = fieldToSelect;
     }
+
     private void highLightField (BoardField fieldToSelect)
     {
         ChessBoardFieldPanel correspondingFieldView = this.chessBoardPanel.getField(fieldToSelect.getPosition());
@@ -590,6 +534,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             correspondingFieldView.setIsHighlighted(true);
         }
     }
+
     private void highLightField (ChessBoardFieldPanel fieldToSelect)
     {
 
@@ -608,8 +553,9 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
-        if(e.getButton() == 1 )//&& (e.getWhen() - new Date().getTime()) > 100
+    public void mousePressed(MouseEvent e)
+    {
+        if(e.getButton() == 1 )
         {
             inMousePressedEvent = true;
             if (selectedField != null)
@@ -626,6 +572,8 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
 
                 setCursorToChessPiece(component);
 
+                selectAllPossibleMoves(position, correspondingField.getChessPiece());
+
                 SLog.write("source pos = " + position);
                 SLog.write("source field = " + selectedField);
             }
@@ -637,6 +585,48 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         else
         {
             inMousePressedEvent = false;
+        }
+    }
+
+    private void selectAllPossibleMoves(Position position, ChessPiece chessPiece)
+    {
+        for (BoardField[] sublist : this.gameController.game.getBoard())
+        {
+            for(BoardField field : sublist)
+            {
+                if(isTargetMoveValid(this.gameController.game.getPlayer1(),position,field.getPosition()) == true)
+                {
+                    this.chessBoardPanel.getField(field.getPosition()).setIsPlayable(true);
+                }
+            }
+        }
+
+//        MovementSet selectedPieceMovementSet = chessPiece.getMovementSet();
+//        for(Position possibleMove :  selectedPieceMovementSet.getSet())
+//        {
+//            Position movePosition = position.plus(possibleMove);
+//            do
+//            {
+//                if(isTargetMoveValid(this.gameController.game.getPlayer1(),position,movePosition) == true)
+//                {
+//                    this.chessBoardPanel.getField(position).setIsPlayable(true);
+//                }
+//
+//                movePosition = position.add(possibleMove);
+//            }
+//            while (selectedPieceMovementSet.isRecursive() == true &&
+//                    movePosition.isWithinBoard() == true);
+//        }
+    }
+
+    private void deselectPlayableFields()
+    {
+        for (ChessBoardFieldPanel[] sublist : this.chessBoardPanel.chessBoardFields  )
+        {
+            for(ChessBoardFieldPanel field : sublist)
+            {
+                field.setIsPlayable(false);
+            }
         }
     }
 
@@ -700,7 +690,6 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                         request.addParameter("move",this.currentMoveString);
 
                         this.getConnection().sendRequest(request);
-
                     }
                 }
 
@@ -714,30 +703,27 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                 SLog.write("Error selected field shouldn't be null here");
             }
         }
+        deselectPlayableFields();
     }
 
     @Override
-    public void mouseEntered(MouseEvent e) {
+    public void mouseEntered(MouseEvent e)
+    {
         ChessBoardFieldPanel component = (ChessBoardFieldPanel)e.getSource();
-//        if(selectedField != null)
-//        {
         if(component.getIsSelected() == false)
         {
             component.setIsHighlighted(true);
         }
-//        }
     }
 
     @Override
-    public void mouseExited(MouseEvent e) {
+    public void mouseExited(MouseEvent e)
+    {
         ChessBoardFieldPanel component = (ChessBoardFieldPanel)e.getSource();
-//        if(selectedField != null)
-//        {
         if(component.getIsSelected() == false)
         {
             component.setIsHighlighted(false);
         }
-//        }
     }
 
     private boolean isSelectionValid(BoardField selectedField, Player me)
@@ -773,7 +759,14 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         return result;
     }
 
-
+    private boolean isTargetMoveValid(Player executor, Position from, Position to)
+    {
+        return isTargetMoveValid(
+                executor,
+                this.gameController.game.getField(from),
+                this.gameController.game.getField(to)
+        );
+    }
 
     private boolean isTargetMoveValid(Player executor, BoardField from, BoardField to)
     {
@@ -799,15 +792,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             }
             else if (resCode == Result.OK)
             {
-//                if (gameController.game.getIsInCheck(ClientMain.player) == false)
-//                {
-                    errorLabel.setText("Valid move");
-//                }
-//                else
-//                {
-//                    errorLabel.setText("Invalid move - your king will be in chess!");
-//                    return false;
-//                }
+                errorLabel.setText("Valid move");
             }
 
             return resCode == 0 ? true : false;
@@ -820,7 +805,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
 
     private String createMoveStringFromPositions(Position from, Position to)
     {
-        return Position.boardPositionFromPosition(from) + Position.boardPositionFromPosition(to);
+        return Position.boardPositionFromPosition(from) + Position.boardPositionFromPosition(to) + "q";
     }
 
     @Override
@@ -844,16 +829,19 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                         currentTurnNumber,
                         yourOpponent.getColor().toString(),
                         pieceTag + " " + opponentMove);
-                if (currentTurnNumber%2==0){
+
+                if (currentTurnNumber%2==0)
+                {
                     movesLogDataB.add(logEntry);
                     logTurnsB.updateUI();
-                } else {
+                }
+                else
+                {
                     movesLogDataW.add(logEntry);
                     logTurnsW.updateUI();
 
                 }
                 currentTurnNumber++;
-
 
                 errorLabel.setText("Your opponent has moved!");
 
@@ -877,7 +865,6 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                             errorLabel.setText("Error in in check state!");
                         }
                     }
-
                 }
 
                 this.chessBoardPanel.updateBoard(gameController.board);
@@ -984,10 +971,13 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                             currentTurnNumber,
                             ClientMain.player.getColor().toString(),
                             pieceTag + " " + currentMoveString);
-                    if (currentTurnNumber%2==0){
+                    if (currentTurnNumber%2==0)
+                    {
                         movesLogDataB.add(logEntry);
                         logTurnsB.updateUI();
-                    } else {
+                    }
+                    else
+                    {
                         movesLogDataW.add(logEntry);
                         logTurnsW.updateUI();
                     }

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_chessherocommon" default="compile.module.chessherocommon">
+  <dirname property="module.chessherocommon.basedir" file="${ant.file.module_chessherocommon}"/>
+  
+  <property name="module.jdk.home.chessherocommon" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.chessherocommon" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.chessherocommon" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.chessherocommon" value="${compiler.args}"/>
+  
+  <property name="chessherocommon.output.dir" value="${module.chessherocommon.basedir}/../ChessHeroSrv/out/production/ChessHeroCommon"/>
+  <property name="chessherocommon.testoutput.dir" value="${module.chessherocommon.basedir}/../ChessHeroSrv/out/test/ChessHeroCommon"/>
+  
+  <path id="chessherocommon.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="chessherocommon.module.production.classpath">
+    <path refid="${module.jdk.classpath.chessherocommon}"/>
+  </path>
+  
+  <path id="chessherocommon.runtime.production.module.classpath">
+    <pathelement location="${chessherocommon.output.dir}"/>
+  </path>
+  
+  <path id="chessherocommon.module.classpath">
+    <path refid="${module.jdk.classpath.chessherocommon}"/>
+    <pathelement location="${chessherocommon.output.dir}"/>
+  </path>
+  
+  <path id="chessherocommon.runtime.module.classpath">
+    <pathelement location="${chessherocommon.testoutput.dir}"/>
+    <pathelement location="${chessherocommon.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.chessherocommon">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.chessherocommon">
+    <patternset refid="excluded.from.module.chessherocommon"/>
+  </patternset>
+  
+  <path id="chessherocommon.module.sourcepath">
+    <dirset dir="${module.chessherocommon.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.chessherocommon" depends="compile.module.chessherocommon.production,compile.module.chessherocommon.tests" description="Compile module ChessHeroCommon"/>
+  
+  <target name="compile.module.chessherocommon.production" depends="register.custom.compilers" description="Compile module ChessHeroCommon; production classes">
+    <mkdir dir="${chessherocommon.output.dir}"/>
+    <javac2 destdir="${chessherocommon.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.chessherocommon}/javac">
+      <compilerarg line="${compiler.args.chessherocommon}"/>
+      <bootclasspath refid="chessherocommon.module.bootclasspath"/>
+      <classpath refid="chessherocommon.module.production.classpath"/>
+      <src refid="chessherocommon.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.chessherocommon"/>
+    </javac2>
+    
+    <copy todir="${chessherocommon.output.dir}">
+      <fileset dir="${module.chessherocommon.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.chessherocommon.tests" depends="register.custom.compilers,compile.module.chessherocommon.production" description="compile module ChessHeroCommon; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.chessherocommon" description="cleanup module">
+    <delete dir="${chessherocommon.output.dir}"/>
+    <delete dir="${chessherocommon.testoutput.dir}"/>
+  </target>
+</project>

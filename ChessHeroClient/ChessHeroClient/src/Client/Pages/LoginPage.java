@@ -5,8 +5,6 @@ import com.kt.Credentials;
 import com.kt.api.*;
 import com.kt.api.Action;
 import com.kt.game.Player;
-import com.kt.utils.SLog;
-import com.sun.org.apache.regexp.internal.StreamCharacterIterator;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -32,6 +30,11 @@ public class LoginPage extends ChessHeroPage {
 
     public  LoginPage(){
         super();
+        //Initialize Components
+        this.setPageTitle("Login Page");
+
+        JPanel mainPanel = new JPanel();
+        JPanel menuPanel = new JPanel();
 
         errorLabel = new JLabel(" ");
 
@@ -40,13 +43,6 @@ public class LoginPage extends ChessHeroPage {
         errorLabel.setFont(new Font("Serif", Font.BOLD, 12));
         errorLabel.setForeground(Color.red);
 
-        this.setPageTitle("Login Page");
-        //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
-        //Initialize Components
-        JPanel mainPanel = new JPanel();
-        JPanel menuPanel = new JPanel();
-        //mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
-        //mainPanel.setLayout(new BoxLayout(mainPanel, FlowLayout.CENTER));
         mainPanel.setLayout(new GridBagLayout());
 
         menuPanel.setLayout(new GridLayout(6,1));
@@ -91,27 +87,18 @@ public class LoginPage extends ChessHeroPage {
         gridOpt.insets = new Insets(20,200,20,200);
         gridOpt.gridx = 0;
         gridOpt.gridy = 0;
-        //gridOpt.gridheight = 1;
-        //gridOpt.ipady = 20;
-        //gridOpt.ipadx = 100;
         gridOpt.weightx = 1;
         gridOpt.weighty = 0;
         mainPanel.add(pageTitle,gridOpt);
 
         gridOpt.insets = new Insets(0,200,20,200);
         gridOpt.gridy = 1;
-        //gridOpt.weighty = 0;
         mainPanel.add(pageSubTitle, gridOpt);
 
-        //gridOpt.fill = GridBagConstraints.BOTH;
         gridOpt.insets = new Insets(0,200,40,200);
-        //gridOpt.ipadx = 10;
         gridOpt.gridx = 0;
         gridOpt.gridy = 2;
-        //gridOpt.gridheight = 4;
-        //gridOpt.weightx = 1;
         gridOpt.weighty = 6;
-        //gridOpt.fill = GridBagConstraints.HORIZONTAL;
         mainPanel.add(menuPanel, gridOpt);
 
         gridOpt.insets = new Insets(0,200,20,200);
@@ -131,38 +118,25 @@ public class LoginPage extends ChessHeroPage {
 
         this.setPagePanel(mainPanel);
 
-        //this.add(mainPanel);
-
-        //this.setContentPane(mainPanel);
-        //this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
         //Add Listeners
         loginButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e)
             {
-                //System.out.println("You clicked the LOGIN button");
                 handleLogin();
             }
         });
-
 
         registerButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e)
             {
-                //System.out.println("You clicked the REGISTER button");
                 handleRegister();
             }
         });
-
-//        //MOCK LOGIN
-//        this.usernameTextBox.setText("kiro");
-//        this.passwordTextBox.setText("asd");
     }
 
     //Handle Buttons
-
     public void handleLogin()
     {
         errorLabel.setText(" ");
@@ -179,6 +153,8 @@ public class LoginPage extends ChessHeroPage {
                 Request request = new Request(Action.LOGIN);
                 request.addParameter("username",username);
                 request.addParameter("password",password);
+
+                errorLabel.setText(getConnection().getServerAddress());
 
                 this.getConnection().sendRequest(request);
             }

@@ -34,6 +34,10 @@ public class RegisterPage extends ChessHeroPage {
     public  RegisterPage(){
         super();
 
+        this.setPageTitle("Register Page");
+
+        //Initialize Components
+
         errorLabel = new JLabel(" ");
 
         errorLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -41,13 +45,8 @@ public class RegisterPage extends ChessHeroPage {
         errorLabel.setFont(new Font("Serif", Font.BOLD, 12));
         errorLabel.setForeground(Color.red);
 
-        this.setPageTitle("Register Page");
-        //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
-        //Initialize Components
         JPanel mainPanel = new JPanel();
         JPanel menuPanel = new JPanel();
-        //mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
-        //mainPanel.setLayout(new BoxLayout(mainPanel, FlowLayout.CENTER));
         mainPanel.setLayout(new GridBagLayout());
 
 
@@ -85,6 +84,7 @@ public class RegisterPage extends ChessHeroPage {
         JButton backButton = new JButton("Back");
 
         //Add Components
+
         menuPanel.add(usernameLabel);
         menuPanel.add(usernameTextBox);
 
@@ -99,27 +99,18 @@ public class RegisterPage extends ChessHeroPage {
         gridOpt.insets = new Insets(20,200,20,200);
         gridOpt.gridx = 0;
         gridOpt.gridy = 0;
-        //gridOpt.gridheight = 1;
-        //gridOpt.ipady = 20;
-        //gridOpt.ipadx = 100;
         gridOpt.weightx = 1;
         gridOpt.weighty = 0;
         mainPanel.add(pageTitle,gridOpt);
 
         gridOpt.insets = new Insets(0,200,20,200);
         gridOpt.gridy = 1;
-        //gridOpt.weighty = 0;
         mainPanel.add(pageSubTitle, gridOpt);
 
-        //gridOpt.fill = GridBagConstraints.BOTH;
         gridOpt.insets = new Insets(0,200,40,200);
-        //gridOpt.ipadx = 10;
         gridOpt.gridx = 0;
         gridOpt.gridy = 2;
-        //gridOpt.gridheight = 4;
-        //gridOpt.weightx = 1;
         gridOpt.weighty = 6;
-        //gridOpt.fill = GridBagConstraints.HORIZONTAL;
         mainPanel.add(menuPanel, gridOpt);
 
         gridOpt.insets = new Insets(0,200,20,200);
@@ -139,18 +130,12 @@ public class RegisterPage extends ChessHeroPage {
 
         this.setPagePanel(mainPanel);
 
-        //this.add(mainPanel);
-
-        //this.setContentPane(mainPanel);
-        //this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
         //Add Listeners
 
         registerButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e)
             {
-                //System.out.println("You clicked the REGISTER button");
                 handleRegister();
             }
         });
@@ -159,7 +144,6 @@ public class RegisterPage extends ChessHeroPage {
 
             public void actionPerformed(ActionEvent e)
             {
-                //System.out.println("You clicked the Back button");
                 handleBackButton();
             }
         });
@@ -174,7 +158,6 @@ public class RegisterPage extends ChessHeroPage {
          passwordTextBox.setBorder(defaultBorder);
          confirmPasswordTextBox.setBorder(defaultBorder);
 
-         //System.out.println(new String(this.passwordTextBox.getPassword()));
          String username = this.usernameTextBox.getText();
          String password = new String(this.passwordTextBox.getPassword());
          String confirmPassword = new String(this.confirmPasswordTextBox.getPassword());

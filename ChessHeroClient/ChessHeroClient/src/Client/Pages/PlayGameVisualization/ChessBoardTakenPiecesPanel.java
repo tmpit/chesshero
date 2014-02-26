@@ -2,11 +2,7 @@ package Client.Pages.PlayGameVisualization;
 
 import Client.Pages.PlayGamePage;
 import com.kt.game.*;
-import com.kt.game.Color;
-import javafx.util.Pair;
-
 import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
@@ -36,11 +32,9 @@ public class ChessBoardTakenPiecesPanel extends JPanel {
     public void setTakenPiecesFields(ArrayList<ChessPiece> takenPieces){
         //ArrayList<ChessPiece> newTakenPiecesList = new ArrayList<ChessPiece>(16);
         for (int i = 0; i < takenPieces.size(); i++){
-            //this.takenPiecesFields[i].setpi
             if(takenPieces.get(i) != null){
-                BufferedImage bufferedImage = PlayGamePage.TakenChessPieceImages.get(new Pair<Byte, com.kt.game.Color>(
-                        takenPieces.get(i).getTag(), takenPieces.get(i).getOwner().getColor()));
-
+                BufferedImage bufferedImage = PlayGamePage.getTakenChessPieceImages().get(new String(
+                       Byte.toString(takenPieces.get(i).getTag()) + takenPieces.get(i).getOwner().getColor()));
                 this.takenPiecesFields[i].setIcon(new ImageIcon(bufferedImage));
             }
             else{

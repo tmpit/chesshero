@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ChessHeroClient:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ChessHeroClient_jar</output-path>
+    <root id="archive" name="ChessHeroClient_jar.jar">
+      <element id="module-output" name="ChessHeroClient" />
+      <element id="module-output" name="ChessHeroCommon" />
+    </root>
+  </artifact>
+</component>

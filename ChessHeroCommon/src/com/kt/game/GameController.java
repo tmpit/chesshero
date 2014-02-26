@@ -325,6 +325,32 @@ public class GameController
 			castle.setPosition(castlePos);
 			board[castlePos.x][castlePos.y].setChessPiece(castle);
 			board[oldPos.x][oldPos.y].setChessPiece(null);
+
+            BoardField castleField = board[castlePos.x][castlePos.y];
+            ChessPiece oldMovedPiece = movedPiece;
+            Position oldTo = to;
+            movedPiece = castleField.getChessPiece();
+            to = castleField.getPosition();
+
+            Player opponent = executor.getOpponent();
+            ChessPieceSet opponentPieceSet = opponent.getChessPieceSet();
+
+            // Check whether this move would make the opponent's king in check
+            Position opponentKingPosition = opponentPieceSet.getKing().getPosition();
+
+            // If the moved piece is a knight, we do not need to check whether the path is clear
+            if (movedPiece.isMoveValid(opponentKingPosition, true) && (movedPiece instanceof Knight || !isPathIntercepted(to, opponentKingPosition)))
+            {	// The opponent's king is in check by the chess piece we just moved
+                SLog.write("opponent's king is in check by: " + movedPiece + " at position: " + to);
+                game.inCheck = opponent;
+                if(!game.attackers.contains(movedPiece))
+                {
+                    game.attackers.add(movedPiece);
+                }
+            }
+
+            movedPiece = oldMovedPiece;
+            to = oldTo;
 		}
 
 		Player opponent = executor.getOpponent();

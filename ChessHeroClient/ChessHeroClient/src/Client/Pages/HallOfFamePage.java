@@ -1,5 +1,7 @@
 package Client.Pages;
 
+import com.kt.utils.SLog;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -63,19 +65,15 @@ public class HallOfFamePage extends ChessHeroPage{
     public  HallOfFamePage(){
         super();
         this.setPageTitle("Hall Of Fame Page");
-        //this.setSize(HORIZONTAL_SIZE, VERTICAL_SIZE);
+
         //Initialize Components
         JPanel mainPanel = new JPanel();
         JPanel menuPanel = new JPanel();
-        //mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
-        //mainPanel.setLayout(new BoxLayout(mainPanel, FlowLayout.CENTER));
+
         mainPanel.setLayout(new GridBagLayout());
-//
-//
-//        menuPanel.setLayout(new GridLayout(6,1));
-//
+
         JLabel pageTitle = new JLabel(MAIN_TITLE);
-//
+
         pageTitle.setHorizontalAlignment(JLabel.CENTER);
         pageTitle.setHorizontalTextPosition(JLabel.CENTER);
         pageTitle.setFont(new Font("Serif", Font.BOLD, 48));
@@ -85,19 +83,7 @@ public class HallOfFamePage extends ChessHeroPage{
         pageSubTitle.setHorizontalAlignment(JLabel.CENTER);
         pageSubTitle.setHorizontalTextPosition(JLabel.CENTER);
         pageSubTitle.setFont(new Font("Serif", Font.BOLD, 32));
-//
-//        JLabel usernameLabel = new JLabel("Username");
-//        JLabel passwordLabel = new JLabel("Password");
-//
-//        this.usernameTextBox = new JTextField();
-//        this.passwordTextBox = new JPasswordField();
-//
-//        pageTitle.setHorizontalAlignment(SwingConstants.CENTER);
-//        usernameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-//        passwordLabel.setHorizontalAlignment(SwingConstants.CENTER);
-//        passwordTextBox.setHorizontalAlignment(SwingConstants.CENTER);
-//        usernameTextBox.setHorizontalAlignment(SwingConstants.CENTER);
-//
+
         JButton previousPageButton = new JButton("Previous Page");
         JButton nextPageButton = new JButton("Next Page");
         JButton lobbyPageButton = new JButton("Back To Lobby");
@@ -105,14 +91,8 @@ public class HallOfFamePage extends ChessHeroPage{
 
         table = new JTable();
         JScrollPane tableHolder = new JScrollPane(table);
-//
-//        //Add Components
-//        menuPanel.add(usernameLabel);
-//        menuPanel.add(usernameTextBox);
-//
-//        menuPanel.add(passwordLabel);
-//        menuPanel.add(passwordTextBox);
-//
+
+        //Add Components
         new GridBagConstraints();
         GridBagConstraints gridOpt = new GridBagConstraints();
         gridOpt.fill = GridBagConstraints.BOTH;
@@ -155,11 +135,9 @@ public class HallOfFamePage extends ChessHeroPage{
         gridOpt.gridx = 1;
         mainPanel.add(logoutButton, gridOpt);
 
-
         this.setPagePanel(mainPanel);
 
         loadHallOfFame();
-
 
         //Add Listeners
 
@@ -167,8 +145,6 @@ public class HallOfFamePage extends ChessHeroPage{
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the previous page button");
-                //HallOfFameEntry SelectedGame = gameList.get(table.getSelectedRow());
                 handlePreviousPageButton();
             }
         });
@@ -177,7 +153,7 @@ public class HallOfFamePage extends ChessHeroPage{
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the next page button");
+                SLog.write("You clicked the next page button");
                 handleNextPageButton();
             }
         });
@@ -185,7 +161,7 @@ public class HallOfFamePage extends ChessHeroPage{
         logoutButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                System.out.println("You clicked the LOGOUT button");
+                SLog.write("You clicked the LOGOUT button");
                 handleLogoutButton();
             }
         });
@@ -194,16 +170,16 @@ public class HallOfFamePage extends ChessHeroPage{
 
             public void actionPerformed(ActionEvent e)
             {
-                System.out.println("You clicked the Lobby page button");
+                SLog.write("You clicked the Lobby page button");
                 handleLobbyPageButton();
             }
         });
     }
 
-
-
     //Handle Buttons
     private void loadHallOfFame() {
+        //MOCKED Data for test purposes
+
         gameList = new Vector<HallOfFameEntry>(Arrays.asList(
                 new HallOfFameEntry(
                         "867954","game1","user1"
@@ -245,32 +221,24 @@ public class HallOfFamePage extends ChessHeroPage{
     }
 
     private void handleLobbyPageButton() {
-        System.out.println("Entered Lobby button HANDLER");
+        SLog.write("Entered Lobby button HANDLER");
         holder.NavigateToPage(new LobbyPage());
     }
 
-
     private void handlePreviousPageButton() {
-        System.out.println("Should load previous results");
+        SLog.write("Should load previous results");
     }
 
     public void handleNextPageButton(){
 
-        //this.holder.NavigateToPage(new CreateGamePage());
-        System.out.println("Should load more results");
-//        Credentials credentials = new Credentials(
-//                this.usernameTextBox.getText(),
-//                new String(this.passwordTextBox.getPassword())
-//        );
-//
-//        AuthMessage authMsg = new AuthMessage(Message.ACTION_REGISTER, credentials);
-        //holder.getConnection().writeMessage(authMsg);
+        SLog.write("Should load more results");
     }
 
     public void handleLogoutButton(){
+        this.getHolder().player = null;
+        this.getConnection().disconnect();
         this.holder.NavigateToPage(new LoginPage());
     }
-
 
     //HELPER METHODS
     private Vector<Vector<String>> transformTableData(Vector<HallOfFameEntry> data){

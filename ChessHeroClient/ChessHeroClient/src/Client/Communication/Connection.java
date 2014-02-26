@@ -4,8 +4,7 @@ import com.kt.Config;
 import com.kt.utils.SLog;
 
 import javax.swing.*;
-import java.io.EOFException;
-import java.io.IOException;
+import java.io.*;
 import java.net.SocketException;
 import java.util.*;
 import java.util.Timer;
@@ -20,7 +19,7 @@ import java.util.Timer;
 public class Connection
 {
 //    private static final String SERVER_ADDRESS = "95.111.43.117";
-    private static final String SERVER_ADDRESS = "127.0.0.1";
+    private static String SERVER_ADDRESS = "127.0.0.1";
     private static final int SERVER_PORT = 4848;
     private static final int CONNECTION_TIMEOUT = 15 * 1000; // In milliseconds
     private static final int READ_TIMEOUT = 15 * 1000; // In milliseconds
@@ -41,14 +40,56 @@ public class Connection
     private RequestTask currentRequestTask = null;
     private Timer timeoutTimer = null;
 
+    static String convertStreamToString(java.io.InputStream is) {
+        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+        return s.hasNext() ? s.next() : "";
+    }
+
     public static synchronized Connection getSingleton()
     {
         if (null == singleton)
         {
             singleton = new Connection();
+
+            try
+            {
+                File file = new File(".\\chserverip.txt");
+                SLog.write(file.getAbsolutePath());
+                FileInputStream inputStream = new FileInputStream(file);
+                String newServerIp =  convertStreamToString(inputStream);
+                SLog.write(newServerIp);
+                setServerAddress(newServerIp);
+                inputStream.close();
+
+            }
+            catch (FileNotFoundException e)
+            {
+                //e.printStackTrace();
+                SLog.write("File chserverip.txt couldn't be found");
+                setServerAddress("127.0.0.1");
+            }
+            catch (IOException e)
+            {
+                //e.printStackTrace();
+                SLog.write("File chserverip.txt couldn't be loaded");
+                setServerAddress("127.0.0.1");
+            }
+//            finally
+//            {
+//
+//            }
         }
 
         return singleton;
+    }
+
+    public synchronized static void setServerAddress(String newServerAddress)
+    {
+        SERVER_ADDRESS = newServerAddress;
+    }
+    public synchronized static String getServerAddress()
+    {
+        return SERVER_ADDRESS;
     }
 
     public synchronized boolean isVerbose()

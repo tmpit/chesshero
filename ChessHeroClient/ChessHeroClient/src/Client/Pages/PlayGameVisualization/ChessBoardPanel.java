@@ -4,8 +4,6 @@ import Client.Pages.PlayGamePage;
 import com.kt.game.BoardField;
 import com.kt.game.ChessPiece;
 import com.kt.game.Position;
-import javafx.util.Pair;
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -62,8 +60,8 @@ public class ChessBoardPanel extends JPanel{
                                     currentGameBoardField.getColor(),
                                     currFieldPos,
                                     pieceSize,
-                                    PlayGamePage.ChessPieceImages.get(new Pair<Byte, com.kt.game.Color>(
-                                            currOccupyingPiece.getTag(), currOccupyingPiece.getOwner().getColor()
+                                    PlayGamePage.getChessPieceImages().get(new String(
+                                           Byte.toString(currOccupyingPiece.getTag()) + currOccupyingPiece.getOwner().getColor()
                                     )));
                 }
                 else{
@@ -88,8 +86,8 @@ public class ChessBoardPanel extends JPanel{
                 ChessPiece currOccupyingPiece = correspondingField.getChessPiece();
 
                 if (currOccupyingPiece != null){
-                    field.setFiledImage(PlayGamePage.ChessPieceImages.get(new Pair<Byte, com.kt.game.Color>(
-                            currOccupyingPiece.getTag(), currOccupyingPiece.getOwner().getColor()
+                    field.setFiledImage(PlayGamePage.getChessPieceImages().get(new String(
+                            Byte.toString(currOccupyingPiece.getTag()) + currOccupyingPiece.getOwner().getColor()
                     )));
                 }
                 else {
@@ -151,34 +149,8 @@ public class ChessBoardPanel extends JPanel{
             this.add(labelFirstRows,GridOpt);
             GridOpt.gridx = 9;
             this.add(labelSecondRows,GridOpt);
-
-            //this.setVisible(true);
         }
     }
-
-//    public void testShit() {
-//        Component[] components = getComponents();
-//        SLog.write(components.length);
-//        for (Component comp : components){
-//
-//            SLog.write(comp);
-//            SLog.write(comp.getBounds());
-//            SLog.write("x " + comp.getX());
-//            SLog.write("y " + comp.getY());
-//        }
-//
-//        for (int k = 0; k< 1500; k++)
-//        {
-//            for (int j = 0; j< 1500; j++)
-//            {
-//                Component component = getComponentAt(k,j);
-//                if (component != null){
-//                    SLog.write(k + ":"+j+"\n"+component);
-//                }
-//            }
-//
-//        }
-//    }
 
     private void drawBoardFields(){
         GridBagConstraints GridOpt = new GridBagConstraints();

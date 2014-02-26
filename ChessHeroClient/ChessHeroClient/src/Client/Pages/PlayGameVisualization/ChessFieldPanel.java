@@ -1,7 +1,5 @@
 package Client.Pages.PlayGameVisualization;
 
-import com.kt.game.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.Color;
@@ -22,23 +20,26 @@ public class ChessFieldPanel extends JLabel {
     {
         return this.fieldColor;
     }
+
     public BufferedImage getFiledImage()
     {
         return this.fieldImage;
     }
+
     public void setFiledImage(BufferedImage newImage)
     {
         this.fieldImage = newImage;
         if(fieldImage != null){
             this.setIcon(new ImageIcon(fieldImage));
         }
-        else{
+        else
+        {
             this.setIcon(new ImageIcon());
         }
     }
 
-    public Color getDisplayColor(){
-//        return this.fieldColor == com.kt.game.Color.WHITE ? new Color(230,198,167): new Color(90,45,45);
+    public Color getDisplayColor()
+    {
         return this.fieldColor == com.kt.game.Color.WHITE ? new Color(207,178,150): new Color(99,50,50);
     }
 
@@ -50,10 +51,12 @@ public class ChessFieldPanel extends JLabel {
         //super(new ImageIcon (fieldImage));
         this.setHorizontalAlignment(SwingConstants.CENTER);
         this.setOpaque(true);
-        if(fieldImage != null){
+        if(fieldImage != null)
+        {
             this.setIcon(new ImageIcon(fieldImage));
         }
-        else{
+        else
+        {
             this.setIcon(new ImageIcon());
         }
         this.setPreferredSize(new Dimension(size,size));
@@ -62,7 +65,5 @@ public class ChessFieldPanel extends JLabel {
         this.fieldColor = fieldColor;
         this.fieldImage = fieldImage;
         this.setBackground(this.getDisplayColor());
-        //this.setBounds(new Rectangle(0, 0, 50, 50));
-
     }
 }

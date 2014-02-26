@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class CreateGamePage extends ChessHeroPage {
 
-    public static GameSettings createGameSettings;//new CreateGameSettings();
+    public static GameSettings createGameSettings;
     public JLabel infoLabel;
     public static boolean gameCreated;
     public static Game createdGame;
@@ -95,11 +95,11 @@ public class CreateGamePage extends ChessHeroPage {
 
 
             this.setPageTitle("Create Game Page");
+
             //Initialize Components
+
             JPanel mainPanel = new JPanel();
             JPanel menuPanel = new JPanel();
-//            mainPanel.setLayout(new GridBagLayout());
-//            menuPanel.setLayout(new GridBagLayout());
 
             JLabel pageTitle = new JLabel(MAIN_TITLE);
 
@@ -119,9 +119,6 @@ public class CreateGamePage extends ChessHeroPage {
 
             this.gameNameTextBox = new JTextField();
 
-//            gameNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-//            gameNameTextBox.setHorizontalAlignment(SwingConstants.CENTER);
-
             lobbyPageButton = new JButton("Back To Lobby");
             createGameButton = new JButton("Create Game");
 
@@ -134,18 +131,9 @@ public class CreateGamePage extends ChessHeroPage {
 
             SpinnerNumberModel spinnerTurnTimeModel = new SpinnerNumberModel(1, 0, 60,1);
             SpinnerNumberModel spinnerGameTimeModel = new SpinnerNumberModel(10, 0, 300, 10);
-            //SpinnerNumberModel spinnerGameTimeModel = new SpinnerNumberModel(10, 0, 300, 10);
             playerLevel = 2;
             SpinnerNumberModel spinnerMinimumOpponentLevelModel = new SpinnerNumberModel(playerLevel, playerLevel > 10 ? playerLevel-10:0, playerLevel, 1);
             SpinnerNumberModel spinnerMaximumOpponentLevelModel = new SpinnerNumberModel(playerLevel, playerLevel, playerLevel < 90 ? playerLevel+10:99, 1);
-
-//            SimpleDateFormat formatDate = new SimpleDateFormat("HH:mm:ss");
-//            formatDate.setTimeZone(TimeZone.getTimeZone("UTC"));
-//
-//            minimumOpponentLevelSpinbox = new JSpinner(spinnerTurnTimeModel);
-//            minimumOpponentLevelSpinbox.setModel(new SpinnerDateModel(new Date(0), null, null, Calendar.MINUTE));
-//            ((JSpinner.DefaultEditor) minimumOpponentLevelSpinbox.getEditor()).getTextField().setFormatterFactory(
-//                    new DefaultFormatterFactory(new DateFormatter(formatDate)));//DateFormat.getDateInstance())));
 
             turnTimeLimitSpinbox = new JSpinner(spinnerTurnTimeModel);
             gameTimeLimitSpinbox = new JSpinner(spinnerGameTimeModel);
@@ -178,13 +166,10 @@ public class CreateGamePage extends ChessHeroPage {
             menuPanel.add(gameTimeLimitLabel);
             menuPanel.add(gameTimeLimitSpinbox);
 
-
             menuPanel.add(minimumOpponentLevelLabel);
             menuPanel.add(minimumOpponentLevelSpinbox);
             menuPanel.add(maximumOpponentLevelLabel);
             menuPanel.add(maximumOpponentLevelSpinbox);
-
-            //menuPanel.add(innerPanel);
 
             new GridBagConstraints();
             GridBagConstraints gridOpt = new GridBagConstraints();
@@ -242,10 +227,6 @@ public class CreateGamePage extends ChessHeroPage {
                     handleCreateGameButton();
                 }
             });
-
-            //MOCK create game
-//            this.gameNameTextBox.setText("asd");
-//            handleCreateGameButton();
         }
 
     //Handle Buttons
@@ -280,7 +261,6 @@ public class CreateGamePage extends ChessHeroPage {
         }
     }
 
-
     //HELPER METHODS
 
     private GameSettings getCreateGameSettings (){
@@ -295,15 +275,6 @@ public class CreateGamePage extends ChessHeroPage {
         newGameSettings.IsWithWhite = toggleButtonWhite.isSelected();
         return newGameSettings;
     }
-
-//        private Vector<Vector<String>> transformTableData(Vector<HallOfFameEntry> data){
-//            Vector<Vector<String>> transformedData = new Vector<Vector<String>>();
-//            for (HallOfFameEntry entry : data){
-//                transformedData.add(new Vector<String>(Arrays.asList(entry.toString().split("\\|"))));
-//            }
-//            return  transformedData;
-//        }
-
 
     @Override
     public void didReceiveMessage(HashMap<String, Object> message)
@@ -321,10 +292,6 @@ public class CreateGamePage extends ChessHeroPage {
         GameController gameContr = new GameController(createdGame);
 
         this.getHolder().NavigateToPage(new PlayGamePage(gameContr));
-
-//                    break;
-//            }
-//        }
     }
 
 
@@ -362,18 +329,4 @@ public class CreateGamePage extends ChessHeroPage {
                 break;
         }
     }
-//        GameController newGameController = new GameController(new Game(),new NetworkPlayer(1), ChessColor.White, new NetworkPlayer(2),ChessColor.Black);
-//        newGameController.game.startNewGame(newGameController.game.getWhitePlayer(), newGameController.game.getBlackPlayer());
-//
-//        newGameController.game.setTakenPieces(newGameController.game.getPlayerStartingPieceSet(newGameController.player.getGamePlayer()),newGameController.opponent.getGamePlayer());
-
-//        getHolder().NavigateToPage(new PlayGamePage(newGameController));
-
-
-
-
-
-
-
-
-    }
+}
