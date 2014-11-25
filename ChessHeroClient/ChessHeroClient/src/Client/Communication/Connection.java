@@ -40,53 +40,16 @@ public class Connection
     private RequestTask currentRequestTask = null;
     private Timer timeoutTimer = null;
 
-    static String convertStreamToString(java.io.InputStream is) {
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
-    }
-
     public static synchronized Connection getSingleton()
     {
         if (null == singleton)
         {
             singleton = new Connection();
-
-            try
-            {
-                File file = new File(".\\chserverip.txt");
-                SLog.write(file.getAbsolutePath());
-                FileInputStream inputStream = new FileInputStream(file);
-                String newServerIp =  convertStreamToString(inputStream);
-                SLog.write(newServerIp);
-                setServerAddress(newServerIp);
-                inputStream.close();
-
-            }
-            catch (FileNotFoundException e)
-            {
-                //e.printStackTrace();
-                SLog.write("File chserverip.txt couldn't be found");
-                setServerAddress("127.0.0.1");
-            }
-            catch (IOException e)
-            {
-                //e.printStackTrace();
-                SLog.write("File chserverip.txt couldn't be loaded");
-                setServerAddress("127.0.0.1");
-            }
-//            finally
-//            {
-//
-//            }
         }
 
         return singleton;
     }
 
-    public synchronized static void setServerAddress(String newServerAddress)
-    {
-        SERVER_ADDRESS = newServerAddress;
-    }
     public synchronized static String getServerAddress()
     {
         return SERVER_ADDRESS;
@@ -174,6 +137,122 @@ public class Connection
 		}
 
         doDisconnect(true);
+    }
+
+    public void sendRequest(Request request)
+    {
+        if (isConnecting)
+        {
+            SLog.write("Attempting to send request when socket is connecting");
+            return;
+        }
+
+        if (null == sock || !sock.isConnected())
+        {
+            SLog.write("Attempting to send request when socket is not connected");
+            return;
+        }
+
+        if (currentRequestTask != null)
+        {
+            SLog.write("Attempting to send request while another is being processed");
+            return;
+        }
+
+        currentRequestTask = new RequestTask(request)
+        {
+            @Override
+            protected Void doInBackground()
+            {
+                try
+                {
+                    if (sock.getTimeout() != WRITE_TIMEOUT)
+                    {
+                        sock.setTimeout(WRITE_TIMEOUT);
+                    }
+
+                    sock.write(this.request);
+
+                    while (null == this.response)
+                    {
+                        if (hasTimedOut())
+                        {
+                            log("Read operation timed out");
+                            break;
+                        }
+
+                        synchronized (readResponses)
+                        {
+                            if (!readResponses.isEmpty())
+                            {
+                                this.response = (HashMap<String, Object>) readResponses.get(0);
+                                readResponses.remove(0);
+                            }
+                        }
+
+                        if (null == this.response)
+                        {
+                            Thread.sleep(4); // Wait until the listen task reads the message
+                        }
+                    }
+                }
+                catch (SocketException e)
+                {
+                    log("Socket exception raised while writing: " + e);
+                }
+                catch (IOException e)
+                {
+                    log("Failed sending request: " + e);
+                }
+                catch (InterruptedException e)
+                {
+                    log("Failed sending request: " + e);
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void done()
+            {
+                timeoutTimer.cancel();
+                timeoutTimer = null;
+                currentRequestTask = null;
+
+                if (this.response != null)
+                {
+                    for (int i = 0; i < listeners.size(); i++)
+                    {
+                        listeners.get(i).requestDidComplete(true, this.request, this.response);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < listeners.size(); i++)
+                    {
+                        listeners.get(i).requestDidComplete(false, this.request, null);
+                    }
+                }
+
+                if (shouldNotifyDisconnection)
+                {
+                    shouldNotifyDisconnection = false;
+                    notifySocketDisconnected(true);
+                }
+            }
+        };
+
+        timeoutTimer = new Timer();
+        timeoutTimer.schedule(new RequestTimeoutTask(currentRequestTask)
+        {
+            @Override
+            public void run()
+            {
+                this.task.setTimedOut(true);
+            }
+        }, READ_TIMEOUT + WRITE_TIMEOUT);
+
+        currentRequestTask.execute();
     }
 
     private void doDisconnect(boolean notify)
@@ -315,122 +394,6 @@ public class Connection
         };
 
 		listenTask.execute();
-    }
-
-    public void sendRequest(Request request)
-    {
-        if (isConnecting)
-        {
-            SLog.write("Attempting to send request when socket is connecting");
-            return;
-        }
-
-        if (null == sock || !sock.isConnected())
-        {
-            SLog.write("Attempting to send request when socket is not connected");
-            return;
-        }
-
-        if (currentRequestTask != null)
-        {
-            SLog.write("Attempting to send request while another is being processed");
-            return;
-        }
-
-        currentRequestTask = new RequestTask(request)
-        {
-            @Override
-            protected Void doInBackground()
-            {
-                try
-                {
-                    if (sock.getTimeout() != WRITE_TIMEOUT)
-                    {
-                        sock.setTimeout(WRITE_TIMEOUT);
-                    }
-
-                    sock.write(this.request);
-
-                    while (null == this.response)
-                    {
-                        if (hasTimedOut())
-                        {
-                            log("Read operation timed out");
-                            break;
-                        }
-
-                        synchronized (readResponses)
-                        {
-                            if (!readResponses.isEmpty())
-                            {
-                                this.response = (HashMap<String, Object>) readResponses.get(0);
-                                readResponses.remove(0);
-                            }
-                        }
-
-                        if (null == this.response)
-                        {
-                            Thread.sleep(4); // Wait until the listen task reads the message
-                        }
-                    }
-                }
-                catch (SocketException e)
-                {
-                    log("Socket exception raised while writing: " + e);
-                }
-                catch (IOException e)
-                {
-                    log("Failed sending request: " + e);
-                }
-                catch (InterruptedException e)
-                {
-                    log("Failed sending request: " + e);
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void done()
-            {
-                timeoutTimer.cancel();
-                timeoutTimer = null;
-                currentRequestTask = null;
-
-                if (this.response != null)
-                {
-                    for (int i = 0; i < listeners.size(); i++)
-                    {
-                        listeners.get(i).requestDidComplete(true, this.request, this.response);
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < listeners.size(); i++)
-                    {
-                        listeners.get(i).requestDidComplete(false, this.request, null);
-                    }
-                }
-
-                if (shouldNotifyDisconnection)
-                {
-                    shouldNotifyDisconnection = false;
-                    notifySocketDisconnected(true);
-                }
-            }
-        };
-
-        timeoutTimer = new Timer();
-        timeoutTimer.schedule(new RequestTimeoutTask(currentRequestTask)
-        {
-            @Override
-            public void run()
-            {
-                this.task.setTimedOut(true);
-            }
-        }, READ_TIMEOUT + WRITE_TIMEOUT);
-
-        currentRequestTask.execute();
     }
 
     private void log(String str)
