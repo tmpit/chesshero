@@ -14,19 +14,32 @@ import java.util.HashMap;
  */
 public class ServerCommunicationService extends Service
 {
+	// Connection configuration
 	private static final String SERVER_ADDRESS = "127.0.0.1";
 	private static final int SERVER_PORT = 4848;
 	private static final int CONNECTION_TIMEOUT = 15 * 1000; // In milliseconds
 	private static final int READ_TIMEOUT = 15 * 1000; // In milliseconds
 	private static final int WRITE_TIMEOUT = 15 * 1000; // In milliseconds
 
-	private static final int MSG_ACTION_CONNECT = 1;
-	private static final int MSG_ACTION_DISCONNECT = 2;
-	private static final int MSG_ACTION_REQUEST = 3;
+	// WorkDispatchHandler message action identifiers. Class is defined at bottom of source file
+	private static final int WORK_DISPATCH_MSG_ACTION_CONNECT = 1;
+	private static final int WORK_DISPATCH_MSG_ACTION_DISCONNECT = 2;
+	private static final int WORK_DISPATCH_MSG_ACTION_REQUEST = 3;
 
-	private MessageHandler messageHandler;
+	// NotificationHandler message action identifiers. Class is defined at bottom of source file
+	private static final int NOTIFICATION_MSG_ACTION_ADD_LISTENER = 1;
+	private static final int NOTIFICATION_MSG_ACTION_RM_LISTENER = 2;
+	private static final int NOTIFICATION_MSG_ACTION_CONNECT = 3;
+	private static final int NOTIFICATION_MSG_ACTION_DISCONNECT = 4;
+	private static final int NOTIFICATION_MSG_ACTION_RESPONSE = 5;
+	private static final int NOTIFICATION_MSG_ACTION_PUSH = 6;
 
-	private ArrayList<ServiceEventListener> eventListeners = new ArrayList<ServiceEventListener>();
+	// When NOTIFICATION_MSG_ACTION_RESPONSE, obj property is a HashMap. The two objects inside can be accessed using these keys
+	private static final String NOTIFICATION_MSG_OBJ_REQUEST_KEY = "request";
+	private static final String NOTIFICATION_MSG_OBJ_RESPONSE_KEY = "response";
+
+	private WorkDispatchHandler workDispatchHandler;
+	private NotificationHandler notificationHandler;
 
 	private void connect()
 	{
@@ -43,39 +56,31 @@ public class ServerCommunicationService extends Service
 
 	}
 
-	private synchronized void addEventListener(ServiceEventListener listener)
+	private void notifyEventListenersForConnect()
 	{
-		eventListeners.add(listener);
+		Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_CONNECT);
+		notificationHandler.sendMessage(msg);
 	}
 
-	private synchronized void removeEventListener(ServiceEventListener listener)
+	private void notifyEventListenersForDisconnect()
 	{
-		eventListeners.remove(listener);
+		Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_DISCONNECT);
+		notificationHandler.sendMessage(msg);
 	}
 
-	private void onHandleMessage(Message msg)
+	private void notifyEventListenersForRequestCompletion(ServiceRequest request, HashMap response)
 	{
-		switch (msg.what)
-		{
-			case MSG_ACTION_CONNECT:
-				connect();
-				break;
+		HashMap<String, Object> bag = new HashMap<String, Object>();
+		bag.put(NOTIFICATION_MSG_OBJ_REQUEST_KEY, request);
+		bag.put(NOTIFICATION_MSG_OBJ_RESPONSE_KEY, response);
+		Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_RESPONSE, bag);
+		notificationHandler.sendMessage(msg);
+	}
 
-			case MSG_ACTION_DISCONNECT:
-				disconnect();
-				break;
-
-			case MSG_ACTION_REQUEST:
-				if (msg.obj != null && msg.obj instanceof ServiceRequest) {
-					sendRequest((ServiceRequest) msg.obj);
-				} else {
-					Log.w("Invalid or missing ServiceRequest object", "");
-				}
-				break;
-
-			default:
-				Log.w("Invalid message action", "");
-		}
+	private void notifyEventListenersForPushMessage(HashMap push)
+	{
+		Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_PUSH, push);
+		notificationHandler.sendMessage(msg);
 	}
 
 	@Override
@@ -86,7 +91,8 @@ public class ServerCommunicationService extends Service
 		HandlerThread thread = new HandlerThread("com.chesshero.scs.handler", Process.THREAD_PRIORITY_BACKGROUND);
 		thread.start();
 
-		messageHandler = new MessageHandler(thread.getLooper());
+		workDispatchHandler = new WorkDispatchHandler(thread.getLooper());
+		notificationHandler = new NotificationHandler();
 	}
 
 	@Override
@@ -111,36 +117,38 @@ public class ServerCommunicationService extends Service
 	{
 		public void addEventListener(ServiceEventListener listener)
 		{
-			ServerCommunicationService.this.addEventListener(listener);
+			Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_ADD_LISTENER, listener);
+			notificationHandler.sendMessage(msg);
 		}
 
 		public void removeEventListener(ServiceEventListener listener)
 		{
-			ServerCommunicationService.this.removeEventListener(listener);
+			Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_RM_LISTENER, listener);
+			notificationHandler.sendMessage(msg);
 		}
 
 		public void connect()
 		{
-			Message msg = messageHandler.obtainMessage(MSG_ACTION_CONNECT);
-			messageHandler.sendMessage(msg);
+			Message msg = workDispatchHandler.obtainMessage(WORK_DISPATCH_MSG_ACTION_CONNECT);
+			workDispatchHandler.sendMessage(msg);
 		}
 
 		public void disconnect()
 		{
-			Message msg = messageHandler.obtainMessage(MSG_ACTION_DISCONNECT);
-			messageHandler.sendMessage(msg);
+			Message msg = workDispatchHandler.obtainMessage(WORK_DISPATCH_MSG_ACTION_DISCONNECT);
+			workDispatchHandler.sendMessage(msg);
 		}
 
 		public void sendRequest(ServiceRequest request)
 		{
-			Message msg = messageHandler.obtainMessage(MSG_ACTION_REQUEST, request);
-			messageHandler.sendMessage(msg);
+			Message msg = workDispatchHandler.obtainMessage(WORK_DISPATCH_MSG_ACTION_REQUEST, request);
+			workDispatchHandler.sendMessage(msg);
 		}
 	}
 
-	private class MessageHandler extends Handler
+	private class WorkDispatchHandler extends Handler
 	{
-		MessageHandler(Looper looper)
+		WorkDispatchHandler(Looper looper)
 		{
 			super(looper);
 		}
@@ -148,8 +156,121 @@ public class ServerCommunicationService extends Service
 		@Override
 		public void handleMessage(Message msg)
 		{
-			super.handleMessage(msg);
-			ServerCommunicationService.this.onHandleMessage(msg);
+			switch (msg.what)
+			{
+				case WORK_DISPATCH_MSG_ACTION_CONNECT:
+					ServerCommunicationService.this.connect();
+					break;
+
+				case WORK_DISPATCH_MSG_ACTION_DISCONNECT:
+					ServerCommunicationService.this.disconnect();
+					break;
+
+				case WORK_DISPATCH_MSG_ACTION_REQUEST:
+					if (msg.obj != null && msg.obj instanceof ServiceRequest) {
+						ServerCommunicationService.this.sendRequest((ServiceRequest) msg.obj);
+					} else {
+						Log.w("Invalid or missing ServiceRequest object", "");
+					}
+					break;
+
+				default:
+					Log.w("Invalid message action", "");
+			}
+		}
+	}
+
+	private class NotificationHandler extends Handler
+	{
+		private ArrayList<ServiceEventListener> eventListeners = new ArrayList<ServiceEventListener>();
+
+		NotificationHandler()
+		{
+			super(Looper.getMainLooper());
+		}
+
+		@Override
+		public void handleMessage(Message msg)
+		{
+			switch (msg.what)
+			{
+				case NOTIFICATION_MSG_ACTION_ADD_LISTENER:
+					if (msg.obj instanceof ServiceEventListener) {
+						addEventListener((ServiceEventListener)msg.obj);
+					} else {
+						Log.w("Object does not implement ServiceEventListener interface", "");
+					}
+					break;
+
+				case NOTIFICATION_MSG_ACTION_RM_LISTENER:
+					if (msg.obj instanceof ServiceEventListener) {
+						removeEventListener((ServiceEventListener) msg.obj);
+					} else {
+						Log.w("Object does not implement ServiceEventListener interface", "");
+					}
+					break;
+
+				case NOTIFICATION_MSG_ACTION_CONNECT:
+					notifyConnect();
+					break;
+
+				case NOTIFICATION_MSG_ACTION_DISCONNECT:
+					notifyDisconnect();
+					break;
+
+				case NOTIFICATION_MSG_ACTION_RESPONSE:
+					HashMap<String, Object> bag = (HashMap<String, Object>)msg.obj;
+					ServiceRequest request = (ServiceRequest)bag.get(NOTIFICATION_MSG_OBJ_REQUEST_KEY);
+					HashMap<String, Object> response = (HashMap<String, Object>)bag.get(NOTIFICATION_MSG_OBJ_RESPONSE_KEY);
+					notifyRequestCompletion(request, response);
+					break;
+
+				case NOTIFICATION_MSG_ACTION_PUSH:
+					notifyPush((HashMap<String, Object>)msg.obj);
+					break;
+			}
+		}
+
+		public void addEventListener(ServiceEventListener listener)
+		{
+			eventListeners.add(listener);
+		}
+
+		public void removeEventListener(ServiceEventListener listener)
+		{
+			eventListeners.remove(listener);
+		}
+
+		public void notifyConnect()
+		{
+			for (int i = eventListeners.size() - 1; i >= 0; i--)
+			{
+				eventListeners.get(i).serviceDidConnect();
+			}
+		}
+
+		public void notifyDisconnect()
+		{
+			for (int i = eventListeners.size() - 1; i >= 0; i--)
+			{
+				eventListeners.get(i).serviceDidDisconnect();
+			}
+		}
+
+		public void notifyRequestCompletion(ServiceRequest request, HashMap<String, Object> response)
+		{
+			for (int i = eventListeners.size() - 1; i >= 0; i--)
+			{
+				eventListeners.get(i).serviceDidCompleteRequest(request, response);
+			}
+		}
+
+		public void notifyPush(HashMap<String, Object> push)
+		{
+			for (int i = eventListeners.size() - 1; i >= 0; i--)
+			{
+				eventListeners.get(i).serviceDidReceivePushMessage(push);
+			}
 		}
 	}
 }
