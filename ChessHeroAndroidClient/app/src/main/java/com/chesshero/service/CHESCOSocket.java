@@ -17,13 +17,12 @@ public class CHESCOSocket
 {
 	private Socket sock = null;
 	private boolean connected = false;
-	private boolean verbose = Config.DEBUG;
 	private CHESCOWriter writer;
 	private CHESCOReader reader;
 
 	private void log(String text)
 	{
-		if (verbose)
+		if (Config.DEBUG)
 		{
 			SLog.write("[CHESCOSocket] : " + text);
 		}
