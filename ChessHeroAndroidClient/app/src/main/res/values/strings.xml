@@ -6,4 +6,5 @@
     <string name="registration_link">New to ChessHero?\nRegister here</string>
     <string name="register">Register New Account</string>
     <string name="login_link">Already has account!\nLogin here</string>
+    <string name="empty_string">...</string>
 </resources>
