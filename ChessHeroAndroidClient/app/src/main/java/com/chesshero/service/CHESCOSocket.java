@@ -6,7 +6,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Map;
 
-import com.kt.Config;
 import com.kt.chesco.*;
 import com.kt.utils.SLog;
 
@@ -22,10 +21,7 @@ public class CHESCOSocket
 
 	private void log(String text)
 	{
-		if (Config.DEBUG)
-		{
-			SLog.write("[CHESCOSocket] : " + text);
-		}
+		SLog.write("[CHESCOSocket] : " + text);
 	}
 
 	private void cleanUp()
