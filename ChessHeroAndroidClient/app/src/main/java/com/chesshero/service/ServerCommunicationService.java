@@ -4,7 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.*;
 import android.os.Process;
-import android.util.Log;
+import com.kt.utils.SLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +40,11 @@ public class ServerCommunicationService extends Service
 
 	private WorkDispatchHandler workDispatchHandler;
 	private NotificationHandler notificationHandler;
+
+	private void log(String text)
+	{
+		SLog.write("[ServerCommunicationService] : " + text);
+	}
 
 	private void connect()
 	{
@@ -170,12 +175,12 @@ public class ServerCommunicationService extends Service
 					if (msg.obj != null && msg.obj instanceof ServiceRequest) {
 						ServerCommunicationService.this.sendRequest((ServiceRequest) msg.obj);
 					} else {
-						Log.w("Invalid or missing ServiceRequest object", "");
+						log("attempting to send a request with invalid or missing ServiceRequest object");
 					}
 					break;
 
 				default:
-					Log.w("Invalid message action", "");
+					log("invalid message action");
 			}
 		}
 	}
@@ -198,7 +203,7 @@ public class ServerCommunicationService extends Service
 					if (msg.obj instanceof ServiceEventListener) {
 						addEventListener((ServiceEventListener)msg.obj);
 					} else {
-						Log.w("Object does not implement ServiceEventListener interface", "");
+						log("attempting to add a listener that does not implement ServiceEventListener interface");
 					}
 					break;
 
@@ -206,7 +211,7 @@ public class ServerCommunicationService extends Service
 					if (msg.obj instanceof ServiceEventListener) {
 						removeEventListener((ServiceEventListener) msg.obj);
 					} else {
-						Log.w("Object does not implement ServiceEventListener interface", "");
+						log("attempting to remove a listener that does not implement ServiceEventListener interface");
 					}
 					break;
 
