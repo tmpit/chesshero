@@ -29,6 +29,13 @@ public class CHESCOSocket
 		}
 	}
 
+	private void cleanUp()
+	{
+		sock = null;
+		writer = null;
+		reader = null;
+	}
+
 	public boolean isConnected()
 	{
 		return connected;
@@ -71,7 +78,7 @@ public class CHESCOSocket
 		finally
 		{
 			connected = false;
-			sock = null;
+			cleanUp();
 		}
 	}
 
@@ -90,6 +97,7 @@ public class CHESCOSocket
 		catch (IOException e)
 		{
 			connected = false;
+			cleanUp();
 			throw e;
 		}
 	}
@@ -109,6 +117,7 @@ public class CHESCOSocket
 		catch (IOException e)
 		{
 			connected = false;
+			cleanUp();
 			throw e;
 		}
 	}
