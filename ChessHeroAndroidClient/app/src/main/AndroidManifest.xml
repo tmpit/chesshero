@@ -6,23 +6,30 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
+
         <service
             android:name=".service.ServerCommunicationService"
-            android:exported="false"></service>
+            android:exported="false" />
 
         <activity
             android:name="com.chesshero.ui.MainActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <!--  Entry for RegisterActivity.class -->
         <activity
             android:name=".ui.RegisterActivity"
-            android:label="Register New Account"></activity>
+            android:label="Register New Account" />
+
+        <!--  Entry for PlayChessActivity.class -->
+        <activity
+            android:name=".ui.PlayChessActivity"
+            android:label="Register New Account" />
+
     </application>
 
 </manifest>
