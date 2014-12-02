@@ -45,7 +45,7 @@ public class ServerCommunicationService extends Service
 	private NotificationHandler notificationHandler;
 	private ExecutorService executor;
 
-	private volatile CHESCOSocket socket = null;
+	private CHESCOSocket socket = null;
 
 	private void connect()
 	{
