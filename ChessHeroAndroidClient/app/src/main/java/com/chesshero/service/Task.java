@@ -1,5 +1,7 @@
 package com.chesshero.service;
 
+import android.os.Handler;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -9,6 +11,17 @@ public abstract class Task implements Runnable
 {
 	private AtomicBoolean completed = new AtomicBoolean(false);
 	private AtomicBoolean cancelled = new AtomicBoolean(false);
+	private Handler callbackHandler = null;
+
+	public void setCallbackHandler(Handler handler)
+	{
+		callbackHandler = handler;
+	}
+
+	public Handler getCallbackHandler()
+	{
+		return callbackHandler;
+	}
 
 	public void cancel()
 	{
@@ -38,7 +51,21 @@ public abstract class Task implements Runnable
 			complete();
 		}
 
-		onFinish();
+		if (callbackHandler != null)
+		{
+			callbackHandler.post(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					onFinish();
+				}
+			});
+		}
+		else
+		{
+			onFinish();
+		}
 	}
 
 	public abstract boolean execute();
