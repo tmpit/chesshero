@@ -68,6 +68,8 @@ public class ServerCommunicationService extends Service
 		{
 			log("exception thrown on socket close: " + e);
 		}
+
+		socket = null;
 	}
 
 	private void connect()
@@ -301,12 +303,6 @@ public class ServerCommunicationService extends Service
 		notificationHandler = new NotificationHandler();
 
 		executor = Executors.newCachedThreadPool(new ServiceThreadFactory());
-	}
-
-	@Override
-	public void onDestroy()
-	{
-		super.onDestroy();
 	}
 
 	@Override
