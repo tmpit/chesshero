@@ -13,7 +13,7 @@ public interface ServiceEventListener
 	// Invoked when the service fails to establish a connection to the server
 	void serviceDidFailToConnect();
 
-	// Invoked when the service closes the connection to the server wither due of a connection failure or due to a disconnect() call on the ServiceProxy
+	// Invoked when the service closes the connection to the server wither due of a connection failure or due to a disconnect() call on the Proxy
 	void serviceDidDisconnect();
 
 	// Invoked when the service executes a request

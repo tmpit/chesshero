@@ -41,7 +41,7 @@ public class ServerCommunicationService extends Service
 
 	// A Handler subclass used to synchronize access to the service and its state
 	// Only it interacts directly with the service object so all communication with the service from the outside goes through it
-	// A ServiceProxy object uses it to schedule connect(), disconnect() and sendRequest() calls on the service object
+	// A Proxy object uses it to schedule connect(), disconnect() and sendRequest() calls on the service object
 	// It is also passed as a callback handler to all Task subclasses
 	private WorkDispatchHandler workDispatchHandler;
 
@@ -52,13 +52,13 @@ public class ServerCommunicationService extends Service
 	// - its 'obj' property will hold a parameter object
 	// ========================================================
 
-	// Sent when a ServiceProxy client invokes connect() on the proxy
+	// Sent when a Proxy client invokes connect() on the proxy
 	private static final int WORK_DISPATCH_MSG_ACTION_CONNECT = 1;
 
-	// Sent when a ServiceProxy client invokes disconnect() on the proxy
+	// Sent when a Proxy client invokes disconnect() on the proxy
 	private static final int WORK_DISPATCH_MSG_ACTION_DISCONNECT = 2;
 
-	// Sent when a ServiceProxy client invokes sendRequest() on the proxy
+	// Sent when a Proxy client invokes sendRequest() on the proxy
 	// Message has a ServiceRequest parameter object
 	private static final int WORK_DISPATCH_MSG_ACTION_REQUEST = 3;
 
@@ -67,7 +67,7 @@ public class ServerCommunicationService extends Service
 
 	// A Handler subclass initialized with the main looper
 	// It manages ServiceEventListener's and invokes ServiceEventListener callbacks, so all communication with the event listeners goes through it
-	// A ServiceProxy object uses it to add and remove ServiceEventListener's
+	// A Proxy object uses it to add and remove ServiceEventListener's
 	// The service object uses it to schedule ServiceEventListener callbacks
 	private NotificationHandler notificationHandler;
 
@@ -78,10 +78,10 @@ public class ServerCommunicationService extends Service
 	// - its 'obj' property will hold a parameter object
 	// ========================================================
 
-	// Sent when a ServiceProxy client invokes addEventListener() on the proxy
+	// Sent when a Proxy client invokes addEventListener() on the proxy
 	private static final int NOTIFICATION_MSG_ACTION_ADD_LISTENER = 1;
 
-	// Sent when a ServiceProxy client invokes removeEventListener() on the proxy
+	// Sent when a Proxy client invokes removeEventListener() on the proxy
 	private static final int NOTIFICATION_MSG_ACTION_RM_LISTENER = 2;
 
 	// Used to schedule serviceDidConnect() on event listeners
@@ -428,10 +428,10 @@ public class ServerCommunicationService extends Service
 	@Override
 	public IBinder onBind(Intent intent)
 	{
-		return new ServiceProxy();
+		return new Proxy();
 	}
 
-	public class ServiceProxy extends Binder
+	public class Proxy extends Binder
 	{
 		public void addEventListener(ServiceEventListener listener)
 		{
