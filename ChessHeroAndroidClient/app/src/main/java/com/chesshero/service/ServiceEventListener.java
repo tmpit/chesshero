@@ -8,6 +8,7 @@ import java.util.HashMap;
 public interface ServiceEventListener
 {
 	void serviceDidConnect();
+	void serviceDidFailToConnect();
 	void serviceDidDisconnect();
 	void serviceDidCompleteRequest(ServiceRequest request, HashMap<String, Object> response);
 	void serviceDidReceivePushMessage(HashMap<String, Object> message);
