@@ -38,10 +38,6 @@ public class ServerCommunicationService extends Service
 	private static final int NOTIFICATION_MSG_ACTION_RESPONSE = 6;
 	private static final int NOTIFICATION_MSG_ACTION_PUSH = 7;
 
-	// When NOTIFICATION_MSG_ACTION_RESPONSE, obj property is a HashMap. The two objects inside can be accessed using these keys
-	private static final String NOTIFICATION_MSG_OBJ_REQUEST_KEY = "request";
-	private static final String NOTIFICATION_MSG_OBJ_RESPONSE_KEY = "response";
-
 	private static final int STATE_DISCONNECTED = 1;
 	private static final int STATE_CONNECTING = 2;
 	private static final int STATE_CONNECTED = 3;
@@ -273,9 +269,7 @@ public class ServerCommunicationService extends Service
 
 	private void notifyEventListenersForRequestCompletion(ServiceRequest request, HashMap response)
 	{
-		HashMap<String, Object> bag = new HashMap<String, Object>();
-		bag.put(NOTIFICATION_MSG_OBJ_REQUEST_KEY, request);
-		bag.put(NOTIFICATION_MSG_OBJ_RESPONSE_KEY, response);
+		Object[] bag = {request, response};
 		Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_RESPONSE, bag);
 		notificationHandler.sendMessage(msg);
 	}
@@ -425,10 +419,8 @@ public class ServerCommunicationService extends Service
 					break;
 
 				case NOTIFICATION_MSG_ACTION_RESPONSE:
-					HashMap<String, Object> bag = (HashMap<String, Object>)msg.obj;
-					ServiceRequest request = (ServiceRequest)bag.get(NOTIFICATION_MSG_OBJ_REQUEST_KEY);
-					HashMap<String, Object> response = (HashMap<String, Object>)bag.get(NOTIFICATION_MSG_OBJ_RESPONSE_KEY);
-					notifyRequestCompletion(request, response);
+					Object[] bag = (Object[])msg.obj;
+					notifyRequestCompletion((ServiceRequest)bag[0], (HashMap<String, Object>)bag[1]);
 					break;
 
 				case NOTIFICATION_MSG_ACTION_PUSH:
