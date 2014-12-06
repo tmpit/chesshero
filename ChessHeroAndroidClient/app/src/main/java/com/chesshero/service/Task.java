@@ -1,5 +1,6 @@
 package com.chesshero.service;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -7,42 +8,41 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class Task implements Runnable
 {
-	private static final int STATE_INIT = 0;
-	private static final int STATE_COMPLETED = 1;
-	private static final int STATE_CANCELLED = 2;
-
-	private AtomicInteger state = new AtomicInteger();
-
-	private void complete()
-	{
-		state.compareAndSet(STATE_INIT, STATE_COMPLETED);
-	}
+	private AtomicBoolean completed = new AtomicBoolean(false);
+	private AtomicBoolean cancelled = new AtomicBoolean(false);
 
 	public void cancel()
 	{
-		state.compareAndSet(STATE_INIT, STATE_CANCELLED);
+		cancelled.set(true);
+	}
+
+	private void complete()
+	{
+		completed.set(true);
 	}
 
 	public boolean isCancelled()
 	{
-		return state.get() == STATE_CANCELLED;
+		return cancelled.get();
+	}
+
+	public boolean isCompleted()
+	{
+		return completed.get();
 	}
 
 	@Override
 	public void run()
 	{
-		boolean result = false;
-
-		if (!isCancelled())
+		if (!isCancelled() && execute())
 		{
-			result = execute();
 			complete();
 		}
 
-		onFinish(result && !isCancelled());
+		onFinish();
 	}
 
 	public abstract boolean execute();
 
-	public abstract void onFinish(boolean success);
+	public abstract void onFinish();
 }
