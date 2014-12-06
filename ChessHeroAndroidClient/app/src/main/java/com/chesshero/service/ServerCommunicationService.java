@@ -6,6 +6,7 @@ import android.os.*;
 import android.os.Process;
 import com.kt.utils.SLog;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.*;
@@ -28,33 +29,105 @@ public class ServerCommunicationService extends Service
 	private static final int WORK_DISPATCH_MSG_ACTION_CONNECT = 1;
 	private static final int WORK_DISPATCH_MSG_ACTION_DISCONNECT = 2;
 	private static final int WORK_DISPATCH_MSG_ACTION_REQUEST = 3;
+	private static final int WORK_DISPATCH_MSG_ACTION_CONNECT_FINISH = 32;
 
 	// NotificationHandler message action identifiers. Class is defined at bottom of source file
 	private static final int NOTIFICATION_MSG_ACTION_ADD_LISTENER = 1;
 	private static final int NOTIFICATION_MSG_ACTION_RM_LISTENER = 2;
 	private static final int NOTIFICATION_MSG_ACTION_CONNECT = 3;
-	private static final int NOTIFICATION_MSG_ACTION_DISCONNECT = 4;
-	private static final int NOTIFICATION_MSG_ACTION_RESPONSE = 5;
-	private static final int NOTIFICATION_MSG_ACTION_PUSH = 6;
+	private static final int NOTIFICATION_MSG_ACTION_CONNECT_FAIURE = 4;
+	private static final int NOTIFICATION_MSG_ACTION_DISCONNECT = 5;
+	private static final int NOTIFICATION_MSG_ACTION_RESPONSE = 6;
+	private static final int NOTIFICATION_MSG_ACTION_PUSH = 7;
 
 	// When NOTIFICATION_MSG_ACTION_RESPONSE, obj property is a HashMap. The two objects inside can be accessed using these keys
 	private static final String NOTIFICATION_MSG_OBJ_REQUEST_KEY = "request";
 	private static final String NOTIFICATION_MSG_OBJ_RESPONSE_KEY = "response";
 
+	private static final int STATE_DISCONNECTED = 1;
+	private static final int STATE_CONNECTING = 2;
+	private static final int STATE_CONNECTED = 3;
+
+	private int state = STATE_DISCONNECTED;
+
 	private WorkDispatchHandler workDispatchHandler;
 	private NotificationHandler notificationHandler;
 	private ExecutorService executor;
 
+	private ConnectTask lastConnectTask = null;
 	private CHESCOSocket socket = null;
 
 	private void connect()
 	{
+		if (state != STATE_DISCONNECTED)
+		{
+			return;
+		}
 
+		state = STATE_CONNECTING;
+
+		lastConnectTask = new ConnectTask(SERVER_ADDRESS, SERVER_PORT, CONNECTION_TIMEOUT)
+		{
+			@Override
+			public void onFinish()
+			{
+				Message msg = workDispatchHandler.obtainMessage(WORK_DISPATCH_MSG_ACTION_CONNECT_FINISH, this);
+				workDispatchHandler.sendMessage(msg);
+			}
+		};
+
+		executor.submit(lastConnectTask);
+	}
+
+	private void connectTaskDidFinish(ConnectTask task)
+	{
+		if (lastConnectTask != task)
+		{
+			return;
+		}
+
+		lastConnectTask = null;
+
+		if (task.isCompleted() && !task.isCancelled())
+		{
+			socket = task.getSocket();
+			state = STATE_CONNECTED;
+			notifyEventListenersForConnect();
+		}
+		else if (!task.isCompleted())
+		{
+			notifyEventListenersForConnectFailure();
+		}
 	}
 
 	private void disconnect()
 	{
+		if (STATE_DISCONNECTED == state)
+		{
+			return;
+		}
 
+		if (STATE_CONNECTING == state)
+		{
+			lastConnectTask.cancel();
+			lastConnectTask = null;
+		}
+		else
+		{
+			try
+			{
+				socket.getSocket().close();
+			}
+			catch (IOException e)
+			{
+				log("exception when closing socket: " + e);
+			}
+
+			socket = null;
+			notifyEventListenersForDisconnect();
+		}
+
+		state = STATE_DISCONNECTED;
 	}
 
 	private void sendRequest(ServiceRequest request)
@@ -65,6 +138,12 @@ public class ServerCommunicationService extends Service
 	private void notifyEventListenersForConnect()
 	{
 		Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_CONNECT);
+		notificationHandler.sendMessage(msg);
+	}
+
+	private void notifyEventListenersForConnectFailure()
+	{
+		Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_CONNECT_FAIURE);
 		notificationHandler.sendMessage(msg);
 	}
 
@@ -180,6 +259,9 @@ public class ServerCommunicationService extends Service
 						log("attempting to send a request with invalid or missing ServiceRequest object");
 					}
 					break;
+				case WORK_DISPATCH_MSG_ACTION_CONNECT_FINISH:
+					ServerCommunicationService.this.connectTaskDidFinish((ConnectTask)msg.obj);
+					break;
 
 				default:
 					log("invalid message action");
@@ -221,6 +303,10 @@ public class ServerCommunicationService extends Service
 					notifyConnect();
 					break;
 
+				case NOTIFICATION_MSG_ACTION_CONNECT_FAIURE:
+					notifyConnectFailure();
+					break;
+
 				case NOTIFICATION_MSG_ACTION_DISCONNECT:
 					notifyDisconnect();
 					break;
@@ -253,6 +339,14 @@ public class ServerCommunicationService extends Service
 			for (int i = eventListeners.size() - 1; i >= 0; i--)
 			{
 				eventListeners.get(i).serviceDidConnect();
+			}
+		}
+
+		public void notifyConnectFailure()
+		{
+			for (int i = eventListeners.size() - 1; i >= 0; i--)
+			{
+				eventListeners.get(i).serviceDidFailToConnect();
 			}
 		}
 
