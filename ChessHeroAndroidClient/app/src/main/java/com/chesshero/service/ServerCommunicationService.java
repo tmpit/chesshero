@@ -9,9 +9,8 @@ import com.kt.utils.SLog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Toshko on 11/24/14.
@@ -19,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ServerCommunicationService extends Service
 {
 	// Connection configuration
-	private static final String SERVER_ADDRESS = "127.0.0.1";
+	private static final String SERVER_ADDRESS = "192.168.100.3";
 	private static final int SERVER_PORT = 4848;
 	private static final int CONNECTION_TIMEOUT = 15 * 1000; // In milliseconds
 	private static final int READ_TIMEOUT = 15 * 1000; // In milliseconds
@@ -29,7 +28,9 @@ public class ServerCommunicationService extends Service
 	private static final int WORK_DISPATCH_MSG_ACTION_CONNECT = 1;
 	private static final int WORK_DISPATCH_MSG_ACTION_DISCONNECT = 2;
 	private static final int WORK_DISPATCH_MSG_ACTION_REQUEST = 3;
-	private static final int WORK_DISPATCH_MSG_ACTION_CONNECT_FINISH = 32;
+	private static final int WORK_DISPATCH_MSG_ACTION_CONNECT_FINISH = 4;
+	private static final int WORK_DISPATCH_MSG_ACTION_LISTEN_MESSAGE = 5;
+	private static final int WORK_DISPATCH_MSG_ACTION_LISTEN_FINISH = 6;
 
 	// NotificationHandler message action identifiers. Class is defined at bottom of source file
 	private static final int NOTIFICATION_MSG_ACTION_ADD_LISTENER = 1;
@@ -54,8 +55,9 @@ public class ServerCommunicationService extends Service
 	private NotificationHandler notificationHandler;
 	private ExecutorService executor;
 
-	private ConnectTask lastConnectTask = null;
-	private CHESCOSocket socket = null;
+	private ConnectTask currentConnectTask;
+	private ListenTask currentListenTask;
+	private CHESCOSocket socket;
 
 	private void connect()
 	{
@@ -66,7 +68,7 @@ public class ServerCommunicationService extends Service
 
 		state = STATE_CONNECTING;
 
-		lastConnectTask = new ConnectTask(SERVER_ADDRESS, SERVER_PORT, CONNECTION_TIMEOUT)
+		currentConnectTask = new ConnectTask(SERVER_ADDRESS, SERVER_PORT, CONNECTION_TIMEOUT)
 		{
 			@Override
 			public void onFinish()
@@ -76,22 +78,23 @@ public class ServerCommunicationService extends Service
 			}
 		};
 
-		executor.submit(lastConnectTask);
+		executor.submit(currentConnectTask);
 	}
 
 	private void connectTaskDidFinish(ConnectTask task)
 	{
-		if (lastConnectTask != task)
+		if (currentConnectTask != task)
 		{
 			return;
 		}
 
-		lastConnectTask = null;
+		currentConnectTask = null;
 
 		if (task.isCompleted() && !task.isCancelled())
 		{
 			socket = task.getSocket();
 			state = STATE_CONNECTED;
+			startListening();
 			notifyEventListenersForConnect();
 		}
 		else if (!task.isCompleted())
@@ -109,25 +112,64 @@ public class ServerCommunicationService extends Service
 
 		if (STATE_CONNECTING == state)
 		{
-			lastConnectTask.cancel();
-			lastConnectTask = null;
+			currentConnectTask.cancel();
 		}
 		else
 		{
-			try
-			{
-				socket.getSocket().close();
-			}
-			catch (IOException e)
-			{
-				log("exception when closing socket: " + e);
-			}
-
-			socket = null;
+			currentListenTask.cancel();
 			notifyEventListenersForDisconnect();
 		}
 
 		state = STATE_DISCONNECTED;
+	}
+
+	private void startListening()
+	{
+		currentListenTask = new ListenTask(socket)
+		{
+			@Override
+			public void onMessage(Map message)
+			{
+				Message msg = workDispatchHandler.obtainMessage(WORK_DISPATCH_MSG_ACTION_LISTEN_MESSAGE, message);
+				workDispatchHandler.sendMessage(msg);
+			}
+
+			@Override
+			public void onFinish()
+			{
+				Message msg = workDispatchHandler.obtainMessage(WORK_DISPATCH_MSG_ACTION_LISTEN_FINISH, this);
+				workDispatchHandler.sendMessage(msg);
+			}
+		};
+
+		executor.submit(currentListenTask);
+	}
+
+	private void listenTaskDidReceiveMessage(Map message)
+	{
+		if (message.containsKey("push"))
+		{
+			notifyEventListenersForPushMessage((HashMap)message);
+		}
+		else
+		{
+
+		}
+	}
+
+	private void listenTaskDidFinish(ListenTask task)
+	{
+		if (task != currentListenTask)
+		{
+			return;
+		}
+
+		if (!task.isCancelled())
+		{
+			disconnect();
+		}
+
+		currentListenTask = null;
 	}
 
 	private void sendRequest(ServiceRequest request)
@@ -261,6 +303,14 @@ public class ServerCommunicationService extends Service
 					break;
 				case WORK_DISPATCH_MSG_ACTION_CONNECT_FINISH:
 					ServerCommunicationService.this.connectTaskDidFinish((ConnectTask)msg.obj);
+					break;
+
+				case WORK_DISPATCH_MSG_ACTION_LISTEN_MESSAGE:
+					ServerCommunicationService.this.listenTaskDidReceiveMessage((Map)msg.obj);
+					break;
+
+				case WORK_DISPATCH_MSG_ACTION_LISTEN_FINISH:
+					ServerCommunicationService.this.listenTaskDidFinish((ListenTask)msg.obj);
 					break;
 
 				default:
