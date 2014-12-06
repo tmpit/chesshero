@@ -1,7 +1,6 @@
 package com.chesshero.service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Toshko on 12/2/14.

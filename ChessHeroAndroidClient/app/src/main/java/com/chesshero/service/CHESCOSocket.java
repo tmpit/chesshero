@@ -2,12 +2,10 @@ package com.chesshero.service;
 
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Map;
 
 import com.kt.chesco.*;
-import com.kt.utils.SLog;
 
 /**
  * Created by Toshko on 11/30/14.
