@@ -4,10 +4,13 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.*;
 import android.os.Process;
-import android.util.Log;
+import com.kt.utils.SLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Toshko on 11/24/14.
@@ -40,6 +43,9 @@ public class ServerCommunicationService extends Service
 
 	private WorkDispatchHandler workDispatchHandler;
 	private NotificationHandler notificationHandler;
+	private ExecutorService executor;
+
+	private CHESCOSocket socket = null;
 
 	private void connect()
 	{
@@ -83,6 +89,11 @@ public class ServerCommunicationService extends Service
 		notificationHandler.sendMessage(msg);
 	}
 
+	private void log(String text)
+	{
+		SLog.write("[ServerCommunicationService] : " + text);
+	}
+
 	@Override
 	public void onCreate()
 	{
@@ -93,18 +104,14 @@ public class ServerCommunicationService extends Service
 
 		workDispatchHandler = new WorkDispatchHandler(thread.getLooper());
 		notificationHandler = new NotificationHandler();
+
+		executor = Executors.newCachedThreadPool(new ServiceThreadFactory());
 	}
 
 	@Override
 	public void onDestroy()
 	{
 		super.onDestroy();
-	}
-
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId)
-	{
-		return super.onStartCommand(intent, flags, startId);
 	}
 
 	@Override
@@ -170,12 +177,12 @@ public class ServerCommunicationService extends Service
 					if (msg.obj != null && msg.obj instanceof ServiceRequest) {
 						ServerCommunicationService.this.sendRequest((ServiceRequest) msg.obj);
 					} else {
-						Log.w("Invalid or missing ServiceRequest object", "");
+						log("attempting to send a request with invalid or missing ServiceRequest object");
 					}
 					break;
 
 				default:
-					Log.w("Invalid message action", "");
+					log("invalid message action");
 			}
 		}
 	}
@@ -198,7 +205,7 @@ public class ServerCommunicationService extends Service
 					if (msg.obj instanceof ServiceEventListener) {
 						addEventListener((ServiceEventListener)msg.obj);
 					} else {
-						Log.w("Object does not implement ServiceEventListener interface", "");
+						log("attempting to add a listener that does not implement ServiceEventListener interface");
 					}
 					break;
 
@@ -206,7 +213,7 @@ public class ServerCommunicationService extends Service
 					if (msg.obj instanceof ServiceEventListener) {
 						removeEventListener((ServiceEventListener) msg.obj);
 					} else {
-						Log.w("Object does not implement ServiceEventListener interface", "");
+						log("attempting to remove a listener that does not implement ServiceEventListener interface");
 					}
 					break;
 
