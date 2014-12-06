@@ -1,34 +1,100 @@
 package com.chesshero.ui.chessboard;
 
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.util.Log;
+import android.content.Context;
+import android.util.AttributeSet;
+import android.widget.ImageView;
 
-public final class Tile {
-    private static final String TAG = Tile.class.getSimpleName();
+import com.chesshero.R;
 
-    private final int col;
-    private final int row;
+/**
+ * Created by Vasil on 6.12.2014 г..
+ */
+public final class Tile extends ImageView {
 
-    private final Paint squareColor;
-    private Rect tileRect;
+    private static final int BLACK_BACKGROUND = R.drawable.black_background;
 
-    public Tile(final int col, final int row) {
-        this.col = col;
-        this.row = row;
+    private static final int WHITE_BACKGROUND = R.drawable.white_background;
 
-        this.squareColor = new Paint();
-        squareColor.setColor(isDark() ? Color.BLACK : Color.WHITE);
+    private static final int[] CHESS_PIECES = {
+            R.drawable.black_rook, R.drawable.black_knight, R.drawable.black_bishop, R.drawable.black_king,
+            R.drawable.black_queen, R.drawable.black_bishop, R.drawable.black_knight, R.drawable.black_rook,
+            R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn,
+            R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn,
+            R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn,
+            R.drawable.white_rook, R.drawable.white_knight, R.drawable.white_bishop, R.drawable.white_king,
+            R.drawable.white_queen, R.drawable.white_bishop, R.drawable.white_knight, R.drawable.white_rook,
+    };
+
+    private int mCurrentTileImage;
+
+    private int mCol;
+
+    private int mRow;
+
+    private boolean mIsFlipped = false;
+
+    public Tile(Context context, AttributeSet attrs) {
+        super(context, attrs);
     }
 
-    public void draw(final Canvas canvas) {
-        canvas.drawRect(tileRect, squareColor);
+    public int getCol() {
+        return mCol;
+    }
+
+    public void setCol(int position) {
+        mCol = position % 8;
+    }
+
+    public int getRow() {
+        return mRow;
+    }
+
+    public void setRow(int position) {
+
+        if (!mIsFlipped) {
+            position = 63 - position;
+        }
+        mRow = position / 8;
+    }
+
+    public int getTileImage() {
+        return mCurrentTileImage;
+    }
+
+    public void setTileImage(int position) {
+
+        if (mIsFlipped) {
+            position = 63 - position;
+        }
+        mCurrentTileImage = CHESS_PIECES[position];
+        setImageResource(mCurrentTileImage);
+    }
+
+    public boolean isDark() {
+        return (mCol + mRow) % 2 == 0;
+    }
+
+    public void setTileBackground() {
+        if (isDark()) {
+            setBackgroundResource(BLACK_BACKGROUND);
+        } else {
+            setBackgroundResource(WHITE_BACKGROUND);
+        }
+    }
+
+    // todo remove the following? or use it?
+    public void handleTouch() {
+        //todo
     }
 
     public String getColumnString() {
-        switch (col) {
+
+        switch (mCol) {
             case 0:
                 return "A";
             case 1:
@@ -51,31 +117,13 @@ public final class Tile {
     }
 
     public String getRowString() {
-        // To get the actual row, add 1 since 'row' is 0 indexed.
-        return String.valueOf(row + 1);
-    }
-
-    public void handleTouch() {
-        Log.d(TAG, "handleTouch(): col: " + col);
-        Log.d(TAG, "handleTouch(): row: " + row);
-    }
-
-    public boolean isDark() {
-        return (col + row) % 2 == 0;
-    }
-
-    public boolean isTouched(final int x, final int y) {
-        return tileRect.contains(x, y);
-    }
-
-    public void setTileRect(final Rect tileRect) {
-        this.tileRect = tileRect;
+        // To get the actual mRow, add 1 since 'mRow' is 0 indexed.
+        return String.valueOf(mRow + 1);
     }
 
     public String toString() {
         final String column = getColumnString();
         final String row = getRowString();
-        return "<Tile " + column + row + ">";
+        return "<Tile " + row + column + ">";
     }
-
 }

@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
 
-    <com.chesshero.ui.chessboard.Chessboard
-        android:id="@+id/chessboard"
-        android:layout_width="fill_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/playerName"
-        android:layout_alignParentEnd="false"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="false"
-        android:layout_alignParentStart="false"
-        android:layout_alignWithParentIfMissing="false"
-        android:layout_below="@+id/oponentName" />
+    <GridView
+        android:id="@+id/chessboard_grid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:numColumns="8"
+        android:stretchMode="columnWidth" />
 
     <TextView
         android:id="@+id/playerName"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
         android:text="@string/empty_string"
         android:textColor="#ff000000"
         android:textSize="34sp" />
@@ -28,9 +25,9 @@
         android:id="@+id/oponentName"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_gravity="top"
         android:text="@string/empty_string"
         android:textColor="#ff000000"
         android:textSize="34sp" />
 
-</RelativeLayout>
+</LinearLayout>
