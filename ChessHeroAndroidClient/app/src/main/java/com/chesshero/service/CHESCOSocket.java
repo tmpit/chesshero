@@ -25,6 +25,11 @@ public class CHESCOSocket
 		reader = new CHESCOReader(sock.getInputStream());
 	}
 
+	public Socket getSocket()
+	{
+		return sock;
+	}
+
 	public void write(Map map, int timeout) throws IOException
 	{
 		sock.setSoTimeout(timeout);
