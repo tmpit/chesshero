@@ -1,5 +1,6 @@
 package com.chesshero.service;
 
+import android.os.Handler;
 import com.kt.utils.SLog;
 import java.util.Map;
 
@@ -16,34 +17,36 @@ public abstract class ListenTask extends Task
 	}
 
 	@Override
-	public void cancel()
+	public boolean execute()
 	{
-		super.cancel();
+		Handler callbackHandler = getCallbackHandler();
 
 		try
 		{
-			socket.getSocket().close();
+			while (true)
+			{
+				final Map message = socket.read(0);
+
+				if (callbackHandler != null)
+				{
+					callbackHandler.post(new Runnable()
+					{
+						@Override
+						public void run()
+						{
+							onMessage(message);
+						}
+					});
+				}
+				else
+				{
+					onMessage(message);
+				}
+			}
 		}
 		catch (Throwable e)
 		{
-			SLog.write("[ListenTask] ~ exception thrown on closing socket: " + e);
-		}
-	}
-
-	@Override
-	public boolean execute()
-	{
-		while (true)
-		{
-			try
-			{
-				onMessage(socket.read(0));
-			}
-			catch (Throwable e)
-			{
-				SLog.write("[ListenTask] ~ exception thrown: " + e);
-				break;
-			}
+			SLog.write("[ListenTask] ~ exception thrown: " + e);
 		}
 
 		return true;
