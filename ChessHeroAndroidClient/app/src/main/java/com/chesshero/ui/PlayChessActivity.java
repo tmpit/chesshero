@@ -19,11 +19,11 @@ public class PlayChessActivity extends Activity {
 
 
     private GridView grid;
-    private String mPlayerName = "proba player";
-    private String mOponentName = "proba oponent";
+    private String mPlayerName = "nasakotoaikata";
+    private String mOponentName = "bushoniraglavachupi";
     private Tile previousTileClicked;
     private Tile currentTileClicked;
-    private boolean newMove = true;
+    private boolean newMove;
 
     private boolean isFlipped = true;
 
