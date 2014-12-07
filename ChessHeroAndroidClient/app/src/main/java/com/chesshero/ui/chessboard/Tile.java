@@ -42,6 +42,17 @@ public final class Tile extends ImageView {
         super(context, attrs);
     }
 
+    /**
+     * Swaps kings and queens in the array,
+     * because in inverted move they need to be swaped.
+     */
+    private void swapQeens() {
+        CHESS_PIECES[3] = R.drawable.black_king;
+        CHESS_PIECES[4] = R.drawable.black_queen;
+        CHESS_PIECES[59] = R.drawable.white_king;
+        CHESS_PIECES[60] = R.drawable.white_queen;
+    }
+
     public int getCol() {
         return mCol;
     }
@@ -70,7 +81,13 @@ public final class Tile extends ImageView {
         setImageResource(mCurrentTileImage);
     }
 
-    public void initTile(int position) {
+    public void initTile(int position, boolean isFlipped) {
+        //set straight or inverted mode (black or white figures)
+        if (isFlipped) {
+            mIsFlipped = isFlipped;
+            swapQeens();
+        }
+
         //set row and coloumn
         setRow(position);
         setCol(position);
@@ -88,6 +105,21 @@ public final class Tile extends ImageView {
         }
         mCurrentTileImage = CHESS_PIECES[position];
         setImageResource(mCurrentTileImage);
+    }
+
+    public boolean isMine() {
+        if (!isEmpty()) {
+            if (isWhiteChessPiece() && !mIsFlipped) {
+                return true;
+            } else if (isBlackChessPiece() && mIsFlipped) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isOponent() {
+        return !isMine();
     }
 
     public boolean isEmpty() {
@@ -134,6 +166,16 @@ public final class Tile extends ImageView {
         return false;
     }
 
+    public void applyHighlight() {
+        setScaleType(ImageView.ScaleType.FIT_XY);
+        setScaleX(0.9f);
+        setScaleY(0.9f);
+    }
+
+    public void removeHighlight() {
+        setScaleX(1f);
+        setScaleY(1f);
+    }
 
     // todo remove the following? or use it?
     public void handleTouch() {

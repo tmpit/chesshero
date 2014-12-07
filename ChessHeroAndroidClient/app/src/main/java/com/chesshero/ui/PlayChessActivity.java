@@ -17,7 +17,6 @@ import com.chesshero.ui.chessboard.Tile;
  */
 public class PlayChessActivity extends Activity {
 
-    private final ChessboardAdapter adapter = new ChessboardAdapter(PlayChessActivity.this);
 
     private GridView grid;
     private String mPlayerName = "proba player";
@@ -26,11 +25,14 @@ public class PlayChessActivity extends Activity {
     private Tile currentTileClicked;
     private boolean newMove = true;
 
+    private boolean isFlipped = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play_chess);
 
+        ChessboardAdapter adapter = new ChessboardAdapter(PlayChessActivity.this, isFlipped);
 
         grid = (GridView) findViewById(R.id.chessboard_grid);
         grid.setAdapter(adapter);
@@ -49,20 +51,32 @@ public class PlayChessActivity extends Activity {
 
                 currentTileClicked = (Tile) view;
 
+                if (currentTileClicked.isMine()) {
+                    newMove = true;
+                }
+
                 if (newMove) {
-                    if (currentTileClicked.getTileImage() == 0) {
+                    if (currentTileClicked.isEmpty() || currentTileClicked.isOponent()) {
                         Toast.makeText(PlayChessActivity.this, "Please select a chess piece", Toast.LENGTH_SHORT).show();
                         newMove = true;
                         return;
                     }
+
+                    if (previousTileClicked != null) {
+                        previousTileClicked.removeHighlight();
+                    }
+
                     previousTileClicked = currentTileClicked;
+                    previousTileClicked.applyHighlight();
                     newMove = false;
                 } //if not new move, then move the piece from the first click to the second one.
                 else {
                     if (currentTileClicked.equals(previousTileClicked)) {
                         return;
                     }
+
                     currentTileClicked.setTileImage(previousTileClicked.getTileImage());
+                    previousTileClicked.removeHighlight();
                     previousTileClicked.setTileImage(0);
                     newMove = true;
                 }

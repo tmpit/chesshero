@@ -21,8 +21,11 @@ public class ChessboardAdapter extends BaseAdapter {
 
     private View mGrid;
 
-    public ChessboardAdapter(Context c) {
-        mContext = c;
+    private boolean mIsFlipped;
+
+    public ChessboardAdapter(Context context, boolean isFlipped) {
+        mContext = context;
+        mIsFlipped = isFlipped;
     }
 
     @Override
@@ -50,7 +53,7 @@ public class ChessboardAdapter extends BaseAdapter {
         if (convertView == null) {
             mGrid = inflater.inflate(R.layout.tile, null);
             Tile tile = (Tile) mGrid.findViewById(R.id.single_tile);
-            tile.initTile(position);
+            tile.initTile(position, mIsFlipped);
         } else {
             mGrid = convertView;
         }
