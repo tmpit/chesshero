@@ -17,13 +17,13 @@ import com.chesshero.ui.chessboard.Tile;
  */
 public class PlayChessActivity extends Activity {
 
-
     private GridView grid;
-    private String mPlayerName = "nasakotoaikata";
-    private String mOponentName = "bushoniraglavachupi";
     private Tile previousTileClicked;
     private Tile currentTileClicked;
     private boolean newMove;
+
+    private String mPlayerName;
+    private String mOponentName;
 
     private boolean isFlipped = true;
 
@@ -37,11 +37,8 @@ public class PlayChessActivity extends Activity {
         grid = (GridView) findViewById(R.id.chessboard_grid);
         grid.setAdapter(adapter);
 
-        TextView playerName = (TextView) findViewById(R.id.playerName);
-        playerName.setText(mPlayerName);
-
-        TextView oponentName = (TextView) findViewById(R.id.oponentName);
-        oponentName.setText(mOponentName);
+        final TextView playerName = (TextView) findViewById(R.id.playerName);
+        final TextView oponentName = (TextView) findViewById(R.id.oponentName);
 
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -81,8 +78,10 @@ public class PlayChessActivity extends Activity {
                     newMove = true;
                 }
                 //todo remove this after we are done coding (used for debugging)
-                Toast.makeText(PlayChessActivity.this, "Position: " + position
-                        + "\n" + currentTileClicked, Toast.LENGTH_SHORT).show();
+                playerName.setText("Position: " + position);
+                oponentName.setText(currentTileClicked.toString());
+//                Toast.makeText(PlayChessActivity.this, "Position: " + position
+//                        + "\n" + currentTileClicked, Toast.LENGTH_SHORT).show();
             }
         });
     }
