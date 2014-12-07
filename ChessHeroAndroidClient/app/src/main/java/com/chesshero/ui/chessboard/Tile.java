@@ -16,18 +16,18 @@ public final class Tile extends ImageView {
     private static final int WHITE_BACKGROUND = R.drawable.white_background;
 
     private static final int[] CHESS_PIECES = {
-            R.drawable.black_rook, R.drawable.black_knight, R.drawable.black_bishop, R.drawable.black_king,
-            R.drawable.black_queen, R.drawable.black_bishop, R.drawable.black_knight, R.drawable.black_rook,
+            // the 'dark' side of the board
+            R.drawable.black_rook, R.drawable.black_knight, R.drawable.black_bishop, R.drawable.black_queen,
+            R.drawable.black_king, R.drawable.black_bishop, R.drawable.black_knight, R.drawable.black_rook,
             R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn,
             R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
+            // the middle of the board
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            // the white side of the board
             R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn,
             R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn,
-            R.drawable.white_rook, R.drawable.white_knight, R.drawable.white_bishop, R.drawable.white_king,
-            R.drawable.white_queen, R.drawable.white_bishop, R.drawable.white_knight, R.drawable.white_rook,
+            R.drawable.white_rook, R.drawable.white_knight, R.drawable.white_bishop, R.drawable.white_queen,
+            R.drawable.white_king, R.drawable.white_bishop, R.drawable.white_knight, R.drawable.white_rook,
     };
 
     private int mCurrentTileImage;
@@ -55,7 +55,6 @@ public final class Tile extends ImageView {
     }
 
     public void setRow(int position) {
-
         if (!mIsFlipped) {
             position = 63 - position;
         }
@@ -66,8 +65,24 @@ public final class Tile extends ImageView {
         return mCurrentTileImage;
     }
 
-    public void setTileImage(int position) {
+    public void setTileImage(int imageId) {
+        mCurrentTileImage = imageId;
+        setImageResource(mCurrentTileImage);
+    }
 
+    public void initTile(int position) {
+        //set row and coloumn
+        setRow(position);
+        setCol(position);
+
+        //set background
+        if ((mCol + mRow) % 2 == 0) {
+            setBackgroundResource(BLACK_BACKGROUND);
+        } else {
+            setBackgroundResource(WHITE_BACKGROUND);
+        }
+
+        //set initial chess piece
         if (mIsFlipped) {
             position = 63 - position;
         }
@@ -75,17 +90,50 @@ public final class Tile extends ImageView {
         setImageResource(mCurrentTileImage);
     }
 
-    public boolean isDark() {
-        return (mCol + mRow) % 2 == 0;
+    public boolean isEmpty() {
+        return mCurrentTileImage == 0;
     }
 
-    public void setTileBackground() {
-        if (isDark()) {
-            setBackgroundResource(BLACK_BACKGROUND);
-        } else {
-            setBackgroundResource(WHITE_BACKGROUND);
+    public boolean isBlackChessPiece() {
+        if (isEmpty()) return false;
+
+        switch (mCurrentTileImage) {
+            case R.drawable.black_pawn:
+                return true;
+            case R.drawable.black_knight:
+                return true;
+            case R.drawable.black_rook:
+                return true;
+            case R.drawable.black_bishop:
+                return true;
+            case R.drawable.black_queen:
+                return true;
+            case R.drawable.black_king:
+                return true;
         }
+        return false;
     }
+
+    public boolean isWhiteChessPiece() {
+        if (isEmpty()) return false;
+
+        switch (mCurrentTileImage) {
+            case R.drawable.white_pawn:
+                return true;
+            case R.drawable.white_knight:
+                return true;
+            case R.drawable.white_rook:
+                return true;
+            case R.drawable.white_bishop:
+                return true;
+            case R.drawable.white_queen:
+                return true;
+            case R.drawable.white_king:
+                return true;
+        }
+        return false;
+    }
+
 
     // todo remove the following? or use it?
     public void handleTouch() {
@@ -124,6 +172,6 @@ public final class Tile extends ImageView {
     public String toString() {
         final String column = getColumnString();
         final String row = getRowString();
-        return "<Tile " + row + column + ">";
+        return "<Tile " + column + " " + row + ">";
     }
 }
