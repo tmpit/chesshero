@@ -11,7 +11,7 @@ import com.chesshero.R;
 /**
  * Created by Vasil on 6.12.2014 г..
  */
-public class Chessboard extends BaseAdapter {
+public class ChessboardAdapter extends BaseAdapter {
 
     private static final int ROWS = 8;
 
@@ -21,13 +21,15 @@ public class Chessboard extends BaseAdapter {
 
     private View mGrid;
 
-    public Chessboard(Context c) {
-        mContext = c;
+    private boolean mIsFlipped;
+
+    public ChessboardAdapter(Context context, boolean isFlipped) {
+        mContext = context;
+        mIsFlipped = isFlipped;
     }
 
     @Override
     public int getCount() {
-        // TODO Auto-generated method stub
         return ROWS * COLS;
     }
 
@@ -51,11 +53,7 @@ public class Chessboard extends BaseAdapter {
         if (convertView == null) {
             mGrid = inflater.inflate(R.layout.tile, null);
             Tile tile = (Tile) mGrid.findViewById(R.id.single_tile);
-
-            tile.setCol(position);
-            tile.setRow(position);
-            tile.setTileBackground();
-            tile.setTileImage(position);
+            tile.initTile(position, mIsFlipped);
         } else {
             mGrid = convertView;
         }

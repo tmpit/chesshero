@@ -4,30 +4,42 @@
     android:layout_height="match_parent"
     android:orientation="horizontal">
 
-    <GridView
-        android:id="@+id/chessboard_grid"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:numColumns="8"
-        android:stretchMode="columnWidth" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/playerName"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:text="@string/empty_string"
-        android:textColor="#ff000000"
-        android:textSize="34sp" />
+        <TextView
+            android:id="@+id/oponentName"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20px"
+            android:gravity="center_horizontal"
+            android:text="@string/empty_string"
+            android:textColor="#ff000000"
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/oponentName"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:text="@string/empty_string"
-        android:textColor="#ff000000"
-        android:textSize="34sp" />
+        <GridView
+            android:id="@+id/chessboard_grid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#00FF00"
+            android:numColumns="8"
+            android:stretchMode="columnWidth" />
+
+        <TextView
+            android:id="@+id/playerName"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20px"
+            android:gravity="center_horizontal"
+            android:text="@string/empty_string"
+            android:textColor="#ff000000"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
 
 </LinearLayout>
