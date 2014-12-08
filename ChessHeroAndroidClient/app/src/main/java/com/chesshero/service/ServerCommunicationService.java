@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Toshko on 11/24/14.
@@ -116,7 +117,7 @@ public class ServerCommunicationService extends Service
 	private static final int STATE_CONNECTED = 3;
 
 	// The current connectivity state of the service
-	private int state = STATE_DISCONNECTED;
+	private AtomicInteger state = new AtomicInteger(STATE_DISCONNECTED);
 
 	// The executor that handles all network-related tasks
 	private ExecutorService executor;
@@ -162,16 +163,40 @@ public class ServerCommunicationService extends Service
 		socket = null;
 	}
 
+	// State setter
+	private void setState(int state)
+	{
+		this.state.set(state);
+	}
+
+	// State getter
+	private int getState()
+	{
+		return this.state.get();
+	}
+
+	// Returns whether the service is connected to the server
+	private boolean isConnected()
+	{
+		return STATE_CONNECTED == getState();
+	}
+
+	// Returns whether the service is currently connecting to the server
+	private boolean isConnecting()
+	{
+		return STATE_CONNECTING == getState();
+	}
+
 	// Submits a ConnectTask to the executor
 	// No-op if the service is already connected or connecting
 	private void connect()
 	{
-		if (state != STATE_DISCONNECTED)
+		if (getState() != STATE_DISCONNECTED)
 		{
 			return;
 		}
 
-		state = STATE_CONNECTING;
+		setState(STATE_CONNECTING);
 
 		currentConnectTask = new ConnectTask(SERVER_ADDRESS, SERVER_PORT, CONNECTION_TIMEOUT)
 		{
@@ -193,7 +218,7 @@ public class ServerCommunicationService extends Service
 				if (this.isCompleted())
 				{	// Connection has been established - modify state, start a ListenTask and notify listeners
 					socket = this.getSocket();
-					state = STATE_CONNECTED;
+					setState(STATE_CONNECTED);
 					startListening();
 					notifyEventListenersForConnect();
 				}
@@ -212,6 +237,8 @@ public class ServerCommunicationService extends Service
 	// No-op if the service is already disconnected
 	private void disconnect()
 	{
+		int state = getState();
+
 		if (STATE_DISCONNECTED == state)
 		{
 			return;
@@ -236,7 +263,7 @@ public class ServerCommunicationService extends Service
 
 		// Reset state
 		fill();
-		state = STATE_DISCONNECTED;
+		setState(STATE_DISCONNECTED);
 	}
 
 	// Starts a ListenTask
@@ -283,7 +310,7 @@ public class ServerCommunicationService extends Service
 	// Assumes 'request' is not null
 	private void sendRequest(ServiceRequest request)
 	{
-		if (state != STATE_CONNECTED || isRequesting())
+		if (getState() != STATE_CONNECTED || isRequesting())
 		{	// Only handle one request at a time
 			return;
 		}
@@ -443,6 +470,16 @@ public class ServerCommunicationService extends Service
 		{
 			Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_RM_LISTENER, listener);
 			notificationHandler.sendMessage(msg);
+		}
+
+		public boolean isConnected()
+		{
+			return ServerCommunicationService.this.isConnected();
+		}
+
+		public boolean isConnecting()
+		{
+			return ServerCommunicationService.this.isConnecting();
 		}
 
 		public void connect()
