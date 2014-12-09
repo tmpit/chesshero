@@ -16,6 +16,7 @@ public class LoginResponseParser extends ResponseParser
 	protected void reset()
 	{
 		super.reset();
+
 		userID = null;
 		userName = null;
 	}
