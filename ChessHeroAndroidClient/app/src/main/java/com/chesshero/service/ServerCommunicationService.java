@@ -22,7 +22,7 @@ public class ServerCommunicationService extends Service
 	// ========================================================
 
 	// The address the service connects to
-	private static final String SERVER_ADDRESS = "192.168.100.3";
+	private static final String SERVER_ADDRESS = "192.168.100.2";
 
 	// The port the service connect to
 	private static final int SERVER_PORT = 4848;
@@ -606,7 +606,7 @@ public class ServerCommunicationService extends Service
 		{
 			for (ServiceEventListener listener : eventListeners)
 			{
-				listener.serviceDidFailToConnect();
+				listener.serviceDidConnect();
 			}
 		}
 
