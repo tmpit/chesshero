@@ -58,6 +58,9 @@ public class Action
 	 * The timeout can be between 3 and 30 minutes for timed chess matches or 0 for timeless. If not present, the default is 0
 	 * Returns:
 	 * - [gameid:INT] - The if of the game which
+	 * - [gamename:STR] - The name of the game
+	 * - [color:STR] - The color of the player
+	 * - [timeout:INT] - The game's timeout value. 0 means no timeout
 	 * - [chattoken:STR] - The chat token needed to authenticate with the chat server
 	 * </pre>
 	 */

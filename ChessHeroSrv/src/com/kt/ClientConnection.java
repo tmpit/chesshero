@@ -815,6 +815,9 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("gameid", gameID);
+			response.put("gamename", gameName);
+			response.put("timeout", timeout);
+			response.put("color", color);
 			response.put("chattoken", chatToken);
             writeMessage(response);
         }
