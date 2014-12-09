@@ -604,41 +604,41 @@ public class ServerCommunicationService extends Service
 
 		public void notifyConnect()
 		{
-			for (int i = eventListeners.size() - 1; i >= 0; i--)
+			for (ServiceEventListener listener : eventListeners)
 			{
-				eventListeners.get(i).serviceDidConnect();
+				listener.serviceDidFailToConnect();
 			}
 		}
 
 		public void notifyConnectFailure()
 		{
-			for (int i = eventListeners.size() - 1; i >= 0; i--)
+			for (ServiceEventListener listener : eventListeners)
 			{
-				eventListeners.get(i).serviceDidFailToConnect();
+				listener.serviceDidFailToConnect();
 			}
 		}
 
 		public void notifyDisconnect()
 		{
-			for (int i = eventListeners.size() - 1; i >= 0; i--)
+			for (ServiceEventListener listener : eventListeners)
 			{
-				eventListeners.get(i).serviceDidDisconnect();
+				listener.serviceDidDisconnect();
 			}
 		}
 
 		public void notifyRequestCompletion(ServiceRequest request, HashMap<String, Object> response)
 		{
-			for (int i = eventListeners.size() - 1; i >= 0; i--)
+			for (ServiceEventListener listener : eventListeners)
 			{
-				eventListeners.get(i).serviceDidCompleteRequest(request, response);
+				listener.serviceDidCompleteRequest(request, response);
 			}
 		}
 
 		public void notifyPush(HashMap<String, Object> push)
 		{
-			for (int i = eventListeners.size() - 1; i >= 0; i--)
+			for (ServiceEventListener listener : eventListeners)
 			{
-				eventListeners.get(i).serviceDidReceivePushMessage(push);
+				listener.serviceDidReceivePushMessage(push);
 			}
 		}
 	}
