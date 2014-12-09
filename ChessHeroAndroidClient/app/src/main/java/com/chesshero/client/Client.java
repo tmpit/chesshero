@@ -6,11 +6,18 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
+import com.chesshero.client.parsers.CreateGameResponseParser;
 import com.chesshero.client.parsers.LoginResponseParser;
+import com.chesshero.client.parsers.ParserCache;
+import com.chesshero.client.parsers.ResponseParser;
+import com.chesshero.event.EventCenter;
 import com.chesshero.service.ServerCommunicationService;
 import com.chesshero.service.ServiceEventListener;
 import com.chesshero.service.ServiceRequest;
 import com.kt.api.Action;
+import com.kt.game.Color;
+import com.kt.game.Game;
+import com.kt.game.Player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +27,15 @@ import java.util.HashMap;
  */
 public class Client implements ServiceEventListener
 {
+	public static class Event
+	{
+		public static final String LOGOUT = "client.event.logout";
+		public static final String LOGIN_RESULT = "client.event.login";
+		public static final String REGISTER_RESULT = "client.event.register";
+		public static final String CREATE_GAME_RESULT = "client.event.creategame";
+		public static final String CANCEL_GAME_RESULT = "client.event.cancelgame";
+	}
+
 	private ServiceConnection serviceConnection = new ServiceConnection()
 	{
 		@Override
@@ -30,7 +46,11 @@ public class Client implements ServiceEventListener
 			serviceProxy = (ServerCommunicationService.Proxy)iBinder;
 			serviceProxy.addEventListener(Client.this);
 			connectedToService = true;
-			serviceProxy.connect();
+
+			if (shouldAutomaticallyConnect)
+			{
+				serviceProxy.connect();
+			}
 		}
 
 		@Override
@@ -48,12 +68,15 @@ public class Client implements ServiceEventListener
 	private ServerCommunicationService.Proxy serviceProxy;
 	private boolean connectedToService = false;
 
-	private User user = null;
-
+	private boolean shouldAutomaticallyConnect = false;
 	private boolean shouldAutomaticallyLoginOnConnect = false;
 	private ServiceRequest cachedLoginRequest;
 
 	private boolean executingRequest = false;
+	private boolean shouldFailNextResponse = false;
+
+	private Player player = null;
+	private Game game = null;
 
 	protected Client(Context context)
 	{
@@ -62,21 +85,102 @@ public class Client implements ServiceEventListener
 		context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 	}
 
-	public User getUser()
-	{
-		return user;
-	}
-
 	public boolean isLoggedIn()
 	{
-		return user != null;
+		return player != null;
+	}
+
+	public Player getPlayer()
+	{
+		return player;
+	}
+
+	public Game getGame()
+	{
+		return game;
+	}
+
+	public void register(String userName, String password)
+	{
+		doLogin(userName, password, true);
 	}
 
 	public void login(String userName, String password)
 	{
+		doLogin(userName, password, false);
+	}
+
+	public void logout()
+	{
+		shouldAutomaticallyConnect = false;
+		shouldAutomaticallyLoginOnConnect = false;
+		cachedLoginRequest = null;
+
+		if (!connectedToService || !isLoggedIn())
+		{
+			return;
+		}
+
+		serviceProxy.disconnect();
+
+		if (executingRequest)
+		{
+			shouldFailNextResponse = true;
+		}
+
+		if (player != null)
+		{
+			player = null;
+			game = null;
+			notifyLogout();
+		}
+	}
+
+	public void createGame(String name, Color color, Integer timeout)
+	{
+		if (!isLoggedIn())
+		{
+			log("unauthorized attempt to create game");
+			return;
+		}
+
+		if (null == name)
+		{
+			log("attempting to create game without providing name");
+			return;
+		}
+
+		maybeSendRequest(RequestFactory.createCreateGameRequest(name, color.toString(), timeout));
+	}
+
+	public void cancelGame(Integer gameID)
+	{
+		if (!isLoggedIn())
+		{
+			log("unauthorized attempt to cancel game");
+			return;
+		}
+
+		if (null == game || game.getState() != Game.STATE_PENDING)
+		{
+			log("invalid attempting to cancel game - game is missing or cannot be cancelled");
+			return;
+		}
+
+		if (null == gameID)
+		{
+			log("attempting to cancel game without providing game id");
+			return;
+		}
+
+		maybeSendRequest(RequestFactory.createCancelGameRequest(gameID));
+	}
+
+	private void doLogin(String userName, String password, boolean register)
+	{
 		if (isLoggedIn())
 		{
-			log("attempting to login while a user is already logged in");
+			log("attempting to login while a player is already logged in");
 			return;
 		}
 
@@ -92,9 +196,22 @@ public class Client implements ServiceEventListener
 			{
 				serviceProxy.connect();
 			}
+			else if (!connectedToService)
+			{
+				shouldAutomaticallyConnect = true;
+			}
 
 			shouldAutomaticallyLoginOnConnect = true;
-			cachedLoginRequest = ServiceRequestFactory.createLoginRequest(userName, password);
+
+			if (register)
+			{
+				cachedLoginRequest = RequestFactory.createRegisterRequest(userName, password);
+			}
+			else
+			{
+				cachedLoginRequest = RequestFactory.createLoginRequest(userName, password);
+			}
+
 			return;
 		}
 
@@ -103,13 +220,21 @@ public class Client implements ServiceEventListener
 			return;
 		}
 
-		maybeSendRequest(ServiceRequestFactory.createLoginRequest(userName, password));
+		if (register)
+		{
+			maybeSendRequest(RequestFactory.createRegisterRequest(userName, password));
+		}
+		else
+		{
+			maybeSendRequest(RequestFactory.createLoginRequest(userName, password));
+		}
 	}
 
 	private void maybeSendRequest(ServiceRequest request)
 	{
 		if (executingRequest)
 		{
+			log("attempting to execute a request while another one is in progress");
 			return;
 		}
 
@@ -120,14 +245,45 @@ public class Client implements ServiceEventListener
 	// ===============================================================
 	private void loginDidComplete(LoginResponseParser parser)
 	{
-		executingRequest = false;
-
 		if (parser.success)
 		{
-			user = new User(parser.userID, parser.userName);
+			player = new Player(parser.userID, parser.userName);
 		}
 
-		notifyLoginCompletion(parser.result, user);
+		notifyLoginCompletion(parser.result);
+	}
+
+	private void registerDidComplete(LoginResponseParser parser)
+	{
+		if (parser.success)
+		{
+			player = new Player(parser.userID, parser.userName);
+		}
+
+		notifyRegisterCompletetion(parser.result);
+	}
+
+	private void createGameDidComplete(CreateGameResponseParser parser)
+	{
+		if (parser.success)
+		{
+			game = new Game(parser.gameID, parser.gameName, parser.timeout);
+			game.setState(Game.STATE_PENDING);
+			player.join(game, Color.fromString(parser.color));
+		}
+
+		notifyGameCreateCompletion(parser.result);
+	}
+
+	private void cancelGameDidComplete(ResponseParser parser)
+	{
+		if (parser.success)
+		{
+			player.leave();
+			game = null;
+		}
+
+		notifyGameCancelCompletion(parser.result);
 	}
 
 	// ===============================================================
@@ -151,7 +307,7 @@ public class Client implements ServiceEventListener
 		if (shouldAutomaticallyLoginOnConnect)
 		{
 			shouldAutomaticallyLoginOnConnect = false;
-			loginDidComplete(getLoginResponseParser().parse(null));
+			loginDidComplete(ParserCache.getLoginResponseParser().parse(null));
 		}
 	}
 
@@ -159,8 +315,7 @@ public class Client implements ServiceEventListener
 	public void serviceDidDisconnect()
 	{
 		log("service did disconnect");
-
-		user = null;
+		logout();
 	}
 
 	@Override
@@ -168,10 +323,30 @@ public class Client implements ServiceEventListener
 	{
 		log("service did complete request");
 
+		executingRequest = false;
+
+		if (shouldFailNextResponse)
+		{
+			shouldFailNextResponse = false;
+			response = null;
+		}
+
 		switch(request.getAction())
 		{
 			case Action.LOGIN:
-				loginDidComplete(getLoginResponseParser().parse(response));
+				loginDidComplete(ParserCache.getLoginResponseParser().parse(response));
+				break;
+
+			case Action.REGISTER:
+				registerDidComplete(ParserCache.getLoginResponseParser().parse(response));
+				break;
+
+			case Action.CREATE_GAME:
+				createGameDidComplete(ParserCache.getCreateGameResponseParser().parse(response));
+				break;
+
+			case Action.CANCEL_GAME:
+				cancelGameDidComplete(ParserCache.getGenericResponseParser().parse(response));
 				break;
 		}
 	}
@@ -183,37 +358,29 @@ public class Client implements ServiceEventListener
 	}
 
 	// ===============================================================
-	private LoginResponseParser cachedLoginParser = null;
-
-	private LoginResponseParser getLoginResponseParser()
+	private void notifyLoginCompletion(Integer result)
 	{
-		if (null == cachedLoginParser)
-		{
-			cachedLoginParser = new LoginResponseParser();
-		}
-
-		return cachedLoginParser;
+		EventCenter.getSingleton().postEvent(Event.LOGIN_RESULT, result);
 	}
 
-	// ===============================================================
-	private ArrayList<ClientEventListener> eventListeners = new ArrayList<ClientEventListener>();
-
-	public void addEventListener(ClientEventListener listener)
+	private void notifyRegisterCompletetion(Integer result)
 	{
-		eventListeners.add(listener);
+		EventCenter.getSingleton().postEvent(Event.REGISTER_RESULT, result);
 	}
 
-	public void removeEventListener(ClientEventListener listener)
+	private void notifyLogout()
 	{
-		eventListeners.remove(listener);
+		EventCenter.getSingleton().postEvent(Event.LOGOUT, null);
 	}
 
-	private void notifyLoginCompletion(Integer result, User user)
+	private void notifyGameCreateCompletion(Integer result)
 	{
-		for (int i = eventListeners.size() - 1; i >= 0; i--)
-		{
-			eventListeners.get(i).clientDidCompleteLogin(result, user);
-		}
+		EventCenter.getSingleton().postEvent(Event.CREATE_GAME_RESULT, result);
+	}
+
+	private void notifyGameCancelCompletion(Integer result)
+	{
+		EventCenter.getSingleton().postEvent(Event.CANCEL_GAME_RESULT, result);
 	}
 
 	// ===============================================================

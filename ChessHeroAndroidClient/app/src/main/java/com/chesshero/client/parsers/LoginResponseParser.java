@@ -1,7 +1,5 @@
 package com.chesshero.client.parsers;
 
-import com.chesshero.client.User;
-
 import java.util.HashMap;
 
 /**
