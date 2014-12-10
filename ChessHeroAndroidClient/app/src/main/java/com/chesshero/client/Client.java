@@ -6,21 +6,18 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
-import com.chesshero.client.parsers.CreateGameResponseParser;
-import com.chesshero.client.parsers.LoginResponseParser;
-import com.chesshero.client.parsers.ParserCache;
-import com.chesshero.client.parsers.ResponseParser;
+import com.chesshero.client.parsers.*;
 import com.chesshero.event.EventCenter;
 import com.chesshero.service.ServerCommunicationService;
 import com.chesshero.service.ServiceEventListener;
 import com.chesshero.service.ServiceRequest;
 import com.kt.api.Action;
-import com.kt.game.Color;
-import com.kt.game.Game;
-import com.kt.game.Player;
+import com.kt.game.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Toshko on 12/7/14.
@@ -34,6 +31,10 @@ public class Client implements ServiceEventListener
 		public static final String REGISTER_RESULT = "client.event.register";
 		public static final String CREATE_GAME_RESULT = "client.event.creategame";
 		public static final String CANCEL_GAME_RESULT = "client.event.cancelgame";
+		public static final String PENDING_GAMES_LOAD_RESULT = "client.event.pendinggames";
+		public static final String JOIN_GAME_RESULT = "client.event.joingame";
+		public static final String EXIT_GAME_RESULT = "client.event.exitgame";
+		public static final String MOVE_RESULT = "client.event.move";
 	}
 
 	private ServiceConnection serviceConnection = new ServiceConnection()
@@ -77,6 +78,12 @@ public class Client implements ServiceEventListener
 
 	private Player player = null;
 	private Game game = null;
+	private GameController gameController = null;
+
+	private List<GameTicket> cachedPendingGames = null;
+
+	private GameTicket currentJoinGameTicket = null;
+	private String currentMove = null;
 
 	protected Client(Context context)
 	{
@@ -98,6 +105,11 @@ public class Client implements ServiceEventListener
 	public Game getGame()
 	{
 		return game;
+	}
+
+	public List<GameTicket> getCachedPendingGames()
+	{
+		return cachedPendingGames;
 	}
 
 	public void register(String userName, String password)
@@ -132,6 +144,7 @@ public class Client implements ServiceEventListener
 		{
 			player = null;
 			game = null;
+			gameController = null;
 			notifyLogout();
 		}
 	}
@@ -153,7 +166,7 @@ public class Client implements ServiceEventListener
 		maybeSendRequest(RequestFactory.createCreateGameRequest(name, color.toString(), timeout));
 	}
 
-	public void cancelGame(Integer gameID)
+	public void cancelGame()
 	{
 		if (!isLoggedIn())
 		{
@@ -161,19 +174,83 @@ public class Client implements ServiceEventListener
 			return;
 		}
 
-		if (null == game || game.getState() != Game.STATE_PENDING)
+		if (null == game)
 		{
-			log("invalid attempting to cancel game - game is missing or cannot be cancelled");
+			log("attempting to cancel game without being in one");
 			return;
 		}
 
-		if (null == gameID)
+		maybeSendRequest(RequestFactory.createCancelGameRequest(game.getID()));
+	}
+
+	public void loadPendingGames()
+	{
+		if (!isLoggedIn())
 		{
-			log("attempting to cancel game without providing game id");
+			log("unauthorized attempt to load pending games");
 			return;
 		}
 
-		maybeSendRequest(RequestFactory.createCancelGameRequest(gameID));
+		maybeSendRequest(RequestFactory.createFetchGamesRequest("pending", null, null));
+	}
+
+	public void joinGame(GameTicket ticket)
+	{
+		if (!isLoggedIn())
+		{
+			log("unauthorized attempt to join game");
+			return;
+		}
+
+		if (null == ticket)
+		{
+			log("attempting to join game without providing a game ticket");
+			return;
+		}
+
+		currentJoinGameTicket = ticket;
+		maybeSendRequest(RequestFactory.createJoinGameRequest(ticket.gameID));
+	}
+
+	public void exitGame()
+	{
+		if (!isLoggedIn())
+		{
+			log("unauthorized attempt to exit game");
+			return;
+		}
+
+		if (null == gameController)
+		{
+			log("attempting to exit game without being in one");
+			return;
+		}
+
+		maybeSendRequest(RequestFactory.createExitGameRequest(game.getID()));
+	}
+
+	public void executeMove(Position from, Position to)
+	{
+		if (!isLoggedIn())
+		{
+			log("unauthorized attempt to execute move");
+			return;
+		}
+
+		if (null == from || null == to)
+		{
+			log("attempting to execute a move without providing from position and/or to position");
+			return;
+		}
+
+		if (null == gameController)
+		{
+			log("attempting to execute a move without being in a game");
+			return;
+		}
+
+		currentMove = Position.boardPositionFromPosition(from) + Position.boardPositionFromPosition(to);
+		maybeSendRequest(RequestFactory.createMoveRequest(currentMove));
 	}
 
 	private void doLogin(String userName, String password, boolean register)
@@ -186,7 +263,7 @@ public class Client implements ServiceEventListener
 
 		if (null == userName || null == password)
 		{
-			log("attempting to login with missing username or password");
+			log("attempting to login without providing username and/or password");
 			return;
 		}
 
@@ -269,7 +346,7 @@ public class Client implements ServiceEventListener
 		{
 			game = new Game(parser.gameID, parser.gameName, parser.timeout);
 			game.setState(Game.STATE_PENDING);
-			player.join(game, Color.fromString(parser.color));
+			player.join(game, parser.color);
 		}
 
 		notifyGameCreateCompletion(parser.result);
@@ -284,6 +361,60 @@ public class Client implements ServiceEventListener
 		}
 
 		notifyGameCancelCompletion(parser.result);
+	}
+
+	private void fetchGamesDidComplete(FetchGamesResponseParser parser)
+	{
+		if (parser.success)
+		{
+			cachedPendingGames = parser.games;
+		}
+
+		notifyFetchPendingGamesLoadCompletion(parser.result);
+	}
+
+	private void joinGameDidComplete(ResponseParser parser)
+	{
+		if (!parser.success)
+		{
+			notifyJoinGameCompletion(parser.result);
+			return;
+		}
+
+		game = new Game(currentJoinGameTicket.gameID, currentJoinGameTicket.gameName, currentJoinGameTicket.timeout);
+		Player opponent = new Player(currentJoinGameTicket.opponentID, currentJoinGameTicket.opponentName);
+		opponent.join(game, currentJoinGameTicket.opponentColor);
+		player.join(game, currentJoinGameTicket.opponentColor.Opposite);
+
+		gameController = new GameController(game);
+		gameController.startGame();
+
+		currentJoinGameTicket = null;
+
+		notifyJoinGameCompletion(parser.result);
+	}
+
+	private void exitGameDidComplete(ResponseParser parser)
+	{
+		if (parser.success)
+		{
+			player.leave();
+			game = null;
+			gameController = null;
+		}
+
+		notifyExitGameCompletion(parser.result);
+	}
+
+	private void moveDidComplete(ResponseParser parser)
+	{
+		if (parser.success)
+		{
+			gameController.execute(game.getTurn(), currentMove);
+			currentMove = null;
+		}
+
+		notifyMoveCompletion(parser.result);
 	}
 
 	// ===============================================================
@@ -348,13 +479,29 @@ public class Client implements ServiceEventListener
 			case Action.CANCEL_GAME:
 				cancelGameDidComplete(ParserCache.getGenericResponseParser().parse(response));
 				break;
+
+			case Action.FETCH_GAMES:
+				fetchGamesDidComplete(ParserCache.getFetchGamesResponseParser().parse(response));
+				break;
+
+			case Action.JOIN_GAME:
+				joinGameDidComplete(ParserCache.getGenericResponseParser().parse(response));
+				break;
+
+			case Action.EXIT_GAME:
+				exitGameDidComplete(ParserCache.getGenericResponseParser().parse(response));
+				break;
+
+			case Action.MOVE:
+				moveDidComplete(ParserCache.getGenericResponseParser().parse(response));
+				break;
 		}
 	}
 
 	@Override
 	public void serviceDidReceivePushMessage(HashMap<String, Object> message)
 	{
-
+		log("service did receive push message");
 	}
 
 	// ===============================================================
@@ -381,6 +528,26 @@ public class Client implements ServiceEventListener
 	private void notifyGameCancelCompletion(Integer result)
 	{
 		EventCenter.getSingleton().postEvent(Event.CANCEL_GAME_RESULT, result);
+	}
+
+	private void notifyFetchPendingGamesLoadCompletion(Integer result)
+	{
+		EventCenter.getSingleton().postEvent(Event.PENDING_GAMES_LOAD_RESULT, result);
+	}
+
+	private void notifyJoinGameCompletion(Integer result)
+	{
+		EventCenter.getSingleton().postEvent(Event.JOIN_GAME_RESULT, result);
+	}
+
+	private void notifyExitGameCompletion(Integer result)
+	{
+		EventCenter.getSingleton().postEvent(Event.EXIT_GAME_RESULT, result);
+	}
+
+	private void notifyMoveCompletion(Integer result)
+	{
+		EventCenter.getSingleton().postEvent(Event.MOVE_RESULT, result);
 	}
 
 	// ===============================================================
