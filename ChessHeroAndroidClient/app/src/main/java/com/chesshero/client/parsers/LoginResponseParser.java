@@ -24,13 +24,11 @@ public class LoginResponseParser extends ResponseParser
 	{
 		super.parse(response);
 
-		if (!success)
+		if (success)
 		{
-			return this;
+			userName = (String)response.get("username");
+			userID = (Integer)response.get("userid");
 		}
-
-		userName = (String)response.get("username");
-		userID = (Integer)response.get("userid");
 
 		return this;
 	}

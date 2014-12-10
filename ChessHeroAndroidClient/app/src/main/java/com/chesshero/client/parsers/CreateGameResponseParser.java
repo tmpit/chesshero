@@ -1,5 +1,7 @@
 package com.chesshero.client.parsers;
 
+import com.kt.game.Color;
+
 import java.util.HashMap;
 
 /**
@@ -10,7 +12,7 @@ public class CreateGameResponseParser extends ResponseParser
 	public Integer gameID;
 	public String gameName;
 	public String chatToken;
-	public String color;
+	public Color color;
 	public Integer timeout;
 
 	@Override
@@ -38,7 +40,7 @@ public class CreateGameResponseParser extends ResponseParser
 		gameID = (Integer)response.get("gameid");
 		chatToken = (String)response.get("chattoken");
 		gameName = (String)response.get("gamename");
-		color = (String)response.get("color");
+		color = Color.fromString((String)response.get("color"));
 		timeout = (Integer)response.get("timeout");
 
 		return this;

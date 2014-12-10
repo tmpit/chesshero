@@ -5,37 +5,49 @@ package com.chesshero.client.parsers;
  */
 public class ParserCache
 {
-	private static ResponseParser cachedGenericParser = null;
-	private static LoginResponseParser cachedLoginParser = null;
-	private static CreateGameResponseParser cachedCreateGameParser = null;
+	private static ResponseParser genericParser = null;
+	private static LoginResponseParser loginParser = null;
+	private static CreateGameResponseParser createGameParser = null;
+	private static FetchGamesResponseParser fetchGamesParser = null;
+	private static ExitGameResponseParser exitGameParser = null;
 
 	public static ResponseParser getGenericResponseParser()
 	{
-		if (null == cachedGenericParser)
+		if (null == genericParser)
 		{
-			cachedGenericParser = new ResponseParser();
+			genericParser = new ResponseParser();
 		}
 
-		return cachedGenericParser;
+		return genericParser;
 	}
 
 	public static LoginResponseParser getLoginResponseParser()
 	{
-		if (null == cachedLoginParser)
+		if (null == loginParser)
 		{
-			cachedLoginParser = new LoginResponseParser();
+			loginParser = new LoginResponseParser();
 		}
 
-		return cachedLoginParser;
+		return loginParser;
 	}
 
 	public static CreateGameResponseParser getCreateGameResponseParser()
 	{
-		if (null == cachedCreateGameParser)
+		if (null == createGameParser)
 		{
-			cachedCreateGameParser = new CreateGameResponseParser();
+			createGameParser = new CreateGameResponseParser();
 		}
 
-		return cachedCreateGameParser;
+		return createGameParser;
+	}
+
+	public static FetchGamesResponseParser getFetchGamesResponseParser()
+	{
+		if (null == fetchGamesParser)
+		{
+			fetchGamesParser = new FetchGamesResponseParser();
+		}
+
+		return fetchGamesParser;
 	}
 }
