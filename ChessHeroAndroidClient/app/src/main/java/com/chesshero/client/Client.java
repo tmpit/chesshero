@@ -151,12 +151,6 @@ public class Client implements ServiceEventListener
 
 	public void createGame(String name, Color color, Integer timeout)
 	{
-		if (!isLoggedIn())
-		{
-			log("unauthorized attempt to create game");
-			return;
-		}
-
 		if (null == name)
 		{
 			log("attempting to create game without providing name");
@@ -168,12 +162,6 @@ public class Client implements ServiceEventListener
 
 	public void cancelGame()
 	{
-		if (!isLoggedIn())
-		{
-			log("unauthorized attempt to cancel game");
-			return;
-		}
-
 		if (null == game)
 		{
 			log("attempting to cancel game without being in one");
@@ -185,23 +173,11 @@ public class Client implements ServiceEventListener
 
 	public void loadPendingGames()
 	{
-		if (!isLoggedIn())
-		{
-			log("unauthorized attempt to load pending games");
-			return;
-		}
-
 		maybeSendRequest(RequestFactory.createFetchGamesRequest("pending", null, null));
 	}
 
 	public void joinGame(GameTicket ticket)
 	{
-		if (!isLoggedIn())
-		{
-			log("unauthorized attempt to join game");
-			return;
-		}
-
 		if (null == ticket)
 		{
 			log("attempting to join game without providing a game ticket");
@@ -214,12 +190,6 @@ public class Client implements ServiceEventListener
 
 	public void exitGame()
 	{
-		if (!isLoggedIn())
-		{
-			log("unauthorized attempt to exit game");
-			return;
-		}
-
 		if (null == gameController)
 		{
 			log("attempting to exit game without being in one");
@@ -231,12 +201,6 @@ public class Client implements ServiceEventListener
 
 	public void executeMove(Position from, Position to)
 	{
-		if (!isLoggedIn())
-		{
-			log("unauthorized attempt to execute move");
-			return;
-		}
-
 		if (null == from || null == to)
 		{
 			log("attempting to execute a move without providing from position and/or to position");
@@ -255,12 +219,6 @@ public class Client implements ServiceEventListener
 
 	private void doLogin(String userName, String password, boolean register)
 	{
-		if (isLoggedIn())
-		{
-			log("attempting to login while a player is already logged in");
-			return;
-		}
-
 		if (null == userName || null == password)
 		{
 			log("attempting to login without providing username and/or password");
