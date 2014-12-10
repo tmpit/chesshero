@@ -48,4 +48,47 @@ public class RequestFactory
 		request.addParameter("gameid", gameID);
 		return request;
 	}
+
+	public static ServiceRequest createFetchGamesRequest(String type, Integer offset, Integer limit)
+	{
+		ServiceRequest request = new ServiceRequest(Action.FETCH_GAMES);
+
+		if (type != null)
+		{
+			request.addParameter("type", type);
+		}
+
+		if (offset != null)
+		{
+			request.addParameter("offset", offset);
+		}
+
+		if (limit != null)
+		{
+			request.addParameter("limit", limit);
+		}
+
+		return request;
+	}
+
+	public static ServiceRequest createJoinGameRequest(Integer gameID)
+	{
+		ServiceRequest request = new ServiceRequest(Action.JOIN_GAME);
+		request.addParameter("gameid", gameID);
+		return request;
+	}
+
+	public static ServiceRequest createExitGameRequest(Integer gameID)
+	{
+		ServiceRequest request = new ServiceRequest(Action.EXIT_GAME);
+		request.addParameter("gameid", gameID);
+		return request;
+	}
+
+	public static ServiceRequest createMoveRequest(String move)
+	{
+		ServiceRequest request = new ServiceRequest(Action.MOVE);
+		request.addParameter("move", move);
+		return request;
+	}
 }
