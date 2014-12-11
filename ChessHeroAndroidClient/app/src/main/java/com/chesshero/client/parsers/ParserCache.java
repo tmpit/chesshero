@@ -9,7 +9,6 @@ public class ParserCache
 	private static LoginResponseParser loginParser = null;
 	private static CreateGameResponseParser createGameParser = null;
 	private static FetchGamesResponseParser fetchGamesParser = null;
-	private static ExitGameResponseParser exitGameParser = null;
 
 	public static ResponseParser getGenericResponseParser()
 	{
