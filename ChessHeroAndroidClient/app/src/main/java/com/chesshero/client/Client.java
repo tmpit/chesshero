@@ -37,6 +37,11 @@ public class Client implements ServiceEventListener
 		public static final String MOVE_RESULT = "client.event.move";
 	}
 
+	private Context context;
+
+	private ServerCommunicationService.Proxy serviceProxy;
+	private boolean connectedToService = false;
+
 	private ServiceConnection serviceConnection = new ServiceConnection()
 	{
 		@Override
@@ -64,14 +69,9 @@ public class Client implements ServiceEventListener
 		}
 	};
 
-	private Context context;
-
-	private ServerCommunicationService.Proxy serviceProxy;
-	private boolean connectedToService = false;
-
 	private boolean shouldAutomaticallyConnect = false;
-	private boolean shouldAutomaticallyLoginOnConnect = false;
-	private ServiceRequest cachedLoginRequest;
+	private boolean shouldAutomaticallySendRequestOnConnect = false;
+	private ServiceRequest cachedRequest = null;
 
 	private boolean executingRequest = false;
 	private boolean shouldFailNextResponse = false;
@@ -114,19 +114,31 @@ public class Client implements ServiceEventListener
 
 	public void register(String userName, String password)
 	{
-		doLogin(userName, password, true);
+		if (null == userName || null == password || 0 == userName.trim().length() || 0 == password.trim().length())
+		{
+			log("attempting to register without providing username and/or password");
+			return;
+		}
+
+		trySendRequest(RequestFactory.createRegisterRequest(userName.trim(), password.trim()));
 	}
 
 	public void login(String userName, String password)
 	{
-		doLogin(userName, password, false);
+		if (null == userName || null == password || 0 == userName.trim().length() || 0 == password.trim().length())
+		{
+			log("attempting to login without providing username and/or password");
+			return;
+		}
+
+		trySendRequest(RequestFactory.createLoginRequest(userName.trim(), password.trim()));
 	}
 
 	public void logout()
 	{
 		shouldAutomaticallyConnect = false;
-		shouldAutomaticallyLoginOnConnect = false;
-		cachedLoginRequest = null;
+		shouldAutomaticallySendRequestOnConnect = false;
+		cachedRequest = null;
 
 		if (!connectedToService || !isLoggedIn())
 		{
@@ -151,13 +163,13 @@ public class Client implements ServiceEventListener
 
 	public void createGame(String name, Color color, Integer timeout)
 	{
-		if (null == name)
+		if (null == name || 0 == name.trim().length())
 		{
 			log("attempting to create game without providing name");
 			return;
 		}
 
-		maybeSendRequest(RequestFactory.createCreateGameRequest(name, color.toString(), timeout));
+		trySendRequest(RequestFactory.createCreateGameRequest(name.trim(), color.toString(), timeout));
 	}
 
 	public void cancelGame()
@@ -168,12 +180,12 @@ public class Client implements ServiceEventListener
 			return;
 		}
 
-		maybeSendRequest(RequestFactory.createCancelGameRequest(game.getID()));
+		trySendRequest(RequestFactory.createCancelGameRequest(game.getID()));
 	}
 
 	public void loadPendingGames()
 	{
-		maybeSendRequest(RequestFactory.createFetchGamesRequest("pending", null, null));
+		trySendRequest(RequestFactory.createFetchGamesRequest("pending", null, null));
 	}
 
 	public void joinGame(GameTicket ticket)
@@ -185,7 +197,7 @@ public class Client implements ServiceEventListener
 		}
 
 		currentJoinGameTicket = ticket;
-		maybeSendRequest(RequestFactory.createJoinGameRequest(ticket.gameID));
+		trySendRequest(RequestFactory.createJoinGameRequest(ticket.gameID));
 	}
 
 	public void exitGame()
@@ -196,7 +208,7 @@ public class Client implements ServiceEventListener
 			return;
 		}
 
-		maybeSendRequest(RequestFactory.createExitGameRequest(game.getID()));
+		trySendRequest(RequestFactory.createExitGameRequest(game.getID()));
 	}
 
 	public void executeMove(Position from, Position to)
@@ -214,17 +226,11 @@ public class Client implements ServiceEventListener
 		}
 
 		currentMove = Position.boardPositionFromPosition(from) + Position.boardPositionFromPosition(to);
-		maybeSendRequest(RequestFactory.createMoveRequest(currentMove));
+		trySendRequest(RequestFactory.createMoveRequest(currentMove));
 	}
 
-	private void doLogin(String userName, String password, boolean register)
+	private void trySendRequest(ServiceRequest request)
 	{
-		if (null == userName || null == password)
-		{
-			log("attempting to login without providing username and/or password");
-			return;
-		}
-
 		if (!connectedToService || !serviceProxy.isConnected())
 		{
 			if (connectedToService && !serviceProxy.isConnecting())
@@ -236,40 +242,15 @@ public class Client implements ServiceEventListener
 				shouldAutomaticallyConnect = true;
 			}
 
-			shouldAutomaticallyLoginOnConnect = true;
-
-			if (register)
-			{
-				cachedLoginRequest = RequestFactory.createRegisterRequest(userName, password);
-			}
-			else
-			{
-				cachedLoginRequest = RequestFactory.createLoginRequest(userName, password);
-			}
+			shouldAutomaticallySendRequestOnConnect = true;
+			cachedRequest = request;
 
 			return;
 		}
 
-		if (shouldAutomaticallyLoginOnConnect)
+		if (shouldAutomaticallySendRequestOnConnect || executingRequest)
 		{
-			return;
-		}
-
-		if (register)
-		{
-			maybeSendRequest(RequestFactory.createRegisterRequest(userName, password));
-		}
-		else
-		{
-			maybeSendRequest(RequestFactory.createLoginRequest(userName, password));
-		}
-	}
-
-	private void maybeSendRequest(ServiceRequest request)
-	{
-		if (executingRequest)
-		{
-			log("attempting to execute a request while another one is in progress");
+			log("attempting to send request while another one is executing");
 			return;
 		}
 
@@ -381,10 +362,10 @@ public class Client implements ServiceEventListener
 	{
 		log("service did connect");
 
-		if (shouldAutomaticallyLoginOnConnect)
+		if (shouldAutomaticallySendRequestOnConnect)
 		{
-			shouldAutomaticallyLoginOnConnect = false;
-			maybeSendRequest(cachedLoginRequest);
+			shouldAutomaticallySendRequestOnConnect = false;
+			trySendRequest(cachedRequest);
 		}
 	}
 
@@ -393,10 +374,10 @@ public class Client implements ServiceEventListener
 	{
 		log("service did fail to connect");
 
-		if (shouldAutomaticallyLoginOnConnect)
+		if (shouldAutomaticallySendRequestOnConnect)
 		{
-			shouldAutomaticallyLoginOnConnect = false;
-			loginDidComplete(ParserCache.getLoginResponseParser().parse(null));
+			shouldAutomaticallySendRequestOnConnect = false;
+			serviceDidCompleteRequest(cachedRequest, null);
 		}
 	}
 
