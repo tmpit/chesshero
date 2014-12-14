@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.chesshero.R;
 import com.chesshero.ui.chessboard.ChessboardAdapter;
+import com.chesshero.ui.chessboard.Moves;
 import com.chesshero.ui.chessboard.Tile;
 
 /**
@@ -18,21 +19,21 @@ import com.chesshero.ui.chessboard.Tile;
 public class PlayChessActivity extends Activity {
 
     private GridView grid;
+    private Moves moves;
+    private boolean isFlipped = true;
+
     private Tile previousTileClicked;
     private Tile currentTileClicked;
-    private boolean newMove;
+    private boolean newMove = true;
 
-    private String mPlayerName;
-    private String mOponentName;
-
-    private boolean isFlipped = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play_chess);
 
-        ChessboardAdapter adapter = new ChessboardAdapter(PlayChessActivity.this, isFlipped);
+        final ChessboardAdapter adapter = new ChessboardAdapter(PlayChessActivity.this, isFlipped);
+        moves = new Moves(adapter.getAllTiles());
 
         grid = (GridView) findViewById(R.id.chessboard_grid);
         grid.setAdapter(adapter);
@@ -49,39 +50,35 @@ public class PlayChessActivity extends Activity {
                 currentTileClicked = (Tile) view;
 
                 if (currentTileClicked.isMine()) {
+                    moves.clear();
+                    moves.apply(currentTileClicked);
                     newMove = true;
                 }
 
                 if (newMove) {
                     if (currentTileClicked.isEmpty() || currentTileClicked.isOponent()) {
-                        Toast.makeText(PlayChessActivity.this, "Please select a chess piece", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PlayChessActivity.this, "Please select a your chess piece", Toast.LENGTH_SHORT).show();
                         newMove = true;
                         return;
                     }
 
-                    if (previousTileClicked != null) {
-                        previousTileClicked.removeHighlight();
-                    }
-
                     previousTileClicked = currentTileClicked;
-                    previousTileClicked.applyHighlight();
                     newMove = false;
                 } //if not new move, then move the piece from the first click to the second one.
                 else {
-                    if (currentTileClicked.equals(previousTileClicked)) {
+                    if (!currentTileClicked.isAvailable()) {
+                        Toast.makeText(PlayChessActivity.this, "Illegal move", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     currentTileClicked.setTileImage(previousTileClicked.getTileImage());
-                    previousTileClicked.removeHighlight();
                     previousTileClicked.setTileImage(0);
+                    moves.clear();
                     newMove = true;
                 }
                 //todo remove this after we are done coding (used for debugging)
                 playerName.setText("Position: " + position);
                 oponentName.setText(currentTileClicked.toString());
-//                Toast.makeText(PlayChessActivity.this, "Position: " + position
-//                        + "\n" + currentTileClicked, Toast.LENGTH_SHORT).show();
             }
         });
     }
