@@ -139,16 +139,21 @@ public class GameController
 		return true;
 	}
 
-	public void endGame(Player winner, boolean checkmate)
+	public void endGame(Player winner, Game.Ending ending)
 	{
 		if (game.getState() != Game.STATE_ACTIVE && game.getState() != Game.STATE_PAUSED)
 		{
 			return;
 		}
 
+		if (ending == null)
+		{
+			return;
+		}
+
 		game.setState(Game.STATE_FINISHED);
 		game.winner = winner;
-		game.checkmate = checkmate;
+		game.ending = ending;
 
 		GameClock clock = game.getClock();
 
@@ -194,7 +199,7 @@ public class GameController
 
 		if (result.checkmate)
 		{
-			endGame(result.winner, true);
+			endGame(result.winner, Game.Ending.CHECKMATE);
 		}
 
 		return result.resultCode;

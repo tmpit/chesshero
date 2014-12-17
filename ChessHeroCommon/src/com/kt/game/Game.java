@@ -121,7 +121,15 @@ public class Game
 	protected ArrayList<ChessPiece> attackers = new ArrayList<ChessPiece>(2);
 
 	protected Player winner = null;
-	protected boolean checkmate = false;
+
+	public enum Ending
+	{
+		CHECKMATE,
+		SUDDED_DEATH,
+		SURRENDER
+	}
+
+	protected Ending ending = null;
 
 	protected boolean initializedFromSavedState = false;
 	protected boolean saved = false;
@@ -318,14 +326,9 @@ public class Game
         return this.board[position.getX()][position.getY()];
     }
 
-	/**
-	 * True if the game has ended due to a checkmate, false if not. Used to determine how to finalize a game after
-	 * it has finished
-	 * @return True if the game has ended due to a checkmate, false if not
-	 */
-	public boolean isCheckmate()
+	public Ending getEnding()
 	{
-		return checkmate;
+		return ending;
 	}
 
 	/**

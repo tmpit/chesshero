@@ -254,7 +254,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 					GameController controller = getGameController(game.getID());
 
 					// End the game with the opponent as the winner
-					controller.endGame(opponent, false);
+					controller.endGame(opponent, Game.Ending.SURRENDER);
 					finalizeGame(game);
 
 					if (opponentConnection != null)
@@ -425,7 +425,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 			if (winner != null)
 			{
-				db.insertResult(gameID, winner.getUserID(), loser.getUserID(), game.isCheckmate());
+				db.insertResult(gameID, winner.getUserID(), loser.getUserID(), game.getEnding() == Game.Ending.CHECKMATE);
 			}
 			else if (!game.wasSaved())
 			{	// Draw
@@ -1125,7 +1125,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 				// End the game with the opponent as the winner
 				GameController controller = getGameController(game.getID());
-				controller.endGame(opponent, false);
+				controller.endGame(opponent, Game.Ending.SURRENDER);
 
 				popPlayerConnection(gameID, player.getUserID());
 				opponentConnection = popPlayerConnection(gameID, opponentUserID);
@@ -1787,7 +1787,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 			int gameID = game.getID();
 
 			// End the game with the opponent as the winner
-			getGameController(gameID).endGame(opponent, false);
+			getGameController(gameID).endGame(opponent, Game.Ending.SUDDED_DEATH);
 
 			popPlayerConnection(gameID, thePlayer.getUserID());
 			opponentConnection = popPlayerConnection(gameID, opponentUserID);
