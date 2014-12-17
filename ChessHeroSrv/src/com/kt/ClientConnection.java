@@ -50,7 +50,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 	private static final HashMap<String, ClientConnection> playerConnections = new HashMap<String, ClientConnection>();
 	private static final Lock playerConnectionsMutex = new ReentrantLock(true);
 
-	private static final HashMap<Integer, Game> games = new HashMap<Integer, Game>();
+	private static final HashMap<Integer, GameController> games = new HashMap<Integer, GameController>();
 	private static final Lock gamesMutex = new ReentrantLock(true);
 
 	/**
@@ -102,29 +102,20 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		return conn;
 	}
 
-	/**
-	 * Maps a {@code Game} instance to its game id
-	 * @param game The {@code Game}
-	 */
-	private static void addGame(Game game)
+	private static void addGameController(GameController controller)
 	{
 		gamesMutex.lock();
-		games.put(game.getID(), game);
+		games.put(controller.getGame().getID(), controller);
 		gamesMutex.unlock();
 	}
 
-	/**
-	 * Removes a {@code Game} for the specified game id and returns it
-	 * @param gameID An {@code int}
-	 * @return The removed {@code Game} or null if there is no game mapped to the specified game id
-	 */
-	private static Game removeGame(int gameID)
+	private static GameController removeGameController(int gameID)
 	{
 		gamesMutex.lock();
-		Game game = games.get(gameID);
+		GameController controller = games.get(gameID);
 		games.remove(gameID);
 		gamesMutex.unlock();
-		return game;
+		return controller;
 	}
 
 	/**
@@ -132,12 +123,12 @@ public class ClientConnection extends Thread implements GameClockEventListener
 	 * @param gameID An {@code int}
 	 * @return The removed {@code Game} or null if there is no game mapped to the specified game id
 	 */
-	private static Game getGame(int gameID)
+	private static GameController getGameController(int gameID)
 	{
 		gamesMutex.lock();
-		Game game = games.get(gameID);
+		GameController controller = games.get(gameID);
 		gamesMutex.unlock();
-		return game;
+		return controller;
 	}
 
 	/**
@@ -260,8 +251,10 @@ public class ClientConnection extends Thread implements GameClockEventListener
 						opponentConnection.saveRequestUnresolved.set(false);
 					}
 
+					GameController controller = getGameController(game.getID());
+
 					// End the game with the opponent as the winner
-					game.getController().endGame(opponent, false);
+					controller.endGame(opponent, false);
 					finalizeGame(game);
 
 					if (opponentConnection != null)
@@ -371,8 +364,8 @@ public class ClientConnection extends Thread implements GameClockEventListener
 	{
 		int gID = game.getID();
 
-		removeGame(gID);
-		player.leave();
+		GameController controller = removeGameController(gID);
+		controller.removePlayers();
 
 		try
 		{
@@ -418,10 +411,8 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		Player winner = game.getWinner();
 		Player loser = (winner != null ? winner.getOpponent() : null);
 
-		game.getPlayer1().leave();
-		game.getPlayer2().leave();
-
-		removeGame(gameID);
+		GameController controller = removeGameController(gameID);
+		controller.removePlayers();
 
 		try
 		{
@@ -802,8 +793,8 @@ public class ClientConnection extends Thread implements GameClockEventListener
 			putPlayerConnection(gameID, userID, this);
 
 			Game game = new Game(gameID, gameName, timeout);
-			game.setState(Game.STATE_PENDING);
-			player.join(game, Color.fromString(color));
+			GameController controller = new GameController(game, new MasterChessMoveExecutor());
+			controller.addPlayer(player, Color.fromString(color));
 			GameClock clock = game.getClock();
 
 			if (clock != null)
@@ -811,7 +802,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 				clock.addEventListener(this);
 			}
 
-			addGame(game);
+			addGameController(controller);
 
             HashMap response = aResponseWithResult(Result.OK);
             response.put("gameid", gameID);
@@ -991,9 +982,9 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
         int gameID = joinGameID.intValue();
 
-        Game game = getGame(gameID);
+		GameController controller = getGameController(gameID);
 
-        if (null == game)
+        if (null == controller)
         {
             writeMessage(aResponseWithResult(Result.INVALID_GAME_ID));
             return;
@@ -1006,6 +997,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
         Player opponent = null;
         String myChatToken = null;
+		Game game = controller.getGame();
 
         synchronized (game)
         {
@@ -1034,8 +1026,8 @@ public class ClientConnection extends Thread implements GameClockEventListener
                         db.commit();
 
 						putPlayerConnection(gameID, myUserID, this);
+						controller.addPlayer(player, myColor);
 
-                        player.join(game, myColor);
 						GameClock clock = game.getClock();
 
 						if (clock != null)
@@ -1043,7 +1035,6 @@ public class ClientConnection extends Thread implements GameClockEventListener
 							clock.addEventListener(this);
 						}
 
-                        GameController controller = new GameController(game);
 						controller.startGame();
                     }
                     catch (Exception e)
@@ -1133,7 +1124,8 @@ public class ClientConnection extends Thread implements GameClockEventListener
 				opponentUserID = opponent.getUserID();
 
 				// End the game with the opponent as the winner
-				game.getController().endGame(opponent, false);
+				GameController controller = getGameController(game.getID());
+				controller.endGame(opponent, false);
 
 				popPlayerConnection(gameID, player.getUserID());
 				opponentConnection = popPlayerConnection(gameID, opponentUserID);
@@ -1202,9 +1194,9 @@ public class ClientConnection extends Thread implements GameClockEventListener
 		{
 			if (!(gameNotStarted = game.getState() != Game.STATE_ACTIVE))
 			{
-				GameController controller = game.getController();
+				GameController controller = getGameController(game.getID());
 
-				result = controller.execute(player, move);
+				result = controller.executeMove(player, move);
 
 				if (Result.OK == result)
 				{
@@ -1354,7 +1346,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 							throw new ChessHeroException(Result.INTERNAL_ERROR);
 						}
 
-						game.setState(Game.STATE_PAUSED);
+						getGameController(game.getID()).pauseGame();
 						opponentConnection.saveRequestUnresolved.set(true);
 						prompt = true;
 					}
@@ -1379,7 +1371,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 							db.commit();
 
-							game.getController().endGame(null, false, true);
+							getGameController(gameID).saveGame();
 
 							popPlayerConnection(gameID, myUserID);
 							popPlayerConnection(gameID, opponentUserID);
@@ -1400,7 +1392,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 							}
 
 							// Revert
-							game.setState(Game.STATE_ACTIVE);
+							getGameController(gameID).resumeGame();
 							saveRequestAccepted.set(false);
 							saveRequestUnresolved.set(false);
 
@@ -1413,7 +1405,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 					}
 					else
 					{
-						game.setState(Game.STATE_ACTIVE);
+						getGameController(gameID).resumeGame();
 					}
 
 					saveRequestAccepted.set(save);
@@ -1578,16 +1570,18 @@ public class ClientConnection extends Thread implements GameClockEventListener
 			HashMap opponentPlayerInfo = firstPlayer == myPlayerInfo ? secondPlayer : firstPlayer;
 
 			Game game = null;
+			GameController controller = null;
 			byte gameData[] = (byte[])gameInfo.get("gdata");
 			String gameName = (String)gameInfo.get("gname");
 			int gameTimeout = (Integer)gameInfo.get("timeout");
 
 			gamesMutex.lock();
 
-			if (null == (game = games.get(gameID)))
+			if (null == (controller = games.get(gameID)))
 			{
 				game = new Game(gameID, gameName, gameTimeout, gameData);
-				games.put(gameID, game);
+				controller = new GameController(game, new MasterChessMoveExecutor());
+				games.put(gameID, controller);
 			}
 
 			gamesMutex.unlock();
@@ -1646,8 +1640,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 					}
 
 					putPlayerConnection(gameID, myUserID, this);
-					game.setState(Game.STATE_WAITING);
-					player.join(game, Color.fromString(color), (Long)myPlayerInfo.get("played"));
+					controller.addPlayer(player, Color.fromString(color), (Long)myPlayerInfo.get("played"));
 					GameClock clock = game.getClock();
 
 					if (clock != null)
@@ -1696,7 +1689,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 						}
 
 						putPlayerConnection(gameID, myUserID, this);
-						player.join(game, Color.fromString(color), (Long)myPlayerInfo.get("played"));
+						controller.addPlayer(player, Color.fromString(color), (Long)myPlayerInfo.get("played"));
 						GameClock clock = game.getClock();
 
 						if (clock != null)
@@ -1705,7 +1698,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 						}
 
 						Boolean myTurn = (Boolean)myPlayerInfo.get("next");
-						new GameController(game).startGame(myTurn ? player : player.getOpponent());
+						controller.startGame(myTurn ? player : player.getOpponent());
 						join = true;
 					}
 				}
@@ -1757,7 +1750,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 			if (!success)
 			{
-				removeGame(gameID);
+				removeGameController(gameID);
 			}
 		}
 	}
@@ -1794,7 +1787,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 			int gameID = game.getID();
 
 			// End the game with the opponent as the winner
-			game.getController().endGame(opponent, false);
+			getGameController(gameID).endGame(opponent, false);
 
 			popPlayerConnection(gameID, thePlayer.getUserID());
 			opponentConnection = popPlayerConnection(gameID, opponentUserID);

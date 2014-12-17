@@ -25,7 +25,7 @@ public class CreateGamePage extends ChessHeroPage {
     public static GameSettings createGameSettings;
     public JLabel infoLabel;
     public static boolean gameCreated;
-    public static Game createdGame;
+    public static GameController createdGameController;
     private JButton createGameButton;
     private JButton lobbyPageButton;
 
@@ -241,7 +241,7 @@ public class CreateGamePage extends ChessHeroPage {
         if(gameCreated == true)
         {
             Request request = new Request(Action.CANCEL_GAME);
-            request.addParameter("gameid",createdGame.getID());
+            request.addParameter("gameid", createdGameController.getGame().getID());
 
             this.getConnection().sendRequest(request);
         }
@@ -286,12 +286,9 @@ public class CreateGamePage extends ChessHeroPage {
         Integer opponentId = (Integer)message.get("opponentid");
 
         Player opponent = new Player(opponentId, opponentName);
+        createdGameController.addPlayer(opponent, this.getHolder().player.getColor().Opposite);
 
-        opponent.join(createdGame,this.getHolder().player.getColor().Opposite);
-
-        GameController gameContr = new GameController(createdGame);
-
-        this.getHolder().NavigateToPage(new PlayGamePage(gameContr));
+        this.getHolder().NavigateToPage(new PlayGamePage(createdGameController));
     }
 
 
@@ -308,7 +305,7 @@ public class CreateGamePage extends ChessHeroPage {
                 if (Result.OK == resultCode)
                 {
                     gameCreated = false;
-                    createdGame = null;
+                    createdGameController = null;
                     createGameButton.setText("Create Game");
                     lobbyPageButton.setEnabled(true);
                 }
@@ -318,8 +315,8 @@ public class CreateGamePage extends ChessHeroPage {
                 {
                     String color = createGameSettings.IsWithWhite ? "white" : "black";
                     Integer gameID = (Integer)response.get("gameid");
-                    createdGame = new Game(gameID, createGameSettings.GameName, Game.NO_TIMEOUT);
-                    this.getHolder().player.join(createdGame, (createGameSettings.IsWithWhite ? com.kt.game.Color.WHITE : com.kt.game.Color.BLACK));
+                    createdGameController = new GameController(new Game(gameID, createGameSettings.GameName, Game.NO_TIMEOUT), new MasterChessMoveExecutor());
+                    createdGameController.addPlayer(this.getHolder().player, (createGameSettings.IsWithWhite ? com.kt.game.Color.WHITE : com.kt.game.Color.BLACK));
 
                     gameCreated = true;
                     createGameButton.setText("Cancel Game");

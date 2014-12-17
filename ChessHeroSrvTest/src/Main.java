@@ -33,7 +33,7 @@ public class Main
 
 	private static Player me;
 	private static Player notMe;
-	private static Game theGame;
+	private static GameController theGameController;
 
     public static void main(String []args)
     {
@@ -228,15 +228,15 @@ public class Main
 			{
 				case Push.GAME_JOIN:
 					notMe = new Player((Integer)msg.get("opponentid"), (String)msg.get("opponentname"));
-					notMe.join(theGame, me.getColor().Opposite);
+					theGameController.addPlayer(notMe, me.getColor().Opposite);
 
 					if (iAmNextOnResume != null)
 					{
-						new GameController(theGame).startGame(iAmNextOnResume ? me : notMe);
+						theGameController.startGame(iAmNextOnResume ? me : notMe);
 					}
 					else
 					{
-						new GameController(theGame).startGame();
+						theGameController.startGame();
 					}
 
 					iAmNextOnResume = null;
@@ -246,12 +246,12 @@ public class Main
 
 				case Push.GAME_END:
 					notMe = null;
-					theGame = null;
+					theGameController = null;
 					break;
 
 				case Push.GAME_MOVE:
 					String move = (String)msg.get("move");
-					theGame.getController().execute(notMe, move);
+					theGameController.executeMove(notMe, move);
 					printBoard();
 					break;
 
@@ -320,8 +320,8 @@ public class Main
 
 		if (Result.OK == (Integer)res.get("result"))
 		{
-			theGame = new Game(-1, "", Game.NO_TIMEOUT);
-			me.join(theGame, (null == color ? Color.WHITE : color.equals("white") ? Color.WHITE : Color.BLACK));
+			theGameController = new GameController(new Game(-1, "", Game.NO_TIMEOUT), new MasterChessMoveExecutor());
+			theGameController.addPlayer(me, (null == color ? Color.WHITE : color.equals("white") ? Color.WHITE : Color.BLACK));
 		}
     }
 
@@ -337,8 +337,8 @@ public class Main
 
 		if (Result.OK == (Integer)res.get("result"))
 		{
-			me.leave();
-			theGame = null;
+			theGameController.removePlayers();
+			theGameController = null;
 		}
     }
 
@@ -402,11 +402,12 @@ public class Main
 				return;
 			}
 
-			theGame = new Game(-1, "", Game.NO_TIMEOUT);
-			me.join(theGame, opponentColor.Opposite);
 			notMe = opponent;
-			notMe.join(theGame, opponentColor);
-			new GameController(theGame).startGame();
+			theGameController = new GameController(new Game(-1, "", Game.NO_TIMEOUT), new MasterChessMoveExecutor());
+			theGameController.addPlayer(me, opponentColor.Opposite);
+			theGameController.addPlayer(notMe, opponentColor);
+			theGameController.startGame();
+
 			printBoard();
 		}
 	}
@@ -423,7 +424,8 @@ public class Main
 
 		if (Result.OK == (Integer)res.get("result"))
 		{
-			theGame = null;
+			theGameController.removePlayers();
+			theGameController = null;
 			notMe = null;
 		}
 	}
@@ -440,7 +442,7 @@ public class Main
 
 		if (Result.OK == (Integer)res.get("result"))
 		{
-			theGame.getController().execute(me, move);
+			theGameController.executeMove(me, move);
 			printBoard();
 		}
 	}
@@ -457,7 +459,8 @@ public class Main
 
 		if (Result.OK == (Integer)res.get("result"))
 		{
-			theGame = null;
+			theGameController.removePlayers();
+			theGameController = null;
 			notMe = null;
 		}
 	}
@@ -487,7 +490,7 @@ public class Main
 		{
 			String dataStr = (String)res.get("game");
 			byte data[] = dataStr.getBytes("UTF-8");
-			theGame = new Game(-1, "", Game.NO_TIMEOUT, data);
+			theGameController = new GameController(new Game(-1, "", Game.NO_TIMEOUT, data), new MasterChessMoveExecutor());
 
 			Color opponentColor = Color.NONE;
 			Player opponent = null;
@@ -507,18 +510,18 @@ public class Main
 				SLog.write("Cannot start game as opponent info could not be found");
 				try { disconnect(); } catch (IOException ignore) {}
 				me = null;
-				theGame = null;
+				theGameController = null;
 				return;
 			}
 
-			me.join(theGame, opponentColor.Opposite);
+			theGameController.addPlayer(me, opponentColor.Opposite);
 			iAmNextOnResume = (Boolean)res.get("next");
 
 			if ((Boolean)res.get("started"))
 			{
 				notMe = opponent;
-				notMe.join(theGame, opponentColor);
-				new GameController(theGame).startGame(iAmNextOnResume ? me : notMe);
+				theGameController.addPlayer(notMe, opponentColor);
+				theGameController.startGame(iAmNextOnResume ? me : notMe);
 				printBoard();
 			}
 		}
@@ -526,6 +529,6 @@ public class Main
 
 	public static void printBoard()
 	{
-		SLog.write(theGame);
+		SLog.write(theGameController.getGame());
 	}
 }

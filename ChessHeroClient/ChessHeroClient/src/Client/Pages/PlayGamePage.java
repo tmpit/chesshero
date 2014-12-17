@@ -219,19 +219,19 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         this.gameController = gameController;
         this.gameController.startGame();
 
-        playerName = "Player - " + this.gameController.game.getPlayer1().getName();
-        opponentName = "Opponent - " + this.gameController.game.getPlayer2().getName();
+        playerName = "Player - " + this.gameController.getGame().getPlayer1().getName();
+        opponentName = "Opponent - " + this.gameController.getGame().getPlayer2().getName();
 
-        chessBoardPanel = new ChessBoardPanel(this.gameController.board, PIECE_SIZE);
+        chessBoardPanel = new ChessBoardPanel(this.gameController.getGame().getBoard(), PIECE_SIZE);
 
         playerTakenPanel = new ChessBoardTakenPiecesPanel(
-               this.gameController.game, this.gameController.game.getPlayer1().getColor(),TAKEN_PIECE_SIZE);
+               this.gameController.getGame(), this.gameController.getGame().getPlayer1().getColor(),TAKEN_PIECE_SIZE);
 
         opponentTakenPanel = new ChessBoardTakenPiecesPanel(
-                this.gameController.game, this.gameController.game.getPlayer2().getColor(),TAKEN_PIECE_SIZE);
+                this.gameController.getGame(), this.gameController.getGame().getPlayer2().getColor(),TAKEN_PIECE_SIZE);
 
 
-        Color playerColor = (this.gameController.game.getPlayer1().getColor());
+        Color playerColor = (this.gameController.getGame().getPlayer1().getColor());
         boolean isBoardReversed = false;
         if (playerColor == Color.WHITE)
             isBoardReversed = false;
@@ -484,7 +484,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         if(PromptResult==0)
         {
             Request request = new Request(com.kt.api.Action.EXIT_GAME);
-            request.addParameter("gameid", this.gameController.game.getID());
+            request.addParameter("gameid", this.gameController.getGame().getID());
             this.getConnection().sendRequest(request);
         }
     }
@@ -507,7 +507,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
 
     private void selectField (ChessBoardFieldPanel fieldViewToSelect)
     {
-        BoardField correspondingField  = gameController.game.getField(fieldViewToSelect.fieldPosition);
+        BoardField correspondingField  = gameController.getGame().getField(fieldViewToSelect.fieldPosition);
         selectField(correspondingField, fieldViewToSelect);
 
     }
@@ -565,7 +565,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
 
             ChessBoardFieldPanel component = (ChessBoardFieldPanel)e.getSource();
             Position position = component.fieldPosition;
-            BoardField correspondingField  = gameController.game.getField(position);
+            BoardField correspondingField  = gameController.getGame().getField(position);
             if (isSelectionValid(correspondingField, ClientMain.player))
             {
                 selectField(correspondingField, component);
@@ -590,11 +590,11 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
 
     private void selectAllPossibleMoves(Position position, ChessPiece chessPiece)
     {
-        for (BoardField[] sublist : this.gameController.game.getBoard())
+        for (BoardField[] sublist : this.gameController.getGame().getBoard())
         {
             for(BoardField field : sublist)
             {
-                if(isTargetMoveValid(this.gameController.game.getPlayer1(),position,field.getPosition()) == true)
+                if(isTargetMoveValid(this.gameController.getGame().getPlayer1(),position,field.getPosition()) == true)
                 {
                     this.chessBoardPanel.getField(field.getPosition()).setIsPlayable(true);
                 }
@@ -671,9 +671,9 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                     ChessBoardFieldPanel targetComponentAsChessBoardField = (ChessBoardFieldPanel)targetComponent;
 
                     Position targetPosition = targetComponentAsChessBoardField.fieldPosition;
-                    if(isTargetMoveValid(ClientMain.player,selectedField,gameController.game.getField(targetPosition)))
+                    if(isTargetMoveValid(ClientMain.player,selectedField,gameController.getGame().getField(targetPosition)))
                     {
-                        targetField = gameController.game.getField(targetPosition);
+                        targetField = gameController.getGame().getField(targetPosition);
 
                         SLog.write("target pos = " + targetPosition);
                         SLog.write("target field = " + targetField);
@@ -729,7 +729,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
     private boolean isSelectionValid(BoardField selectedField, Player me)
     {
         boolean result = false;
-        if (this.gameController.game.getTurn().equals(me))
+        if (this.gameController.getGame().getTurn().equals(me))
         {
             ChessPiece chessPiece = selectedField.getChessPiece();
             if (chessPiece != null)
@@ -763,44 +763,15 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
     {
         return isTargetMoveValid(
                 executor,
-                this.gameController.game.getField(from),
-                this.gameController.game.getField(to)
+                this.gameController.getGame().getField(from),
+                this.gameController.getGame().getField(to)
         );
     }
 
     private boolean isTargetMoveValid(Player executor, BoardField from, BoardField to)
     {
         ChessPiece movedPiece = from.getChessPiece();
-        if(movedPiece != null)
-        {
-            int resCode = gameController.validateMove(
-                    executor,
-                    movedPiece,
-                    from.getPosition(),
-                    to.getPosition(),
-                    this.gameController.getNewMoveContext()
-            );
-
-            if (resCode == Result.WRONG_MOVE)
-            {
-                errorLabel.setText("Invalid move - your king will be in chess!");
-                return true;
-            }
-            else if (resCode == Result.INVALID_MOVE)
-            {
-                errorLabel.setText("Invalid move");
-            }
-            else if (resCode == Result.OK)
-            {
-                errorLabel.setText("Valid move");
-            }
-
-            return resCode == 0 ? true : false;
-        }
-        else
-        {
-            return false;
-        }
+        return movedPiece != null;
     }
 
     private String createMoveStringFromPositions(Position from, Position to)
@@ -820,10 +791,10 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
         {
             case Push.GAME_MOVE:
                 String opponentMove = (String)message.get("move");
-                Player yourOpponent = this.gameController.game.getPlayer2();
+                Player yourOpponent = this.gameController.getGame().getPlayer2();
 
-                String pieceTag = gameController.game.getField(Position.positionFromBoardPosition(opponentMove.substring(0,2))).getChessPiece().getShortName();
-                this.gameController.execute(yourOpponent, opponentMove);
+                String pieceTag = gameController.getGame().getField(Position.positionFromBoardPosition(opponentMove.substring(0, 2))).getChessPiece().getShortName();
+                this.gameController.executeMove(yourOpponent, opponentMove);
 
                 LogEntry logEntry = new LogEntry(
                         currentTurnNumber,
@@ -856,7 +827,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                             Position piecePosition =  Position.positionFromBoardPosition(piece.toString());
                             highLightField(this.chessBoardPanel.getField(piecePosition));
                         }
-                        if( gameController.game.getIsInCheck(ClientMain.player))
+                        if( gameController.getGame().getIsInCheck(ClientMain.player))
                         {
                             errorLabel.setText("You are in Check!");
                         }
@@ -867,7 +838,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                     }
                 }
 
-                this.chessBoardPanel.updateBoard(gameController.board);
+                this.chessBoardPanel.updateBoard(gameController.getGame().getBoard());
                 this.playerTakenPanel.updateTakenPieces();
                 this.opponentTakenPanel.updateTakenPieces();
                 this.RearrangeLayout();
@@ -875,10 +846,10 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             case Push.GAME_END:
                 Integer winnerID = (Integer)message.get("winner");
                 boolean winner = false;
-                if (this.gameController.game.getPlayer1().getUserID() == winnerID){
+                if (this.gameController.getGame().getPlayer1().getUserID() == winnerID){
                     winner = true;
                 }
-                else if (this.gameController.game.getPlayer2().getUserID() == winnerID){
+                else if (this.gameController.getGame().getPlayer2().getUserID() == winnerID){
                     winner = false;
                 }
                 else {
@@ -964,9 +935,9 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                 case Result.OK :
                     this.errorLabel.setText("move successfully executed");
 
-                    String pieceTag = gameController.game.getField(Position.positionFromBoardPosition(currentMoveString.substring(0,2))).getChessPiece().getShortName();
+                    String pieceTag = gameController.getGame().getField(Position.positionFromBoardPosition(currentMoveString.substring(0, 2))).getChessPiece().getShortName();
 
-                    this.gameController.execute(ClientMain.player, currentMoveString);
+                    this.gameController.executeMove(ClientMain.player, currentMoveString);
                     LogEntry logEntry = new LogEntry(
                             currentTurnNumber,
                             ClientMain.player.getColor().toString(),
@@ -983,11 +954,11 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
                     }
                     currentTurnNumber++;
 
-                    if(this.gameController.game.getIsInCheck(gameController.game.getPlayer2()) == true)
+                    if(this.gameController.getGame().getIsInCheck(gameController.getGame().getPlayer2()) == true)
                     {
                         errorLabel.setText("Check!");
                     }
-                    this.chessBoardPanel.updateBoard(gameController.board);
+                    this.chessBoardPanel.updateBoard(gameController.getGame().getBoard());
                     this.playerTakenPanel.updateTakenPieces();
                     this.opponentTakenPanel.updateTakenPieces();
                     this.RearrangeLayout();
@@ -1025,7 +996,7 @@ public class PlayGamePage extends ChessHeroPage implements MouseListener {
             {
                 case Result.OK:
                     JOptionPane.showMessageDialog(null,
-                    "You've lost, " + this.gameController.game.getPlayer2().getName() + " is victorious!", "Defeated",
+                    "You've lost, " + this.gameController.getGame().getPlayer2().getName() + " is victorious!", "Defeated",
                     JOptionPane.PLAIN_MESSAGE);
                     SLog.write("Successful exit");
                     this.getHolder().NavigateToPage(new LobbyPage());
