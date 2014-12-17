@@ -336,7 +336,8 @@ public class ServerCommunicationService extends Service
 				}
 				else
 				{	// We have successfully written the request, start a read timeout
-					scheduleReadTimeout();
+					int timeout = currentRequest.canTimeout() ? READ_TIMEOUT : 0;
+					scheduleReadTimeout(timeout);
 				}
 
 				currentSendTask = null;
@@ -364,10 +365,10 @@ public class ServerCommunicationService extends Service
 		currentRequest = null;
 	}
 
-	private void scheduleReadTimeout()
+	private void scheduleReadTimeout(int seconds)
 	{
 		Message msg = workDispatchHandler.obtainMessage(WORK_DISPATCH_MSG_ACTION_READ_TIMEOUT);
-		workDispatchHandler.sendMessageDelayed(msg, READ_TIMEOUT);
+		workDispatchHandler.sendMessageDelayed(msg, seconds);
 	}
 
 	private void cancelReadTimeout()
