@@ -216,6 +216,11 @@ public class Client implements ServiceEventListener
 
 	public void executeMove(Position from, Position to)
 	{
+		executeMove(from, to, null);
+	}
+
+	public void executeMove(Position from, Position to, Promotion promotion)
+	{
 		if (null == from || null == to)
 		{
 			log("attempting to execute a move without providing from position and/or to position");
@@ -229,6 +234,12 @@ public class Client implements ServiceEventListener
 		}
 
 		currentMove = Position.boardPositionFromPosition(from) + Position.boardPositionFromPosition(to);
+
+		if (promotion != null)
+		{
+			currentMove += promotion.toString();
+		}
+
 		trySendRequest(RequestFactory.createMoveRequest(currentMove));
 	}
 
