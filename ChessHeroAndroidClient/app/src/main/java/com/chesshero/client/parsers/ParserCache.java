@@ -64,4 +64,28 @@ public class ParserCache
 
 		return gameJoinParser;
 	}
+
+	private static GameEndPushParser gameEndParser = null;
+
+	public static GameEndPushParser getGameEndPushParser()
+	{
+		if (null == gameEndParser)
+		{
+			gameEndParser = new GameEndPushParser();
+		}
+
+		return gameEndParser;
+	}
+
+	private static GameMovePushParser gameMoveParser = null;
+
+	public static GameMovePushParser getGameMovePushParser()
+	{
+		if (null == gameMoveParser)
+		{
+			gameMoveParser = new GameMovePushParser();
+		}
+
+		return gameMoveParser;
+	}
 }

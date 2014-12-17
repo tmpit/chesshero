@@ -7,8 +7,8 @@ import java.util.HashMap;
  */
 public class GameJoinPushParser extends PushParser
 {
-	Integer opponentID;
-	String opponentName;
+	public Integer opponentID;
+	public String opponentName;
 
 	@Override
 	protected void reset()
@@ -18,7 +18,7 @@ public class GameJoinPushParser extends PushParser
 	}
 
 	@Override
-	public PushParser parse(HashMap<String, Object> message)
+	public GameJoinPushParser parse(HashMap<String, Object> message)
 	{
 		super.parse(message);
 
