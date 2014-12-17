@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:text="Create game"
             android:id="@+id/creategame_btn" android:layout_below="@+id/register_btn" android:layout_centerHorizontal="true"
-            android:layout_marginTop="60dp" android:onClick="createGameButtonWasTapped"/>
+            android:layout_marginTop="10dp" android:onClick="createGameButtonWasTapped"/>
     <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -68,33 +68,17 @@
             android:layout_height="wrap_content"
             android:id="@+id/password_field" android:layout_below="@+id/username_field" android:layout_centerHorizontal="true"
             android:width="200dp" android:hint="password"/>
-    <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/gamename_field" android:layout_below="@+id/register_btn" android:layout_toLeftOf="@+id/register_btn"
-            android:layout_toStartOf="@+id/register_btn" android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" android:hint="game name"/>
     <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Logout"
             android:id="@+id/logout_btn" android:layout_above="@+id/register_btn"
             android:onClick="logoutButtonWasTapped"/>
-    <RadioGroup
+    <EditText
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:layout_alignTop="@+id/gamename_field"
-            android:layout_toRightOf="@+id/gamename_field" android:layout_toEndOf="@+id/gamename_field"
-            android:id="@+id/color_rgrp" android:focusableInTouchMode="false">
-        <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Black"
-                android:id="@+id/black_rbtn" android:checked="true"/>
-        <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="White"
-                android:id="@+id/white_rbtn" android:checked="false"/>
-    </RadioGroup>
+            android:layout_height="wrap_content"
+            android:id="@+id/move_field" android:layout_alignTop="@+id/executemove_btn"
+            android:layout_toLeftOf="@+id/executemove_btn" android:layout_toStartOf="@+id/executemove_btn"
+            android:layout_alignParentLeft="true" android:layout_alignParentStart="true" android:hint="move"/>
 
 </RelativeLayout>
