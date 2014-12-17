@@ -139,7 +139,7 @@ public class Player
 	@Override
 	public String toString()
 	{
-		return "<Player :: userid: " + userID + ", name: " + name + ", color: " + (color == Color.WHITE ? "white" : "black") + ">";
+		return "<Player :: userid: " + userID + ", name: " + name + ", color: " + color.toString() + ">";
 	}
 }
 
