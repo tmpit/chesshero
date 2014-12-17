@@ -16,11 +16,11 @@ public class Player
 	private int userID;
 	private String name;
 
-	private Game game;
-	private Color color = Color.NONE;
+	protected Game game;
+	protected Color color = Color.NONE;
 	protected long millisPlayed = 0;
 
-	private ChessPieceSet chessPieceSet;
+	protected ChessPieceSet chessPieceSet;
 
 	/**
 	 * Initializes a newly created {@code Player} instance with a user id and a username
@@ -86,86 +86,6 @@ public class Player
 	public long getMillisPlayed()
 	{
 		return millisPlayed;
-	}
-
-	/**
-	 * Attempts to join this player to the specified game with the specified color
-	 * @param game The {@code Game} to join
-	 * @param color The {@code Color} to join with
-	 * @return True if the join was successful, false if there are already two players in the game
-	 */
-	public boolean join(Game game, Color color)
-	{
-		return join(game, color, 0);
-	}
-
-	/**
-	 * Attempts to join this player to the specified game with the specified color with an initial value for the
-	 * number of milliseconds the player has played in the game
-	 * @param game The {@code Game} to join
-	 * @param color The {@code Color} to join with
-	 * @param millisPlayed The number of milliseconds the player has played in the game
-	 * @return True if the join was successful, false if there are already two players in the game
-	 */
-	public boolean join(Game game, Color color, long millisPlayed)
-	{
-		boolean player1;
-
-		if (!(player1 = null == game.player1) && game.player2 != null)
-		{	// Both players are in the game
-			return false;
-		}
-
-		if (player1)
-		{
-			game.player1 = this;
-		}
-		else
-		{
-			game.player2 = this;
-		}
-
-		ChessPieceSet set = (color == Color.WHITE ? game.whiteChessPieceSet : game.blackChessPieceSet);
-
-		this.game = game;
-		this.color = color;
-		this.chessPieceSet = set;
-		this.millisPlayed = millisPlayed;
-
-		ArrayList<ChessPiece> pieces = set.getActivePieces();
-		for (ChessPiece piece : pieces)
-		{
-			piece.setOwner(this);
-		}
-
-		return true;
-	}
-
-	/**
-	 * Leaves this player out of the game they are in (if any) and zeroes out all game-related
-	 * fields
-	 */
-	public void leave()
-	{
-		if (null == game)
-		{
-			return;
-		}
-
-		if (game.player1 == this)
-		{
-			game.player1 = null;
-		}
-
-		if (game.player2 == this)
-		{
-			game.player2 = null;
-		}
-
-		game = null;
-		chessPieceSet = null;
-		color = Color.NONE;
-		millisPlayed = 0;
 	}
 
 	/**

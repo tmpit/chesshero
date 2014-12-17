@@ -62,7 +62,7 @@ public class BoardField
 	 * Sets the chess piece that is "standing" on this field
 	 * @param aPiece An instance of {@code ChessPiece} or null if you wish to remove the current chess piece
 	 */
-	public void setChessPiece(ChessPiece aPiece)
+	protected void setChessPiece(ChessPiece aPiece)
 	{
 		this.chessPiece = aPiece;
 	}

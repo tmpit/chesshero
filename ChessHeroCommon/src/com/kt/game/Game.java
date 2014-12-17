@@ -112,8 +112,6 @@ public class Game
 
 	private BoardField board[][] = new BoardField[BOARD_SIDE][BOARD_SIDE];
 
-	protected GameController controller;
-
 	protected Player turn = null;
 
 	protected Pawn lastPawnRunner = null;
@@ -125,6 +123,7 @@ public class Game
 	protected Player winner = null;
 	protected boolean checkmate = false;
 
+	protected boolean initializedFromSavedState = false;
 	protected boolean saved = false;
 
 	/**
@@ -157,6 +156,10 @@ public class Game
 		{
 			whiteChessPieceSet = aSetOfChessPieces(Color.WHITE, true);
 			blackChessPieceSet = aSetOfChessPieces(Color.BLACK, false);
+		}
+		else
+		{
+			initializedFromSavedState = true;
 		}
 
 		if (timeout != NO_TIMEOUT)
@@ -214,7 +217,7 @@ public class Game
 	 * Sets the state of the game
 	 * @param state A {@code short} that is one of the state constants for the game
 	 */
-	public void setState(short state)
+	protected void setState(short state)
 	{
 		this.state = state;
 	}
@@ -229,14 +232,7 @@ public class Game
 		return saved;
 	}
 
-	/**
-	 * Gets the game controller
-	 * @return A {@code GameController}
-	 */
-	public GameController getController()
-	{
-		return controller;
-	}
+	public boolean wasResumed() { return initializedFromSavedState; }
 
 	/**
 	 * Gets the first player to join the game

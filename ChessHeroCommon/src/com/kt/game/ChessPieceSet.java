@@ -44,6 +44,19 @@ public class ChessPieceSet
 		}
 	}
 
+	public void setOwner(Player owner)
+	{
+		for (ChessPiece piece : activePieces)
+		{
+			piece.setOwner(owner);
+		}
+
+		for (ChessPiece piece : takenPieces)
+		{
+			piece.setOwner(owner);
+		}
+	}
+
 	/**
 	 * Gets the active pieces
 	 * @return An {@code ArrayList} of {@code ChessPiece} instances
