@@ -77,7 +77,6 @@ public class Client implements ServiceEventListener
 	private boolean shouldFailNextResponse = false;
 
 	private Player player = null;
-	private Game game = null;
 	private GameController gameController = null;
 
 	private List<GameTicket> cachedPendingGames = null;
@@ -104,7 +103,7 @@ public class Client implements ServiceEventListener
 
 	public Game getGame()
 	{
-		return game;
+		return gameController.getGame();
 	}
 
 	public List<GameTicket> getCachedPendingGames()
@@ -155,7 +154,6 @@ public class Client implements ServiceEventListener
 		if (player != null)
 		{
 			player = null;
-			game = null;
 			gameController = null;
 			notifyLogout();
 		}
@@ -174,13 +172,13 @@ public class Client implements ServiceEventListener
 
 	public void cancelGame()
 	{
-		if (null == game)
+		if (null == gameController)
 		{
 			log("attempting to cancel game without being in one");
 			return;
 		}
 
-		trySendRequest(RequestFactory.createCancelGameRequest(game.getID()));
+		trySendRequest(RequestFactory.createCancelGameRequest(gameController.getGame().getID()));
 	}
 
 	public void loadPendingGames()
@@ -208,7 +206,7 @@ public class Client implements ServiceEventListener
 			return;
 		}
 
-		trySendRequest(RequestFactory.createExitGameRequest(game.getID()));
+		trySendRequest(RequestFactory.createExitGameRequest(gameController.getGame().getID()));
 	}
 
 	public void executeMove(Position from, Position to)
@@ -283,9 +281,8 @@ public class Client implements ServiceEventListener
 	{
 		if (parser.success)
 		{
-			game = new Game(parser.gameID, parser.gameName, parser.timeout);
-			game.setState(Game.STATE_PENDING);
-			player.join(game, parser.color);
+			gameController = new GameController(new Game(parser.gameID, parser.gameName, parser.timeout), new MasterChessMoveExecutor());
+			gameController.addPlayer(player, parser.color);
 		}
 
 		notifyGameCreateCompletion(parser.result);
@@ -295,8 +292,8 @@ public class Client implements ServiceEventListener
 	{
 		if (parser.success)
 		{
-			player.leave();
-			game = null;
+			gameController.removePlayers();
+			gameController = null;
 		}
 
 		notifyGameCancelCompletion(parser.result);
@@ -320,12 +317,12 @@ public class Client implements ServiceEventListener
 			return;
 		}
 
-		game = new Game(currentJoinGameTicket.gameID, currentJoinGameTicket.gameName, currentJoinGameTicket.timeout);
+		Game game = new Game(currentJoinGameTicket.gameID, currentJoinGameTicket.gameName, currentJoinGameTicket.timeout);
 		Player opponent = new Player(currentJoinGameTicket.opponentID, currentJoinGameTicket.opponentName);
-		opponent.join(game, currentJoinGameTicket.opponentColor);
-		player.join(game, currentJoinGameTicket.opponentColor.Opposite);
 
-		gameController = new GameController(game);
+		gameController = new GameController(game, new MasterChessMoveExecutor());
+		gameController.addPlayer(opponent, currentJoinGameTicket.opponentColor);
+		gameController.addPlayer(player, currentJoinGameTicket.opponentColor.Opposite);
 		gameController.startGame();
 
 		currentJoinGameTicket = null;
@@ -337,8 +334,7 @@ public class Client implements ServiceEventListener
 	{
 		if (parser.success)
 		{
-			player.leave();
-			game = null;
+			gameController.removePlayers();
 			gameController = null;
 		}
 
@@ -349,7 +345,7 @@ public class Client implements ServiceEventListener
 	{
 		if (parser.success)
 		{
-			gameController.execute(game.getTurn(), currentMove);
+			gameController.executeMove(player, currentMove);
 			currentMove = null;
 		}
 
