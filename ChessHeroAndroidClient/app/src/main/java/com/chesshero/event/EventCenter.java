@@ -75,6 +75,11 @@ public class EventCenter
 		}
 	}
 
+	public void postEvent(String eventName)
+	{
+		postEvent(eventName, null);
+	}
+
 	public void postEvent(String eventName, Object userData)
 	{
 		HashSet<EventCenterObserver> set = null;
