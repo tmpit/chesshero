@@ -368,7 +368,14 @@ public class Client implements ServiceEventListener
 
 	private void didReceiveGameEndPush(GameEndPushParser parser)
 	{
-		gameController.endGame(parser.winner, parser.gameEnding);
+		Player winner = null;
+
+		if (parser.winnerID != null)
+		{
+			winner = parser.winnerID == player.getUserID() ? player : player.getOpponent();
+		}
+
+		gameController.endGame(winner, parser.gameEnding);
 
 		notifyEndGamePush();
 	}

@@ -10,13 +10,13 @@ import java.util.HashMap;
  */
 public class GameEndPushParser extends PushParser
 {
-	public Player winner;
+	public Integer winnerID;
 	public Game.Ending gameEnding;
 
 	@Override
 	protected void reset()
 	{
-		winner = null;
+		winnerID = null;
 		gameEnding = null;
 	}
 
@@ -25,7 +25,7 @@ public class GameEndPushParser extends PushParser
 	{
 		super.parse(message);
 
-		winner = (Player)message.get("winner");
+		winnerID = (Integer)message.get("winner");
 
 		if (message.containsKey("suddendeath"))
 		{
