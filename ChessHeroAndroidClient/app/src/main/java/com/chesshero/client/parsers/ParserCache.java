@@ -6,9 +6,6 @@ package com.chesshero.client.parsers;
 public class ParserCache
 {
 	private static ResponseParser genericParser = null;
-	private static LoginResponseParser loginParser = null;
-	private static CreateGameResponseParser createGameParser = null;
-	private static FetchGamesResponseParser fetchGamesParser = null;
 
 	public static ResponseParser getGenericResponseParser()
 	{
@@ -20,6 +17,8 @@ public class ParserCache
 		return genericParser;
 	}
 
+	private static LoginResponseParser loginParser = null;
+
 	public static LoginResponseParser getLoginResponseParser()
 	{
 		if (null == loginParser)
@@ -29,6 +28,8 @@ public class ParserCache
 
 		return loginParser;
 	}
+
+	private static CreateGameResponseParser createGameParser = null;
 
 	public static CreateGameResponseParser getCreateGameResponseParser()
 	{
@@ -40,6 +41,8 @@ public class ParserCache
 		return createGameParser;
 	}
 
+	private static FetchGamesResponseParser fetchGamesParser = null;
+
 	public static FetchGamesResponseParser getFetchGamesResponseParser()
 	{
 		if (null == fetchGamesParser)
@@ -48,5 +51,17 @@ public class ParserCache
 		}
 
 		return fetchGamesParser;
+	}
+
+	private static GameJoinPushParser gameJoinParser = null;
+
+	public static GameJoinPushParser getGameJoinPushParser()
+	{
+		if (null == gameJoinParser)
+		{
+			gameJoinParser = new GameJoinPushParser();
+		}
+
+		return gameJoinParser;
 	}
 }
