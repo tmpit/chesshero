@@ -36,7 +36,11 @@ public final class Tile extends ImageView {
 
     private int mRow;
 
+    private boolean mIsBlackBackground = false;
+
     private boolean mIsFlipped = false;
+
+    private boolean mIsAvailableMove = false;
 
     public Tile(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -72,6 +76,14 @@ public final class Tile extends ImageView {
         mRow = position / 8;
     }
 
+    public boolean isAvailable() {
+        return mIsAvailableMove;
+    }
+
+    public void setAvailable(boolean isAvailable) {
+        mIsAvailableMove = isAvailable;
+    }
+
     public int getTileImage() {
         return mCurrentTileImage;
     }
@@ -95,6 +107,7 @@ public final class Tile extends ImageView {
         //set background
         if ((mCol + mRow) % 2 == 0) {
             setBackgroundResource(BLACK_BACKGROUND);
+            mIsBlackBackground = true;
         } else {
             setBackgroundResource(WHITE_BACKGROUND);
         }
@@ -105,6 +118,10 @@ public final class Tile extends ImageView {
         }
         mCurrentTileImage = CHESS_PIECES[position];
         setImageResource(mCurrentTileImage);
+
+        if (!isEmpty() && isMine()) {
+            mIsAvailableMove = true;
+        }
     }
 
     public boolean isMine() {
@@ -119,11 +136,18 @@ public final class Tile extends ImageView {
     }
 
     public boolean isOponent() {
+        if (isEmpty()) {
+            return false;
+        }
         return !isMine();
     }
 
     public boolean isEmpty() {
         return mCurrentTileImage == 0;
+    }
+
+    public boolean isBlackBackground() {
+        return mIsBlackBackground;
     }
 
     public boolean isBlackChessPiece() {

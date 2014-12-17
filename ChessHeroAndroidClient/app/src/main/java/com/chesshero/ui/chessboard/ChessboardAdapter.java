@@ -16,16 +16,18 @@ public class ChessboardAdapter extends BaseAdapter {
     private static final int ROWS = 8;
 
     private static final int COLS = 8;
-
+    private Tile[][] allTiles = new Tile[ROWS][COLS];
     private Context mContext;
-
     private View mGrid;
-
     private boolean mIsFlipped;
 
     public ChessboardAdapter(Context context, boolean isFlipped) {
         mContext = context;
         mIsFlipped = isFlipped;
+    }
+
+    public Tile[][] getAllTiles() {
+        return allTiles;
     }
 
     @Override
@@ -52,8 +54,11 @@ public class ChessboardAdapter extends BaseAdapter {
 
         if (convertView == null) {
             mGrid = inflater.inflate(R.layout.tile, null);
+
             Tile tile = (Tile) mGrid.findViewById(R.id.single_tile);
             tile.initTile(position, mIsFlipped);
+
+            allTiles[tile.getRow()][tile.getCol()] = tile;
         } else {
             mGrid = convertView;
         }
