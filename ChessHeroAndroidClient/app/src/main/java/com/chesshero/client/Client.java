@@ -12,6 +12,7 @@ import com.chesshero.service.ServerCommunicationService;
 import com.chesshero.service.ServiceEventListener;
 import com.chesshero.service.ServiceRequest;
 import com.kt.api.Action;
+import com.kt.api.Push;
 import com.kt.game.*;
 
 import java.util.ArrayList;
@@ -26,15 +27,19 @@ public class Client implements ServiceEventListener
 {
 	public static class Event
 	{
-		public static final String LOGOUT = "client.event.logout";
-		public static final String LOGIN_RESULT = "client.event.login";
-		public static final String REGISTER_RESULT = "client.event.register";
-		public static final String CREATE_GAME_RESULT = "client.event.creategame";
-		public static final String CANCEL_GAME_RESULT = "client.event.cancelgame";
-		public static final String PENDING_GAMES_LOAD_RESULT = "client.event.pendinggames";
-		public static final String JOIN_GAME_RESULT = "client.event.joingame";
-		public static final String EXIT_GAME_RESULT = "client.event.exitgame";
-		public static final String MOVE_RESULT = "client.event.move";
+		public static final String LOGOUT = "client.result.logout";
+		public static final String LOGIN_RESULT = "client.result.login";
+		public static final String REGISTER_RESULT = "client.result.register";
+		public static final String CREATE_GAME_RESULT = "client.result.creategame";
+		public static final String CANCEL_GAME_RESULT = "client.result.cancelgame";
+		public static final String PENDING_GAMES_LOAD_RESULT = "client.result.pendinggames";
+		public static final String JOIN_GAME_RESULT = "client.result.joingame";
+		public static final String EXIT_GAME_RESULT = "client.result.exitgame";
+		public static final String MOVE_RESULT = "client.result.move";
+
+		public static final String JOIN_GAME_PUSH = "client.push.joingame";
+		public static final String END_GAME_PUSH = "client.push.endgame";
+		public static final String MOVE_PUSH = "client.push.move";
 	}
 
 	private Context context;
@@ -159,7 +164,7 @@ public class Client implements ServiceEventListener
 		}
 	}
 
-	public void createGame(String name, Color color, Integer timeout)
+	public void createGame(String name, Color color)
 	{
 		if (null == name || 0 == name.trim().length())
 		{
@@ -167,7 +172,7 @@ public class Client implements ServiceEventListener
 			return;
 		}
 
-		trySendRequest(RequestFactory.createCreateGameRequest(name.trim(), color.toString(), timeout));
+		trySendRequest(RequestFactory.createCreateGameRequest(name.trim(), color.toString(), Game.NO_TIMEOUT));
 	}
 
 	public void cancelGame()
@@ -352,6 +357,29 @@ public class Client implements ServiceEventListener
 		notifyMoveCompletion(parser.result);
 	}
 
+	private void didReceiveGameJoinPush(GameJoinPushParser parser)
+	{
+		Player opponent = new Player(parser.opponentID, parser.opponentName);
+		gameController.addPlayer(opponent, player.getColor().Opposite);
+		gameController.startGame();
+
+		notifyJoinGamePush();
+	}
+
+	private void didReceiveGameEndPush(GameEndPushParser parser)
+	{
+		gameController.endGame(parser.winner, parser.gameEnding);
+
+		notifyEndGamePush();
+	}
+
+	private void didReceiveGameMovePush(GameMovePushParser parser)
+	{
+		gameController.executeMove(player.getOpponent(), parser.move);
+
+		notifyGameMovePush();
+	}
+
 	// ===============================================================
 	@Override
 	public void serviceDidConnect()
@@ -437,6 +465,23 @@ public class Client implements ServiceEventListener
 	public void serviceDidReceivePushMessage(HashMap<String, Object> message)
 	{
 		log("service did receive push message");
+
+		Integer event = (Integer)message.get("event");
+
+		switch (event)
+		{
+			case Push.GAME_JOIN:
+				didReceiveGameJoinPush(ParserCache.getGameJoinPushParser().parse(message));
+				break;
+
+			case Push.GAME_END:
+				didReceiveGameEndPush(ParserCache.getGameEndPushParser().parse(message));
+				break;
+
+			case Push.GAME_MOVE:
+				didReceiveGameMovePush(ParserCache.getGameMovePushParser().parse(message));
+				break;
+		}
 	}
 
 	// ===============================================================
@@ -452,7 +497,7 @@ public class Client implements ServiceEventListener
 
 	private void notifyLogout()
 	{
-		EventCenter.getSingleton().postEvent(Event.LOGOUT, null);
+		EventCenter.getSingleton().postEvent(Event.LOGOUT);
 	}
 
 	private void notifyGameCreateCompletion(Integer result)
@@ -483,6 +528,21 @@ public class Client implements ServiceEventListener
 	private void notifyMoveCompletion(Integer result)
 	{
 		EventCenter.getSingleton().postEvent(Event.MOVE_RESULT, result);
+	}
+
+	private void notifyJoinGamePush()
+	{
+		EventCenter.getSingleton().postEvent(Event.JOIN_GAME_PUSH);
+	}
+
+	private void notifyEndGamePush()
+	{
+		EventCenter.getSingleton().postEvent(Event.END_GAME_PUSH);
+	}
+
+	private void notifyGameMovePush()
+	{
+		EventCenter.getSingleton().postEvent(Event.MOVE_PUSH);
 	}
 
 	// ===============================================================
