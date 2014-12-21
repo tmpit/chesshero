@@ -16,9 +16,15 @@ public class ChessboardAdapter extends BaseAdapter {
     private static final int ROWS = 8;
 
     private static final int COLS = 8;
+
     private Tile[][] allTiles = new Tile[ROWS][COLS];
+
+    private Tile[] allTilesByPosition = new Tile[ROWS*COLS];
+
     private Context mContext;
+
     private View mGrid;
+
     private boolean mIsFlipped;
 
     public ChessboardAdapter(Context context, boolean isFlipped) {
@@ -37,14 +43,12 @@ public class ChessboardAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        // TODO Auto-generated method stub
-        return null;
+        return allTilesByPosition[position];
     }
 
     @Override
     public long getItemId(int position) {
-        // TODO Auto-generated method stub
-        return 0;
+        return allTilesByPosition[position].getId();
     }
 
     @Override
@@ -59,6 +63,7 @@ public class ChessboardAdapter extends BaseAdapter {
             tile.initTile(position, mIsFlipped);
 
             allTiles[tile.getRow()][tile.getCol()] = tile;
+            allTilesByPosition[position] = tile;
         } else {
             mGrid = convertView;
         }
