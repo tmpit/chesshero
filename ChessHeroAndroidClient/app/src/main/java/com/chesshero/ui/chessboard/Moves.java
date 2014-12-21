@@ -227,7 +227,7 @@ public class Moves {
         mCurrentTile.applyHighlight();
         mPreviousHighlightedTiles.add(mCurrentTile);
 
-        switch (mCurrentTile.getTileImage()) {
+        switch (mCurrentTile.getTileImageId()) {
             case R.drawable.white_pawn:
             case R.drawable.black_pawn:
                 pawnMoves();

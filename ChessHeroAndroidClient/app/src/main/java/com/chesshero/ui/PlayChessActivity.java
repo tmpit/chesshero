@@ -20,12 +20,11 @@ public class PlayChessActivity extends Activity {
 
     private GridView grid;
     private Moves moves;
-    private boolean isFlipped = true;
+    private boolean isFlipped = false;
 
     private Tile previousTileClicked;
     private Tile currentTileClicked;
     private boolean newMove = true;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,15 +69,25 @@ public class PlayChessActivity extends Activity {
                         Toast.makeText(PlayChessActivity.this, "Illegal move", Toast.LENGTH_SHORT).show();
                         return;
                     }
+                    //todo log
+                    boolean capture = currentTileClicked.isOponent();
 
-                    currentTileClicked.setTileImage(previousTileClicked.getTileImage());
-                    previousTileClicked.setTileImage(0);
+                    currentTileClicked.setTileImageId(previousTileClicked.getTileImageId());
+                    previousTileClicked.setTileImageId(0);
                     moves.clear();
                     newMove = true;
+
+                    //todo log
+                    // x - captured
+                    // > - moved to
+                    oponentName.setText(currentTileClicked.getTileImageName() + " "
+                            + previousTileClicked.toString()
+                            + (capture ? " x " : " > ")
+                            + currentTileClicked.toString());
                 }
                 //todo remove this after we are done coding (used for debugging)
                 playerName.setText("Position: " + position);
-                oponentName.setText(currentTileClicked.toString());
+                //   oponentName.setText();
             }
         });
     }

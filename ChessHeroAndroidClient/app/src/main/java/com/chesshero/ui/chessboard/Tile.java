@@ -30,13 +30,13 @@ public final class Tile extends ImageView {
             R.drawable.white_king, R.drawable.white_bishop, R.drawable.white_knight, R.drawable.white_rook,
     };
 
-    private int mCurrentTileImage;
+    private int mCurrentTileImageId;
+
+    private String mCurrentTileImageName;
 
     private int mCol;
 
     private int mRow;
-
-    private boolean mIsBlackBackground = false;
 
     private boolean mIsFlipped = false;
 
@@ -46,15 +46,30 @@ public final class Tile extends ImageView {
         super(context, attrs);
     }
 
-    /**
-     * Swaps kings and queens in the array,
-     * because in inverted move they need to be swaped.
-     */
-    private void swapQeens() {
-        CHESS_PIECES[3] = R.drawable.black_king;
-        CHESS_PIECES[4] = R.drawable.black_queen;
-        CHESS_PIECES[59] = R.drawable.white_king;
-        CHESS_PIECES[60] = R.drawable.white_queen;
+    public void initTile(int position, boolean isFlipped) {
+        mIsFlipped = isFlipped;
+
+        //set row and coloumn
+        setRow(position);
+        setCol(position);
+
+        //set background
+        if ((mCol + mRow) % 2 == 0) {
+            setBackgroundResource(WHITE_BACKGROUND);
+        } else {
+            setBackgroundResource(BLACK_BACKGROUND);
+        }
+
+        //set initial chess piece
+        if (mIsFlipped) {
+            position = 63 - position;
+        }
+        mCurrentTileImageId = CHESS_PIECES[position];
+        setImageResource(mCurrentTileImageId);
+
+        if (isMine()) {
+            mIsAvailableMove = true;
+        }
     }
 
     public int getCol() {
@@ -70,9 +85,6 @@ public final class Tile extends ImageView {
     }
 
     public void setRow(int position) {
-        if (!mIsFlipped) {
-            position = 63 - position;
-        }
         mRow = position / 8;
     }
 
@@ -84,76 +96,38 @@ public final class Tile extends ImageView {
         mIsAvailableMove = isAvailable;
     }
 
-    public int getTileImage() {
-        return mCurrentTileImage;
+    public int getTileImageId() {
+        return mCurrentTileImageId;
     }
 
-    public void setTileImage(int imageId) {
-        mCurrentTileImage = imageId;
-        setImageResource(mCurrentTileImage);
+    public void setTileImageId(int imageId) {
+        mCurrentTileImageId = imageId;
+        setImageResource(mCurrentTileImageId);
     }
 
-    public void initTile(int position, boolean isFlipped) {
-        //set straight or inverted mode (black or white figures)
-        if (isFlipped) {
-            mIsFlipped = isFlipped;
-            swapQeens();
-        }
-
-        //set row and coloumn
-        setRow(position);
-        setCol(position);
-
-        //set background
-        if ((mCol + mRow) % 2 == 0) {
-            setBackgroundResource(BLACK_BACKGROUND);
-            mIsBlackBackground = true;
-        } else {
-            setBackgroundResource(WHITE_BACKGROUND);
-        }
-
-        //set initial chess piece
-        if (mIsFlipped) {
-            position = 63 - position;
-        }
-        mCurrentTileImage = CHESS_PIECES[position];
-        setImageResource(mCurrentTileImage);
-
-        if (!isEmpty() && isMine()) {
-            mIsAvailableMove = true;
-        }
+    public String getTileImageName() {
+        mCurrentTileImageName = getResources().getResourceName(mCurrentTileImageId);
+        mCurrentTileImageName = mCurrentTileImageName.substring(mCurrentTileImageName.lastIndexOf("/") + 1);
+        mCurrentTileImageName = mCurrentTileImageName.replace("_", " ");
+        return mCurrentTileImageName;
     }
 
     public boolean isMine() {
-        if (!isEmpty()) {
-            if (isWhiteChessPiece() && !mIsFlipped) {
-                return true;
-            } else if (isBlackChessPiece() && mIsFlipped) {
-                return true;
-            }
-        }
-        return false;
+        return !mIsFlipped && isWhiteFigure() || mIsFlipped && isBlackFigure();
     }
 
     public boolean isOponent() {
-        if (isEmpty()) {
-            return false;
-        }
-        return !isMine();
+        return !isEmpty() && !isMine();
     }
 
     public boolean isEmpty() {
-        return mCurrentTileImage == 0;
+        return mCurrentTileImageId == 0;
     }
 
-    public boolean isBlackBackground() {
-        return mIsBlackBackground;
-    }
-
-    public boolean isBlackChessPiece() {
+    public boolean isBlackFigure() {
         if (isEmpty()) return false;
 
-        switch (mCurrentTileImage) {
+        switch (mCurrentTileImageId) {
             case R.drawable.black_pawn:
                 return true;
             case R.drawable.black_knight:
@@ -170,10 +144,10 @@ public final class Tile extends ImageView {
         return false;
     }
 
-    public boolean isWhiteChessPiece() {
+    public boolean isWhiteFigure() {
         if (isEmpty()) return false;
 
-        switch (mCurrentTileImage) {
+        switch (mCurrentTileImageId) {
             case R.drawable.white_pawn:
                 return true;
             case R.drawable.white_knight:
@@ -201,14 +175,12 @@ public final class Tile extends ImageView {
         setScaleY(1f);
     }
 
-    // todo remove the following? or use it?
-    public void handleTouch() {
-        //todo
-    }
-
     public String getColumnString() {
-
-        switch (mCol) {
+        int col = mCol;
+        if (mIsFlipped) {
+            col = 7 - col;
+        }
+        switch (col) {
             case 0:
                 return "A";
             case 1:
@@ -232,12 +204,15 @@ public final class Tile extends ImageView {
 
     public String getRowString() {
         // To get the actual mRow, add 1 since 'mRow' is 0 indexed.
-        return String.valueOf(mRow + 1);
+        int row = mRow + 1;
+        // handle straight case
+        if (!mIsFlipped) {
+            row = 9 - row;
+        }
+        return String.valueOf(row);
     }
 
     public String toString() {
-        final String column = getColumnString();
-        final String row = getRowString();
-        return "<Tile " + column + " " + row + ">";
+        return getColumnString() + getRowString();
     }
 }

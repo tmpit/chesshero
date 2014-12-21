@@ -19,7 +19,7 @@ public class ChessboardAdapter extends BaseAdapter {
 
     private Tile[][] allTiles = new Tile[ROWS][COLS];
 
-    private Tile[] allTilesByPosition = new Tile[ROWS*COLS];
+    private Tile[] allTilesByPosition = new Tile[ROWS * COLS];
 
     private Context mContext;
 
