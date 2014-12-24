@@ -37,6 +37,12 @@ public class PlayChessActivity extends Activity {
         grid = (GridView) findViewById(R.id.chessboard_grid);
         grid.setAdapter(adapter);
 
+        if (isFlipped) {
+            grid.setBackgroundResource(R.drawable.board_flipped);
+        } else {
+            grid.setBackgroundResource(R.drawable.board);
+        }
+
         final TextView playerName = (TextView) findViewById(R.id.playerName);
         final TextView oponentName = (TextView) findViewById(R.id.oponentName);
 

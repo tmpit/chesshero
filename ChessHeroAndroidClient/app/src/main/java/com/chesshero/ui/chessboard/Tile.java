@@ -11,9 +11,9 @@ import com.chesshero.R;
  */
 public final class Tile extends ImageView {
 
-    private static final int BLACK_BACKGROUND = R.drawable.black_background;
+    private static final int BLACK_BACKGROUND = R.drawable.transperant_black_cube;
 
-    private static final int WHITE_BACKGROUND = R.drawable.white_background;
+    private static final int WHITE_BACKGROUND = R.drawable.transperant_white_cube;
 
     private static final int[] CHESS_PIECES = {
             // the 'dark' side of the board
