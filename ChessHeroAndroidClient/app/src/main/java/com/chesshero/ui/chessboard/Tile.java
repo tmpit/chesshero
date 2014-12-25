@@ -70,6 +70,10 @@ public final class Tile extends ImageView {
         if (isMine()) {
             mIsAvailableMove = true;
         }
+
+        setScaleType(ScaleType.FIT_XY);
+        setScaleX(0.95f);
+        setScaleY(0.95f);
     }
 
     public int getCol() {
@@ -165,14 +169,13 @@ public final class Tile extends ImageView {
     }
 
     public void applyHighlight() {
-        setScaleType(ImageView.ScaleType.FIT_XY);
-        setScaleX(0.9f);
-        setScaleY(0.9f);
+        setScaleX(0.80f);
+        setScaleY(0.80f);
     }
 
     public void removeHighlight() {
-        setScaleX(1f);
-        setScaleY(1f);
+        setScaleX(0.95f);
+        setScaleY(0.95f);
     }
 
     public String getColumnString() {
