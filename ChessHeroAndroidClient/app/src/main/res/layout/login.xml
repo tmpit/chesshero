@@ -59,6 +59,7 @@
                 android:textColor="#372c24" />
 
             <EditText
+                android:id="@+id/login_username"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dip"
@@ -74,6 +75,7 @@
                 android:textColor="#372c24" />
 
             <EditText
+                android:id="@+id/login_password"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dip"
@@ -86,7 +88,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dip"
-                android:onClick="openPlayChessPage"
+                android:onClick="login"
                 android:text="@string/login" />
 
             <!-- Link to Registration Screen -->

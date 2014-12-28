@@ -82,12 +82,28 @@
                 android:inputType="textPassword"
                 android:singleLine="true" />
 
+            <!-- Re-enter Password Label and input field -->
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/password2"
+                android:textColor="#372c24" />
+
+            <EditText
+                android:id="@+id/reg_password2"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dip"
+                android:inputType="textPassword"
+                android:singleLine="true" />
+
             <!-- Register Button -->
             <Button
                 android:id="@+id/btnRegister"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dip"
+                android:onClick="register"
                 android:text="@string/register" />
 
             <!-- Link to Login Screen -->
