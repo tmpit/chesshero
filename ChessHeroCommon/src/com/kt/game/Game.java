@@ -2,6 +2,7 @@ package com.kt.game;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The Game class represents the state of a chess game and groups all game-related components such as players
@@ -121,6 +122,8 @@ public class Game
 	protected ArrayList<ChessPiece> attackers = new ArrayList<ChessPiece>(2);
 
 	protected Player winner = null;
+
+	protected List<String> moves = new ArrayList<String>();
 
 	public enum Ending
 	{
@@ -289,6 +292,15 @@ public class Game
 
         return blackPlayer;
     }
+
+	/**
+	 * Fetches a list with all executed moves up until now
+	 * @return A {@code List} object containing a @{code String} instance for each executed move
+	 */
+	public List<String> getExecutedMoves()
+	{
+		return new ArrayList<String>(moves);
+	}
 
 	/**
 	 * Gets the player whose turn it is

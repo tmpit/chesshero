@@ -1,5 +1,6 @@
 package com.kt.game;
 
+import com.kt.api.Result;
 import com.kt.utils.SLog;
 
 /**
@@ -197,9 +198,14 @@ public class GameController
 	{
 		ChessMoveResult result = moveExecutor.executeMove(player, move);
 
-		if (result.checkmate)
+		if (Result.OK == result.resultCode)
 		{
-			endGame(result.winner, Game.Ending.CHECKMATE);
+			game.moves.add(move);
+
+			if (result.checkmate)
+			{
+				endGame(result.winner, Game.Ending.CHECKMATE);
+			}
 		}
 
 		return result.resultCode;
