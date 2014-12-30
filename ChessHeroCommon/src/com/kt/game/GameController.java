@@ -200,7 +200,7 @@ public class GameController
 
 		if (Result.OK == result.resultCode)
 		{
-			game.moves.add(move);
+			game.moves.add(new Move(player, move));
 
 			if (result.checkmate)
 			{

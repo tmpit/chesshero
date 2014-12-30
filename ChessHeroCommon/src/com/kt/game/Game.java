@@ -123,7 +123,7 @@ public class Game
 
 	protected Player winner = null;
 
-	protected List<String> moves = new ArrayList<String>();
+	protected List<Move> moves = new ArrayList<Move>();
 
 	public enum Ending
 	{
@@ -297,9 +297,9 @@ public class Game
 	 * Fetches a list with all executed moves up until now
 	 * @return A {@code List} object containing a @{code String} instance for each executed move
 	 */
-	public List<String> getExecutedMoves()
+	public List<Move> getExecutedMoves()
 	{
-		return new ArrayList<String>(moves);
+		return new ArrayList<Move>(moves);
 	}
 
 	/**
