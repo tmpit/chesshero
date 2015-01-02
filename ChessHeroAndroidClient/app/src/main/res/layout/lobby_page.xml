@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dip"
                 android:layout_marginStart="10dip"
-                android:src="@drawable/chessheroblue" />
+                android:src="@drawable/chesshero" />
             <!-- Logo ends -->
 
         </LinearLayout>

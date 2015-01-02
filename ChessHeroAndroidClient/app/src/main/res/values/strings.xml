@@ -7,5 +7,14 @@
     <string name="registration_link">New to ChessHero?\nRegister here</string>
     <string name="register">Register New Account</string>
     <string name="login_link">Already has account!\nLogin here</string>
+    <string name="play_white">Play White</string>
+    <string name="play_black">Play Black</string>
     <string name="empty_string">...</string>
+    <string name="turn_limit">Turn Time Limit in Minutes</string>
+    <string name="game_limit">Game Time Limit in Minutes</string>
+    <string name="min_level">Minimum Opponent Level</string>
+    <string name="max_level">Maximum Opponent Level</string>
+    <string name="cancel_game">Cancel Game</string>
+    <string name="back_lobby">Back to Lobby</string>
+    <string name ="Enter_game_name" >Enter a Name for Your Game </string>
 </resources>
