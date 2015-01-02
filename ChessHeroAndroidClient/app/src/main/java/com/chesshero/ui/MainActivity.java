@@ -12,6 +12,7 @@ import com.chesshero.client.Client;
 import com.chesshero.event.EventCenter;
 import com.chesshero.event.EventCenterObserver;
 import com.kt.api.Result;
+import com.kt.game.Color;
 
 
 public class MainActivity extends Activity implements EventCenterObserver {
@@ -49,6 +50,11 @@ public class MainActivity extends Activity implements EventCenterObserver {
             //todo handle other result cases, open lobby
 
             if (userData != null && (Integer) userData == Result.OK) {
+
+                //todo remove (temporary used for testing chess game-play)
+                client.createGame("dada", Color.WHITE);
+                PlayChessActivity.isFlipped = false;
+
                 pageToOpen = new Intent(this, PlayChessActivity.class);
                 startActivity(pageToOpen);
             }
