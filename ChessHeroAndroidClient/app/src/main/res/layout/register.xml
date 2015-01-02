@@ -18,7 +18,8 @@
             android:layout_height="wrap_content"
             android:background="@layout/header_gradient"
             android:paddingBottom="5dip"
-            android:paddingTop="5dip">
+            android:paddingTop="5dip"
+            android:gravity="center">
 
             <!-- Logo -->
             <ImageView
@@ -26,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dip"
                 android:layout_marginStart="10dip"
-                android:src="@drawable/chesshero" />
+                android:src="@drawable/chessheroblue" />
             <!-- Logo Ends -->
 
         </LinearLayout>
@@ -56,7 +57,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/username"
-                android:textColor="#372c24" />
+                android:textColor="#00467f" />
 
             <EditText
                 android:id="@+id/reg_username"
@@ -72,10 +73,25 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/password"
-                android:textColor="#372c24" />
+                android:textColor="#00467f" />
 
             <EditText
                 android:id="@+id/reg_password"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dip"
+                android:inputType="textPassword"
+                android:singleLine="true" />
+
+            <!-- Re-enter Password Label and input field -->
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/password2"
+                android:textColor="#00467f" />
+
+            <EditText
+                android:id="@+id/reg_password2"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dip"
@@ -88,7 +104,9 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dip"
-                android:text="@string/register" />
+                android:onClick="register"
+                android:text="@string/register"
+                android:textColor="#00467f"/>
 
             <!-- Link to Login Screen -->
             <TextView
@@ -101,7 +119,7 @@
                 android:gravity="center"
                 android:onClick="openLoginPage"
                 android:text="@string/login_link"
-                android:textColor="#18b410"
+                android:textColor="#00467f"
                 android:textSize="20sp" />
 
         </LinearLayout>
