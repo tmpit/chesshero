@@ -5,6 +5,9 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import com.chesshero.R;
+import com.kt.game.ChessPiece;
+import com.kt.game.Color;
+import com.kt.game.Position;
 
 /**
  * Created by Vasil on 6.12.2014 г..
@@ -38,6 +41,8 @@ public final class Tile extends ImageView {
 
     private int mRow;
 
+    private Position mPosition;
+
     private boolean mIsFlipped = false;
 
     private boolean mIsAvailableMove = false;
@@ -49,9 +54,10 @@ public final class Tile extends ImageView {
     public void initTile(int position, boolean isFlipped) {
         mIsFlipped = isFlipped;
 
-        //set row and coloumn
+        //set row, column and position
         setRow(position);
         setCol(position);
+        mPosition = Position.positionFromBoardPosition(this.toString());
 
         //set background
         if ((mCol + mRow) % 2 == 0) {
@@ -91,6 +97,8 @@ public final class Tile extends ImageView {
     public void setRow(int position) {
         mRow = position / 8;
     }
+
+    public Position getPosition() { return mPosition; }
 
     public boolean isAvailable() {
         return mIsAvailableMove;

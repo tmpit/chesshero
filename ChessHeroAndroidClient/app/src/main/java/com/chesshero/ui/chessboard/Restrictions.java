@@ -7,7 +7,7 @@ import java.util.ArrayList;
 /**
  * Created by lmn7 on 14.12.2014 г..
  */
-public class Moves {
+public class Restrictions {
 
     private static final int BOARD_MIN = 0;
 
@@ -25,7 +25,7 @@ public class Moves {
 
     private static int mCurrentCol;
 
-    public Moves(Tile[][] allTiles) {
+    public Restrictions(Tile[][] allTiles) {
         mAllTiles = allTiles;
     }
 
@@ -45,7 +45,7 @@ public class Moves {
 
     private void pawnMoves() {
         //first move rule
-        if (mCurrentRow == PAWN_FIRST_ROW) {
+        if (mCurrentRow == PAWN_FIRST_ROW && !mAllTiles[mCurrentRow - 1][mCurrentCol].isOponent()) {
             doMagic(mAllTiles[mCurrentRow - 2][mCurrentCol]);
         }
         if (mCurrentRow > BOARD_MIN) {

@@ -2,6 +2,7 @@ package com.chesshero.ui;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -9,54 +10,76 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chesshero.R;
+import com.chesshero.client.ChessHeroApplication;
+import com.chesshero.client.Client;
+import com.chesshero.event.EventCenter;
+import com.chesshero.event.EventCenterObserver;
 import com.chesshero.ui.chessboard.ChessboardAdapter;
-import com.chesshero.ui.chessboard.Moves;
+import com.chesshero.ui.chessboard.Restrictions;
 import com.chesshero.ui.chessboard.Tile;
+import com.kt.game.Move;
+
+import java.util.List;
 
 /**
  * Created by Vasil on 30.11.2014 г..
  */
-public class PlayChessActivity extends Activity {
+public class PlayChessActivity extends Activity implements EventCenterObserver {
 
+    public static boolean isFlipped = false;
+    private final ChessboardAdapter adapter = new ChessboardAdapter(PlayChessActivity.this, isFlipped);
+    private Client client;
     private GridView grid;
-    private Moves moves;
-    private boolean isFlipped = false;
-
+    private Restrictions restrictions;
     private Tile previousTileClicked;
     private Tile currentTileClicked;
     private boolean newMove = true;
+    private boolean isMyTurn = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play_chess);
 
-        final ChessboardAdapter adapter = new ChessboardAdapter(PlayChessActivity.this, isFlipped);
-        moves = new Moves(adapter.getAllTiles());
+        // init client service
+        client = ((ChessHeroApplication) getApplication()).getClient();
+        EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_RESULT);
+        EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_PUSH);
+        EventCenter.getSingleton().addObserver(this, Client.Event.END_GAME_PUSH);
+        EventCenter.getSingleton().addObserver(this, Client.Event.EXIT_GAME_RESULT);
+
+        // set player names
+        final TextView playerName = (TextView) findViewById(R.id.playerName);
+        final TextView oponentName = (TextView) findViewById(R.id.oponentName);
+//        playerName.setText(client.getGame().getPlayer1().getName());
+//        oponentName.setText(client.getGame().getPlayer2().getName());
 
         grid = (GridView) findViewById(R.id.chessboard_grid);
         grid.setAdapter(adapter);
+        restrictions = new Restrictions(adapter.getAllTiles());
 
         if (isFlipped) {
             grid.setBackgroundResource(R.drawable.board_flipped);
+            isMyTurn = false;
         } else {
             grid.setBackgroundResource(R.drawable.board);
         }
 
-        final TextView playerName = (TextView) findViewById(R.id.playerName);
-        final TextView oponentName = (TextView) findViewById(R.id.oponentName);
-
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
 
                 currentTileClicked = (Tile) view;
 
+                if (!isMyTurn) {
+                    Toast.makeText(PlayChessActivity.this, "Not your turn", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 if (currentTileClicked.isMine()) {
-                    moves.clear();
-                    moves.apply(currentTileClicked);
+                    restrictions.clear();
+                    restrictions.apply(currentTileClicked);
                     newMove = true;
                 }
 
@@ -77,25 +100,86 @@ public class PlayChessActivity extends Activity {
                     }
                     //todo log
                     boolean capture = currentTileClicked.isOponent();
-
-                    currentTileClicked.setTileImageId(previousTileClicked.getTileImageId());
-                    previousTileClicked.setTileImageId(0);
-                    moves.clear();
-                    newMove = true;
-
-                    //todo log
                     // x - captured
                     // > - moved to
-                    oponentName.setText(currentTileClicked.getTileImageName() + " "
-                            + previousTileClicked.toString()
-                            + (capture ? " x " : " > ")
-                            + currentTileClicked.toString());
+//                    oponentName.setText(currentTileClicked.getTileImageName() + " "
+//                            + previousTileClicked.toString()
+//                            + (capture ? " x " : " > ")
+//                            + currentTileClicked.toString());
+
+                    client.executeMove(previousTileClicked.getPosition(), currentTileClicked.getPosition());
+                    restrictions.clear();
+                    newMove = true;
                 }
-                //todo remove this after we are done coding (used for debugging)
-                playerName.setText("Position: " + position);
-                //   oponentName.setText();
+//                //todo remove this after we are done coding (used for debugging)
+//                playerName.setText("Position: " + position + "\n"
+//                        + currentTileClicked.getPosition().toString());
             }
         });
+
+//        final VerticalPager pager = (VerticalPager) findViewById(R.id.pager);
+//        final LinearLayout list = (LinearLayout) findViewById(R.id.log);
+//
+//        TextView text;
+//
+//        for(int i = 0; i < 40; i++ ) {
+//            text = new TextView(this);
+//            text.setText("test: "+i);
+//            text.setTextSize(30);
+//            list.addView(text);
+//        }
+//
+//        pager.addOnScrollListener(new VerticalPager.OnScrollListener() {
+//            public void onScroll(int scrollX) {
+//                //Log.d("TestActivity", "scrollX=" + scrollX);
+//            }
+//
+//            public void onViewScrollFinished(int currentPage) {
+//                //Log.d("TestActivity", "viewIndex=" + currentPage);
+//            }
+//        });
+    }
+
+    @Override
+    public void eventCenterDidPostEvent(String eventName, Object userData) {
+        List<Move> moves = client.getGame().getExecutedMoves();
+
+        if (eventName == Client.Event.MOVE_RESULT) {
+            drawMove(moves.get(moves.size() - 1).code);
+            isMyTurn = false;
+            //vij drugite raoti tuk w game obekta
+            //  Log.i("", currentLastMove.executor.getName());
+        }
+        if (eventName == Client.Event.MOVE_PUSH) {
+            drawMove(moves.get(moves.size() - 1).code);
+            isMyTurn = true;
+        }
+    }
+
+    private void drawMove(String code) {
+        int startCol, startRow, endCol, endRow;
+        // flipped - true
+        if (isFlipped) {
+            startCol = 104 - code.charAt(0);
+            startRow = Integer.parseInt(code.charAt(1) + "") - 1;
+            endCol = 104 - code.charAt(2);
+            endRow = Integer.parseInt(code.charAt(3) + "") - 1;
+        } else {
+            // flipped - false
+            startCol = code.charAt(0) - 97;
+            startRow = 8 - Integer.parseInt(code.charAt(1) + "");
+            endCol = code.charAt(2) - 97;
+            endRow = 8 - Integer.parseInt(code.charAt(3) + "");
+        }
+
+        Tile previousTile = adapter.getTileAt(startRow, startCol);
+        Tile currentTile = adapter.getTileAt(endRow, endCol);
+
+        currentTile.setTileImageId(previousTile.getTileImageId());
+        previousTile.setTileImageId(0);
+
+        Log.i("PlayChessActivity",
+                String.format("drawing move from {%d,%d} to {%d,%d}", startRow, startCol, endRow, endCol));
     }
 }
 

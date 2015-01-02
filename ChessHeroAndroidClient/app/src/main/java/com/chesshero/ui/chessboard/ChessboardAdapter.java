@@ -36,6 +36,10 @@ public class ChessboardAdapter extends BaseAdapter {
         return allTiles;
     }
 
+    public Tile getTileAt(int row, int col) {
+        return allTiles[row][col];
+    }
+
     @Override
     public int getCount() {
         return ROWS * COLS;
