@@ -88,7 +88,10 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/password2"
+
                 android:textColor="#00467f" />
+
+
 
             <EditText
                 android:id="@+id/reg_password2"
@@ -107,6 +110,9 @@
                 android:onClick="register"
                 android:text="@string/register"
                 android:textColor="#00467f"/>
+
+
+
 
             <!-- Link to Login Screen -->
             <TextView
