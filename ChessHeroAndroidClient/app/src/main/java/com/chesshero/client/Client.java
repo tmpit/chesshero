@@ -426,12 +426,17 @@ public class Client implements ServiceEventListener
 		notifyExitGameCompletion(parser.result);
 	}
 
-	private void moveDidComplete(ResponseParser parser)
+	private void moveDidComplete(GameMoveResponseParser parser)
 	{
 		if (parser.success)
 		{
 			gameController.executeMove(player, currentMove);
 			currentMove = null;
+
+			if (parser.playerTime != null)
+			{
+				gameController.setPlayerMillisPlayed(player, parser.playerTime);
+			}
 		}
 
 		notifyMoveCompletion(parser.result);
@@ -463,6 +468,11 @@ public class Client implements ServiceEventListener
 	private void didReceiveGameMovePush(GameMovePushParser parser)
 	{
 		gameController.executeMove(player.getOpponent(), parser.move);
+
+		if (parser.playerTime != null)
+		{
+			gameController.setPlayerMillisPlayed(player.getOpponent(), parser.playerTime);
+		}
 
 		notifyGameMovePush();
 	}
@@ -543,7 +553,7 @@ public class Client implements ServiceEventListener
 				break;
 
 			case Action.MOVE:
-				moveDidComplete(ParserCache.getGenericResponseParser().parse(response));
+				moveDidComplete(ParserCache.getGameMoveResponseParser().parse(response));
 				break;
 		}
 	}
