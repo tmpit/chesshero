@@ -116,6 +116,11 @@ public class GameController
 		player.millisPlayed = 0;
 	}
 
+	public void setPlayerMillisPlayed(Player player, long millisPlayed)
+	{
+		player.millisPlayed = millisPlayed;
+	}
+
 	public void startGame()
 	{
 		startGame(null);
