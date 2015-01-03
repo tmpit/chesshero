@@ -79,7 +79,7 @@ public class MasterChessMoveExecutor extends ChessMoveValidator implements Chess
 		if (from.equals(to))
 		{
 			SLog.write("no-op");
-			return new ChessMoveResult(Result.OK);
+			return new ChessMoveResult(Result.SAME_POSITION);
 		}
 
 		BoardField fromField = board[from.x][from.y];
