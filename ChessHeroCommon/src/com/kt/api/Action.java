@@ -124,6 +124,9 @@ public class Action
 	 * Execute a game move
 	 * Parameters:
 	 * - [move:STR] - The move as per the Pure coordinate notation described at http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
+	 * Returns:
+	 * - [playertime:INT] - Optional. Present only if playing a timed game. This is the time in milliseconds the player executing the
+	 * move has spent in the game. The time is calculated after the move is executed.
 	 * </pre>
 	 */
 	public static final int MOVE = 8;
