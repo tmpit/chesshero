@@ -61,12 +61,18 @@ public class Client implements ServiceEventListener
 		public static final String MOVE_RESULT = "client.result.move";
 
 		// Posted when a join game push message is received
+		// When you receive this event, it means that an opponent has joined your game
+		// and that the game has started
 		public static final String JOIN_GAME_PUSH = "client.push.joingame";
 
 		// Posted when an end game push message is received
+		// When you receive this event, it means that the game has ended
+		// All game state and information regarding how the game has ended is kept in the Game object
 		public static final String END_GAME_PUSH = "client.push.endgame";
 
 		// Posted when a move push message is received
+		// When you receive this message, it means that your opponent has executed a move
+		// You can fetch the move via the Game object's list of executed moves
 		public static final String MOVE_PUSH = "client.push.move";
 	}
 
@@ -155,6 +161,7 @@ public class Client implements ServiceEventListener
 	}
 
 	// Attempts to register a user
+	// Registration also logs the user in
 	// You must provide a username and a password
 	public void register(String userName, String password)
 	{
@@ -271,6 +278,8 @@ public class Client implements ServiceEventListener
 		trySendRequest(RequestFactory.createExitGameRequest(gameController.getGame().getID()));
 	}
 
+	// Attempts to execute a move
+	// You must provide from and to positions
 	public void executeMove(Position from, Position to)
 	{
 		executeMove(from, to, null);
