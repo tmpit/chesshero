@@ -367,7 +367,7 @@ public class Client implements ServiceEventListener
 	{
 		if (parser.success)
 		{
-			gameController = new GameController(new Game(parser.gameID, parser.gameName, parser.timeout), new MasterChessMoveExecutor());
+			gameController = new GameController(new Game(parser.gameID, parser.gameName, parser.timeout), new MasterChessMoveExecutor(), false);
 			gameController.addPlayer(player, parser.color);
 		}
 
@@ -406,7 +406,7 @@ public class Client implements ServiceEventListener
 		Game game = new Game(currentJoinGameTicket.gameID, currentJoinGameTicket.gameName, currentJoinGameTicket.timeout);
 		Player opponent = new Player(currentJoinGameTicket.opponentID, currentJoinGameTicket.opponentName);
 
-		gameController = new GameController(game, new MasterChessMoveExecutor());
+		gameController = new GameController(game, new MasterChessMoveExecutor(), false);
 		gameController.addPlayer(opponent, currentJoinGameTicket.opponentColor);
 		gameController.addPlayer(player, currentJoinGameTicket.opponentColor.Opposite);
 		gameController.startGame();
