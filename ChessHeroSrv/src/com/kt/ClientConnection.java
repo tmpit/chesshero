@@ -793,9 +793,9 @@ public class ClientConnection extends Thread implements GameClockEventListener
 			putPlayerConnection(gameID, userID, this);
 
 			Game game = new Game(gameID, gameName, timeout);
-			GameController controller = new GameController(game, new MasterChessMoveExecutor());
+			GameController controller = new GameController(game, new MasterChessMoveExecutor(), true);
 			controller.addPlayer(player, Color.fromString(color));
-			GameClock clock = game.getClock();
+			GameClock clock = controller.getClock();
 
 			if (clock != null)
 			{
@@ -1028,7 +1028,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 						putPlayerConnection(gameID, myUserID, this);
 						controller.addPlayer(player, myColor);
 
-						GameClock clock = game.getClock();
+						GameClock clock = controller.getClock();
 
 						if (clock != null)
 						{
@@ -1598,7 +1598,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 			if (null == (controller = games.get(gameID)))
 			{
 				game = new Game(gameID, gameName, gameTimeout, gameData);
-				controller = new GameController(game, new MasterChessMoveExecutor());
+				controller = new GameController(game, new MasterChessMoveExecutor(), true);
 				games.put(gameID, controller);
 			}
 
@@ -1659,7 +1659,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 					putPlayerConnection(gameID, myUserID, this);
 					controller.addPlayer(player, Color.fromString(color), (Long)myPlayerInfo.get("played"));
-					GameClock clock = game.getClock();
+					GameClock clock = controller.getClock();
 
 					if (clock != null)
 					{
@@ -1708,7 +1708,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 						putPlayerConnection(gameID, myUserID, this);
 						controller.addPlayer(player, Color.fromString(color), (Long)myPlayerInfo.get("played"));
-						GameClock clock = game.getClock();
+						GameClock clock = controller.getClock();
 
 						if (clock != null)
 						{

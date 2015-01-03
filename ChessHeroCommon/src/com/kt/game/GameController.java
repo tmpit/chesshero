@@ -11,7 +11,9 @@ public class GameController
 	private Game game;
 	private ChessMoveValidator moveExecutor;
 
-	public GameController(Game game, ChessMoveValidator executor)
+	private GameClock gameClock = null;
+
+	public GameController(Game game, ChessMoveValidator executor, boolean shouldUseGameClock)
 	{
 		if (game.getState() != Game.STATE_INIT)
 		{
@@ -20,6 +22,11 @@ public class GameController
 
 		this.game = game;
 		this.moveExecutor = executor;
+
+		if (game.getTimeout() != Game.NO_TIMEOUT && shouldUseGameClock)
+		{
+			this.gameClock = new GameClock(game);
+		}
 
 		if (game.wasResumed())
 		{
@@ -34,6 +41,15 @@ public class GameController
 	public Game getGame()
 	{
 		return game;
+	}
+
+	/**
+	 * Gets the game clock of the game
+	 * @return A {@code GameClock}
+	 */
+	public GameClock getClock()
+	{
+		return gameClock;
 	}
 
 	public void addPlayer(Player player, Color color)
@@ -130,11 +146,9 @@ public class GameController
 			game.turn = game.player2;
 		}
 
-		GameClock clock = game.getClock();
-
-		if (clock != null)
+		if (gameClock != null)
 		{
-			clock.start();
+			gameClock.start();
 		}
 
 		return true;
@@ -156,11 +170,9 @@ public class GameController
 		game.winner = winner;
 		game.ending = ending;
 
-		GameClock clock = game.getClock();
-
-		if (clock != null)
+		if (gameClock != null)
 		{
-			clock.interrupt();
+			gameClock.interrupt();
 		}
 	}
 
@@ -196,10 +208,17 @@ public class GameController
 
 	public int executeMove(Player player, String move)
 	{
+		long currentTime = System.currentTimeMillis();
+
 		ChessMoveResult result = moveExecutor.executeMove(player, move);
 
 		if (Result.OK == result.resultCode)
 		{
+			if (gameClock != null)
+			{
+				player.millisPlayed = (currentTime - gameClock.getStartTimeMillis()) - player.getOpponent().millisPlayed;
+			}
+
 			game.moves.add(new Move(player, move));
 
 			if (result.checkmate)
