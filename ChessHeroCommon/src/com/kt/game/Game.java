@@ -101,7 +101,6 @@ public class Game
 	private int id;
 	private String name;
 	private int timeout;
-	private GameClock clock = null;
 
 	protected ChessPieceSet whiteChessPieceSet;
 	protected ChessPieceSet blackChessPieceSet;
@@ -172,11 +171,6 @@ public class Game
 		{
 			initializedFromSavedState = true;
 		}
-
-		if (timeout != NO_TIMEOUT)
-		{
-			clock = new GameClock(this);
-		}
 	}
 
 	/**
@@ -204,15 +198,6 @@ public class Game
 	public int getTimeout()
 	{
 		return timeout;
-	}
-
-	/**
-	 * Gets the game clock of the game
-	 * @return A {@code GameClock}
-	 */
-	public GameClock getClock()
-	{
-		return clock;
 	}
 
 	/**

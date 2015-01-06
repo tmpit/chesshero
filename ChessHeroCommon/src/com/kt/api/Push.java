@@ -55,6 +55,8 @@ public class Push
 	 * - [move:STR] - The move as per the Pure coordinate notation: http://chessprogramming.wikispaces.com/Algebraic+Chess+Notation
 	 * - [attackers:ARR] - Optional. Present only when your king is in check. Each element in the array is a [STR]
 	 * representing the position of a chess piece attacking your king
+	 * - [playertime:INT] - Optional. Present only if playing a timed game. This is the time in milliseconds the player executing the
+	 * move has spent in the game. The time is calculated after the move is executed.
 	 * </pre>
 	 */
 	public static final int GAME_MOVE = 3;

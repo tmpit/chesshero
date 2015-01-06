@@ -793,9 +793,9 @@ public class ClientConnection extends Thread implements GameClockEventListener
 			putPlayerConnection(gameID, userID, this);
 
 			Game game = new Game(gameID, gameName, timeout);
-			GameController controller = new GameController(game, new MasterChessMoveExecutor());
+			GameController controller = new GameController(game, new MasterChessMoveExecutor(), true);
 			controller.addPlayer(player, Color.fromString(color));
-			GameClock clock = game.getClock();
+			GameClock clock = controller.getClock();
 
 			if (clock != null)
 			{
@@ -1028,7 +1028,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 						putPlayerConnection(gameID, myUserID, this);
 						controller.addPlayer(player, myColor);
 
-						GameClock clock = game.getClock();
+						GameClock clock = controller.getClock();
 
 						if (clock != null)
 						{
@@ -1185,6 +1185,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 		boolean gameNotStarted = false;
 		int result = 0;
+		Long playerTimeLeft = null;
 		boolean gameFinished = false;
 		ArrayList<ChessPiece> attackers = null;
 		Player winner = null;
@@ -1205,6 +1206,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 					int gameID = game.getID();
 					int opponentUserID = player.getOpponent().getUserID();
+
+					if (game.getTimeout() != Game.NO_TIMEOUT)
+					{
+						playerTimeLeft = player.getMillisPlayed();
+					}
 
 					opponentConnection = getPlayerConnection(gameID, opponentUserID);
 
@@ -1227,7 +1233,14 @@ public class ClientConnection extends Thread implements GameClockEventListener
 			return;
 		}
 
-		writeMessage(aResponseWithResult(result));
+		HashMap response = aResponseWithResult(result);
+
+		if (playerTimeLeft != null)
+		{
+			response.put("playertime", playerTimeLeft);
+		}
+
+		writeMessage(response);
 
 		if (result != Result.OK)
 		{
@@ -1264,6 +1277,11 @@ public class ClientConnection extends Thread implements GameClockEventListener
 				}
 
 				msg.put("attackers", positions);
+			}
+
+			if (playerTimeLeft != null)
+			{
+				msg.put("playertime", playerTimeLeft);
 			}
 
 			opponentConnection.writeMessage(msg);
@@ -1580,7 +1598,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 			if (null == (controller = games.get(gameID)))
 			{
 				game = new Game(gameID, gameName, gameTimeout, gameData);
-				controller = new GameController(game, new MasterChessMoveExecutor());
+				controller = new GameController(game, new MasterChessMoveExecutor(), true);
 				games.put(gameID, controller);
 			}
 
@@ -1641,7 +1659,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 					putPlayerConnection(gameID, myUserID, this);
 					controller.addPlayer(player, Color.fromString(color), (Long)myPlayerInfo.get("played"));
-					GameClock clock = game.getClock();
+					GameClock clock = controller.getClock();
 
 					if (clock != null)
 					{
@@ -1690,7 +1708,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 						putPlayerConnection(gameID, myUserID, this);
 						controller.addPlayer(player, Color.fromString(color), (Long)myPlayerInfo.get("played"));
-						GameClock clock = game.getClock();
+						GameClock clock = controller.getClock();
 
 						if (clock != null)
 						{
