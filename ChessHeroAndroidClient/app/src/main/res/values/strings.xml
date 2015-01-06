@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">ChessHero</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
@@ -16,5 +18,9 @@
     <string name="max_level">Maximum Opponent Level</string>
     <string name="cancel_game">Cancel Game</string>
     <string name="back_lobby">Back to Lobby</string>
-    <string name ="Enter_game_name" >Enter a Name for Your Game </string>
+    <string name="Enter_game_name">Enter a Name for Your Game </string>
+    <string name="title_activity_lobby_activiy">LobbyActiviy</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
 </resources>
