@@ -64,7 +64,7 @@
                 android:shrinkColumns="*"
                 android:stretchColumns="*">
 
-                <!-- Row 1 with single column -->
+                <!-- Title Row -->
                 <TableRow
                     android:id="@+id/row_title"
                     android:layout_width="fill_parent"
@@ -87,8 +87,7 @@
 
                 </TableRow>
 
-                <!-- Row 2 with 3 columns -->
-
+                <!-- Subtitle Row -->
                 <TableRow
                     android:id="@+id/row_subtitle"
                     android:layout_width="match_parent"
@@ -129,44 +128,6 @@
                         android:textStyle="bold" />
 
                 </TableRow>
-
-                <!-- Row 3 with 3 columns -->
-                <TableRow
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:id="@+id/row_games">
-
-                    <TextView
-                        android:id="@+id/txt_game"
-                        android:layout_weight="1"
-                        android:background="#d3d3d3"
-                        android:gravity="center"
-                        android:padding="20dip"
-                        android:text="........."
-                        android:textColor="#00467f" />
-
-                    <TextView
-                        android:id="@+id/txt_creator"
-                        android:layout_weight="1"
-                        android:background="#d3d3d3"
-                        android:gravity="center"
-                        android:padding="20dip"
-                        android:text=""
-
-                        android:textColor="#00467f" />
-
-                    <TextView
-                        android:id="@+id/txt_oponent"
-                        android:layout_weight="1"
-                        android:background="#d3d3d3"
-                        android:gravity="center"
-                        android:padding="20dip"
-                        android:text=""
-                        android:textColor="#00467f" />
-
-                </TableRow>
-
 
             </TableLayout>
 
