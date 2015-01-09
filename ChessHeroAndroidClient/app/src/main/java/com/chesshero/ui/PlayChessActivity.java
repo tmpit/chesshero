@@ -10,7 +10,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chesshero.R;
-import com.chesshero.client.ChessHeroApplication;
 import com.chesshero.client.Client;
 import com.chesshero.event.EventCenter;
 import com.chesshero.event.EventCenterObserver;
@@ -28,7 +27,7 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
 
     public static boolean isFlipped = false;
     private final ChessboardAdapter adapter = new ChessboardAdapter(PlayChessActivity.this, isFlipped);
-    private Client client;
+    public static Client client;
     private GridView grid;
     private Restrictions restrictions;
     private Tile previousTileClicked;
@@ -42,7 +41,6 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         setContentView(R.layout.play_chess);
 
         // init client service
-        client = ((ChessHeroApplication) getApplication()).getClient();
         EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_RESULT);
         EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_PUSH);
         EventCenter.getSingleton().addObserver(this, Client.Event.END_GAME_PUSH);
@@ -51,8 +49,8 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         // set player names
         final TextView playerName = (TextView) findViewById(R.id.playerName);
         final TextView oponentName = (TextView) findViewById(R.id.oponentName);
-//        playerName.setText(client.getGame().getPlayer1().getName());
-//        oponentName.setText(client.getGame().getPlayer2().getName());
+        playerName.setText(client.getPlayer().getName());
+        oponentName.setText(client.getPlayer().getOpponent().getName());
 
         grid = (GridView) findViewById(R.id.chessboard_grid);
         grid.setAdapter(adapter);
