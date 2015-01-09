@@ -55,7 +55,7 @@ public class MainActivity extends Activity implements EventCenterObserver {
                 client.createGame("dada", Color.WHITE);
                 PlayChessActivity.isFlipped = false;
 
-                pageToOpen = new Intent(this, PlayChessActivity.class);
+                pageToOpen = new Intent(this, LobbyActiviy.class);
                 startActivity(pageToOpen);
             }
         }

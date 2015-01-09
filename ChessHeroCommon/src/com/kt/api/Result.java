@@ -145,6 +145,11 @@ public class Result
 	 */
 	public static final int MISSING_PROMOTION = 206;
 
+	/**
+	 * You are attempting to move the chess piece to the same position. Can be returned on: move
+	 */
+	public static final int SAME_POSITION = 207;
+
 
 	/**
 	 * The action is temporarily disabled for you. Can be returned on any request other than a save game request only when

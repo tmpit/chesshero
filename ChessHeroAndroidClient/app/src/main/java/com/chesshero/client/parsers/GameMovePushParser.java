@@ -8,11 +8,13 @@ import java.util.HashMap;
 public class GameMovePushParser extends PushParser
 {
 	public String move;
+	public Long playerTime;
 
 	@Override
 	protected void reset()
 	{
 		move = null;
+		playerTime = null;
 	}
 
 	@Override
@@ -21,6 +23,11 @@ public class GameMovePushParser extends PushParser
 		super.parse(message);
 
 		move = (String)message.get("move");
+
+		if (message.containsKey("playertime"))
+		{
+			playerTime = (Long)message.get("playertime");
+		}
 
 		return this;
 	}

@@ -53,6 +53,18 @@ public class ParserCache
 		return fetchGamesParser;
 	}
 
+	private static GameMoveResponseParser gameMoveResponseParser = null;
+
+	public static GameMoveResponseParser getGameMoveResponseParser()
+	{
+		if (null == gameMoveResponseParser)
+		{
+			gameMoveResponseParser = new GameMoveResponseParser();
+		}
+
+		return gameMoveResponseParser;
+	}
+
 	private static GameJoinPushParser gameJoinParser = null;
 
 	public static GameJoinPushParser getGameJoinPushParser()

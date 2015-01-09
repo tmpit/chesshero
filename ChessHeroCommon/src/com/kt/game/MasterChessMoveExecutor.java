@@ -79,7 +79,7 @@ public class MasterChessMoveExecutor extends ChessMoveValidator implements Chess
 		if (from.equals(to))
 		{
 			SLog.write("no-op");
-			return new ChessMoveResult(Result.OK);
+			return new ChessMoveResult(Result.SAME_POSITION);
 		}
 
 		BoardField fromField = board[from.x][from.y];
@@ -255,14 +255,6 @@ public class MasterChessMoveExecutor extends ChessMoveValidator implements Chess
 		// Update whose turn it is
 		game.turn = opponent;
 		SLog.write("player to play next turn: " + opponent);
-
-		// Update duration
-		GameClock clock = game.getClock();
-
-		if (clock != null)
-		{
-			executor.millisPlayed = (System.currentTimeMillis() - clock.getStartTimeMillis()) - opponent.millisPlayed;
-		}
 
 		// Update general game state
 		game.lastPawnRunner = context.doubleMove;
