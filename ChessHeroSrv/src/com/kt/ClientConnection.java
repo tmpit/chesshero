@@ -1185,7 +1185,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 		boolean gameNotStarted = false;
 		int result = 0;
-		Long playerTimeLeft = null;
+		Integer playerTime = null;
 		boolean gameFinished = false;
 		ArrayList<ChessPiece> attackers = null;
 		Player winner = null;
@@ -1209,7 +1209,7 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 					if (game.getTimeout() != Game.NO_TIMEOUT)
 					{
-						playerTimeLeft = player.getMillisPlayed();
+						playerTime = (int)player.getMillisPlayed();
 					}
 
 					opponentConnection = getPlayerConnection(gameID, opponentUserID);
@@ -1235,9 +1235,9 @@ public class ClientConnection extends Thread implements GameClockEventListener
 
 		HashMap response = aResponseWithResult(result);
 
-		if (playerTimeLeft != null)
+		if (playerTime != null)
 		{
-			response.put("playertime", playerTimeLeft);
+			response.put("playertime", playerTime);
 		}
 
 		writeMessage(response);
@@ -1279,9 +1279,9 @@ public class ClientConnection extends Thread implements GameClockEventListener
 				msg.put("attackers", positions);
 			}
 
-			if (playerTimeLeft != null)
+			if (playerTime != null)
 			{
-				msg.put("playertime", playerTimeLeft);
+				msg.put("playertime", playerTime);
 			}
 
 			opponentConnection.writeMessage(msg);
