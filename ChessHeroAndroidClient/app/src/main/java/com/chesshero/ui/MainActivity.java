@@ -27,6 +27,9 @@ public class MainActivity extends Activity implements EventCenterObserver {
         setContentView(R.layout.login);
 
         client = ((ChessHeroApplication) getApplication()).getClient();
+        PlayChessActivity.client = client;
+        RegisterActivity.client = client;
+        LobbyActiviy.client = client;
         EventCenter.getSingleton().addObserver(this, Client.Event.LOGIN_RESULT);
     }
 
@@ -50,12 +53,7 @@ public class MainActivity extends Activity implements EventCenterObserver {
             //todo handle other result cases, open lobby
 
             if (userData != null && (Integer) userData == Result.OK) {
-
-                //todo remove (temporary used for testing chess game-play)
-                client.createGame("dada", Color.WHITE);
-                PlayChessActivity.isFlipped = false;
-
-                pageToOpen = new Intent(this, PlayChessActivity.class);
+                pageToOpen = new Intent(this, LobbyActiviy.class);
                 startActivity(pageToOpen);
             }
         }

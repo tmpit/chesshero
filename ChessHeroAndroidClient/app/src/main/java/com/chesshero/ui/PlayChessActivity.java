@@ -10,7 +10,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chesshero.R;
-import com.chesshero.client.ChessHeroApplication;
 import com.chesshero.client.Client;
 import com.chesshero.event.EventCenter;
 import com.chesshero.event.EventCenterObserver;
@@ -28,7 +27,7 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
 
     public static boolean isFlipped = false;
     private final ChessboardAdapter adapter = new ChessboardAdapter(PlayChessActivity.this, isFlipped);
-    private Client client;
+    public static Client client;
     private GridView grid;
     private Restrictions restrictions;
     private Tile previousTileClicked;
@@ -42,7 +41,6 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         setContentView(R.layout.play_chess);
 
         // init client service
-        client = ((ChessHeroApplication) getApplication()).getClient();
         EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_RESULT);
         EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_PUSH);
         EventCenter.getSingleton().addObserver(this, Client.Event.END_GAME_PUSH);
@@ -51,8 +49,8 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         // set player names
         final TextView playerName = (TextView) findViewById(R.id.playerName);
         final TextView oponentName = (TextView) findViewById(R.id.oponentName);
-//        playerName.setText(client.getGame().getPlayer1().getName());
-//        oponentName.setText(client.getGame().getPlayer2().getName());
+        playerName.setText(client.getPlayer().getName());
+        oponentName.setText(client.getPlayer().getOpponent().getName());
 
         grid = (GridView) findViewById(R.id.chessboard_grid);
         grid.setAdapter(adapter);
@@ -145,31 +143,31 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         List<Move> moves = client.getGame().getExecutedMoves();
 
         if (eventName == Client.Event.MOVE_RESULT) {
-            drawMove(moves.get(moves.size() - 1).code);
+            drawMove(moves.get(moves.size() - 1));
             isMyTurn = false;
             //vij drugite raoti tuk w game obekta
             //  Log.i("", currentLastMove.executor.getName());
         }
         if (eventName == Client.Event.MOVE_PUSH) {
-            drawMove(moves.get(moves.size() - 1).code);
+            drawMove(moves.get(moves.size() - 1));
             isMyTurn = true;
         }
     }
 
-    private void drawMove(String code) {
+    private void drawMove(Move move) {
         int startCol, startRow, endCol, endRow;
         // flipped - true
         if (isFlipped) {
-            startCol = 104 - code.charAt(0);
-            startRow = Integer.parseInt(code.charAt(1) + "") - 1;
-            endCol = 104 - code.charAt(2);
-            endRow = Integer.parseInt(code.charAt(3) + "") - 1;
+            startCol = 104 - move.code.charAt(0);
+            startRow = Integer.parseInt(move.code.charAt(1) + "") - 1;
+            endCol = 104 - move.code.charAt(2);
+            endRow = Integer.parseInt(move.code.charAt(3) + "") - 1;
         } else {
             // flipped - false
-            startCol = code.charAt(0) - 97;
-            startRow = 8 - Integer.parseInt(code.charAt(1) + "");
-            endCol = code.charAt(2) - 97;
-            endRow = 8 - Integer.parseInt(code.charAt(3) + "");
+            startCol = move.code.charAt(0) - 97;
+            startRow = 8 - Integer.parseInt(move.code.charAt(1) + "");
+            endCol = move.code.charAt(2) - 97;
+            endRow = 8 - Integer.parseInt(move.code.charAt(3) + "");
         }
 
         Tile previousTile = adapter.getTileAt(startRow, startCol);
