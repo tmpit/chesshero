@@ -315,7 +315,7 @@ public class LobbyPage extends ChessHeroPage{
 
                     }
 
-                    GameController gameContr = new GameController(new Game(SelectedGame.gameID, SelectedGame.gameName, Game.NO_TIMEOUT), new MasterChessMoveExecutor());
+                    GameController gameContr = new GameController(new Game(SelectedGame.gameID, SelectedGame.gameName, Game.NO_TIMEOUT), new MasterChessMoveExecutor(), true);
                     gameContr.addPlayer(this.getHolder().player, opponentColor.Opposite);
                     gameContr.addPlayer(opponent, opponentColor);
                     this.getHolder().NavigateToPage(new PlayGamePage(gameContr));
