@@ -7,7 +7,7 @@ import java.util.HashMap;
  */
 public class GameMoveResponseParser extends ResponseParser
 {
-	public Long playerTime;
+	public Integer playerTime;
 
 	@Override
 	protected void reset()
@@ -24,7 +24,7 @@ public class GameMoveResponseParser extends ResponseParser
 
 		if (success && response.containsKey("playertime"))
 		{
-			playerTime = (Long)response.get("playertime");
+			playerTime = (Integer)response.get("playertime");
 		}
 
 		return this;

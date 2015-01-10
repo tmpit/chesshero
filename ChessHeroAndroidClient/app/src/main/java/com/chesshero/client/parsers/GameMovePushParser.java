@@ -8,7 +8,7 @@ import java.util.HashMap;
 public class GameMovePushParser extends PushParser
 {
 	public String move;
-	public Long playerTime;
+	public Integer playerTime;
 
 	@Override
 	protected void reset()
@@ -26,7 +26,7 @@ public class GameMovePushParser extends PushParser
 
 		if (message.containsKey("playertime"))
 		{
-			playerTime = (Long)message.get("playertime");
+			playerTime = (Integer)message.get("playertime");
 		}
 
 		return this;
