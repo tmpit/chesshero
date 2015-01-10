@@ -315,7 +315,7 @@ public class CreateGamePage extends ChessHeroPage {
                 {
                     String color = createGameSettings.IsWithWhite ? "white" : "black";
                     Integer gameID = (Integer)response.get("gameid");
-                    createdGameController = new GameController(new Game(gameID, createGameSettings.GameName, Game.NO_TIMEOUT), new MasterChessMoveExecutor());
+                    createdGameController = new GameController(new Game(gameID, createGameSettings.GameName, Game.NO_TIMEOUT), new MasterChessMoveExecutor(), true);
                     createdGameController.addPlayer(this.getHolder().player, (createGameSettings.IsWithWhite ? com.kt.game.Color.WHITE : com.kt.game.Color.BLACK));
 
                     gameCreated = true;
