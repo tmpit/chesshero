@@ -26,7 +26,8 @@ import java.util.List;
 public class PlayChessActivity extends Activity implements EventCenterObserver {
 
     public static boolean isFlipped = false;
-    private final ChessboardAdapter adapter = new ChessboardAdapter(PlayChessActivity.this, isFlipped);
+    private final ChessboardAdapter adapter = new ChessboardAdapter(PlayChessActivity.this,
+            isFlipped, client.getPlayer().getGame().getBoard());
     public static Client client;
     private GridView grid;
     private Restrictions restrictions;

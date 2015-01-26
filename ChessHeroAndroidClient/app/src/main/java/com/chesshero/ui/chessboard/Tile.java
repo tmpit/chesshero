@@ -5,8 +5,6 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import com.chesshero.R;
-import com.kt.game.ChessPiece;
-import com.kt.game.Color;
 import com.kt.game.Position;
 
 /**
@@ -17,21 +15,6 @@ public final class Tile extends ImageView {
     private static final int BLACK_BACKGROUND = R.drawable.transperant_black_cube;
 
     private static final int WHITE_BACKGROUND = R.drawable.transperant_white_cube;
-
-    private static final int[] CHESS_PIECES = {
-            // the 'dark' side of the board
-            R.drawable.black_rook, R.drawable.black_knight, R.drawable.black_bishop, R.drawable.black_queen,
-            R.drawable.black_king, R.drawable.black_bishop, R.drawable.black_knight, R.drawable.black_rook,
-            R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn,
-            R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn, R.drawable.black_pawn,
-            // the middle of the board
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            // the white side of the board
-            R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn,
-            R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn, R.drawable.white_pawn,
-            R.drawable.white_rook, R.drawable.white_knight, R.drawable.white_bishop, R.drawable.white_queen,
-            R.drawable.white_king, R.drawable.white_bishop, R.drawable.white_knight, R.drawable.white_rook,
-    };
 
     private int mCurrentTileImageId;
 
@@ -66,20 +49,70 @@ public final class Tile extends ImageView {
             setBackgroundResource(BLACK_BACKGROUND);
         }
 
-        //set initial chess piece
-        if (mIsFlipped) {
-            position = 63 - position;
+        setScaleType(ScaleType.FIT_XY);
+        setScaleX(0.95f);
+        setScaleY(0.95f);
+    }
+
+    public void setChessPiece(String chessPieceCode) {
+
+        char piece = chessPieceCode.charAt(1);
+
+        // change code letters
+        // in order to flip black and white chess pieces
+        // because in my implementation element[0][0] is up-left,
+        // and on the server element[0][0] is down-left
+        if(!mIsFlipped) {
+            if (piece > 64 && piece < 91) piece += 32;
+            else piece -= 32;
         }
-        mCurrentTileImageId = CHESS_PIECES[position];
+
+        switch (piece) {
+            case '-':
+                mCurrentTileImageId = 0;
+                break;
+            case 'P':
+                mCurrentTileImageId = R.drawable.white_pawn;
+                break;
+            case 'p':
+                mCurrentTileImageId = R.drawable.black_pawn;
+                break;
+            case 'K':
+                mCurrentTileImageId = R.drawable.white_king;
+                break;
+            case 'k':
+                mCurrentTileImageId = R.drawable.black_king;
+                break;
+            case 'B':
+                mCurrentTileImageId = R.drawable.white_bishop;
+                break;
+            case 'b':
+                mCurrentTileImageId = R.drawable.black_bishop;
+                break;
+            case 'R':
+                mCurrentTileImageId = R.drawable.white_rook;
+                break;
+            case 'r':
+                mCurrentTileImageId = R.drawable.black_rook;
+                break;
+            case 'Q':
+                mCurrentTileImageId = R.drawable.white_queen;
+                break;
+            case 'q':
+                mCurrentTileImageId = R.drawable.black_queen;
+                break;
+            case 'N':
+                mCurrentTileImageId = R.drawable.white_knight;
+                break;
+            case 'n':
+                mCurrentTileImageId = R.drawable.black_knight;
+                break;
+        }
         setImageResource(mCurrentTileImageId);
 
         if (isMine()) {
             mIsAvailableMove = true;
         }
-
-        setScaleType(ScaleType.FIT_XY);
-        setScaleX(0.95f);
-        setScaleY(0.95f);
     }
 
     public int getCol() {
@@ -98,7 +131,9 @@ public final class Tile extends ImageView {
         mRow = position / 8;
     }
 
-    public Position getPosition() { return mPosition; }
+    public Position getPosition() {
+        return mPosition;
+    }
 
     public boolean isAvailable() {
         return mIsAvailableMove;
