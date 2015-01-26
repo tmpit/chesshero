@@ -1,7 +1,6 @@
 package com.chesshero.ui.chessboard;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,12 +34,6 @@ public class ChessboardAdapter extends BaseAdapter {
         mContext = context;
         mIsFlipped = isFlipped;
         mBoardField = boardField;
-
-        for (int i =0; i<8; i++) {
-            for(int j=0; j<8; j++ ) {
-                Log.i("GAGAGA", mBoardField[i][j].toString() + " " + i + " : "+ j);
-            }
-        }
     }
 
     public Tile[][] getAllTiles() {
