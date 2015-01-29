@@ -2,7 +2,9 @@ package com.chesshero.ui;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -13,6 +15,7 @@ import com.chesshero.client.Client;
 import com.chesshero.client.parsers.GameTicket;
 import com.chesshero.event.EventCenter;
 import com.chesshero.event.EventCenterObserver;
+import com.chesshero.ui.chessboard.CreateGameActivity;
 import com.kt.api.Result;
 
 import java.util.List;
@@ -40,9 +43,11 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
         client.joinGame(gameTicket);
     }
 
-    public void create(View view) {
 
-        //TODO
+
+    public void createGame (View view) {
+        pageToOpen = new Intent(this, CreateGameActivity.class);
+        startActivity(pageToOpen);
     }
 
     public void refresh(View view) {
@@ -95,11 +100,22 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
             TextView gameName = new TextView(this);
             TextView createdBy = new TextView(this);
             TextView oponent = new TextView(this);
+            TextView opponent = new TextView(this);
 
             gameName.setText(game.gameName);
             createdBy.setText(game.opponentName);
-            oponent.setText(client.getPlayer().getName());
+            gameName.setGravity(Gravity.CENTER);
+            createdBy.setText(game.opponentName);
+            oponent.setText(game.opponentColor.toString());
 
+            createdBy.setTextColor(Color.BLUE);
+            createdBy.setGravity(Gravity.CENTER);
+            opponent.setText(client.getPlayer().getName());
+            opponent.setTextColor(Color.BLUE);
+            opponent.setGravity(Gravity.CENTER);
+
+            if(table.getChildCount() % 2 == 0) {gamesRow.setBackgroundColor(Color.YELLOW);}
+            gamesRow.setPadding(12,12,12,12);
             gamesRow.addView(gameName);
             gamesRow.addView(createdBy);
             gamesRow.addView(oponent);

@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.chesshero.R;
 import com.chesshero.client.ChessHeroApplication;
@@ -38,12 +40,22 @@ public class MainActivity extends Activity implements EventCenterObserver {
         startActivity(pageToOpen);
     }
 
+
+
     //todo add field constrains/validations
     public void login(View view) {
         String username = ((EditText) findViewById(R.id.login_username)).getText().toString();
         String password = ((EditText) findViewById(R.id.login_password)).getText().toString();
 
-        client.login(username, password);
+
+        if (username.trim().length() == 0 || password.length() == 0) {
+            TextView lastMsg = (TextView)findViewById(R.id.exceptions);
+            lastMsg.setText(" Fill in all the required fields ");
+            return;
+        } else{
+            client.login(username, password);
+
+    }
     }
 
     @Override
@@ -53,6 +65,7 @@ public class MainActivity extends Activity implements EventCenterObserver {
             //todo handle other result cases, open lobby
 
             if (userData != null && (Integer) userData == Result.OK) {
+
                 pageToOpen = new Intent(this, LobbyActiviy.class);
                 startActivity(pageToOpen);
             }

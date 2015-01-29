@@ -45,6 +45,14 @@
             android:name="com.chesshero.ui.LobbyActiviy"
             android:label="@string/title_activity_lobby_activiy" >
         </activity>
+
+        <!-- Entry for CreateGameActivity-->
+        <activity
+            android:name="com.chesshero.ui.chessboard.CreateGameActivity"
+            android:label="Create Game Page "/>
+
+
+
     </application>
 
 </manifest>

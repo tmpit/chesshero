@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:fillViewport="true"
-    android:orientation="vertical"
-    tools:ignore="ContentDescription">
 
-    <RelativeLayout
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/adaad"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -46,20 +40,31 @@
         <!--Footer ends -->
 
         <!-- Lobby Table -->
+
+
+
         <LinearLayout
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="300dip"
             android:layout_below="@id/header"
             android:orientation="vertical"
             android:padding="10dip"
-            android:visibility="visible">
-
+            android:visibility="visible"
+            android:weightSum="1">
+            <ScrollView
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_below="@+id/header"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:fillViewport="true"
+                android:orientation="vertical"
+                tools:ignore="ContentDescription">
 
             <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/table"
                 android:layout_width="match_parent"
-                android:layout_height="333dp"
+                android:layout_height="200dp"
                 android:background="#d3d3d3"
                 android:shrinkColumns="*"
                 android:stretchColumns="*">
@@ -130,77 +135,65 @@
                 </TableRow>
 
             </TableLayout>
+</ScrollView>
 
         </LinearLayout>
 
-        <Button
-            android:id="@+id/refresh_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
-
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/linearLayout"
-            android:onClick="refresh"
-            android:text="    Refresh   "
-            android:textColor="#00467f" />
-
-        <Button
-            android:id="@+id/join_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-
-
-            android:layout_below="@+id/refresh_button"
-            android:text="    Join game     "
-            android:textColor="#00467f" />
-
-        <Button
+    <Button
             android:id="@+id/create_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/fame_button"
-            android:layout_alignParentEnd="true"
 
-            android:layout_alignParentRight="true"
-            android:text="  Create game    "
-            android:textColor="#00467f" />
 
-        <Button
-            android:id="@+id/fame_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignEnd="@+id/join_button"
+            android:text=" Create game  "
+            android:textColor="#00467f"
+            android:layout_toStartOf="@+id/logout_button"
+            android:layout_below="@+id/refresh_button"
             android:layout_alignParentLeft="true"
-
-
             android:layout_alignParentStart="true"
-            android:layout_alignRight="@+id/join_button"
-            android:layout_below="@+id/join_button"
-            android:text="    Hall of fame   "
-            android:textColor="#00467f" />
+            android:onClick="createGame"/>
 
-        <Button
+    <Button
             android:id="@+id/logout_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/create_button"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-
-            android:layout_alignStart="@+id/create_button"
-            android:layout_below="@+id/create_button"
             android:text="   Logout     "
-            android:textColor="#00467f" />
+            android:textColor="#00467f"
+            android:layout_gravity="center_horizontal"
+            android:layout_toStartOf="@+id/join_button"
+            android:layout_below="@+id/create_button"
+            android:layout_centerHorizontal="true" />
+
+    <Button
+            android:id="@+id/join_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="  Join game   "
+            android:textColor="#00467f"
+            android:layout_gravity="right"
+            android:layout_below="@+id/refresh_button"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
 
-    </RelativeLayout>
+
+    <Button
+        android:id="@+id/refresh_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:onClick="refresh"
+        android:text="    Refresh   "
+        android:textColor="#00467f"
+
+        android:layout_below="@+id/linearLayout"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+
+</RelativeLayout>
     <!-- Form Ends -->
 
-</ScrollView>
+
 
 
