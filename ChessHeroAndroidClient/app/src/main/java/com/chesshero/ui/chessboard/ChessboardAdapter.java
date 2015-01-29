@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 import com.chesshero.R;
+import com.kt.game.BoardField;
 
 /**
  * Created by Vasil on 6.12.2014 г..
@@ -27,9 +28,12 @@ public class ChessboardAdapter extends BaseAdapter {
 
     private boolean mIsFlipped;
 
-    public ChessboardAdapter(Context context, boolean isFlipped) {
+    private BoardField[][] mBoardField;
+
+    public ChessboardAdapter(Context context, boolean isFlipped, BoardField[][] boardField) {
         mContext = context;
         mIsFlipped = isFlipped;
+        mBoardField = boardField;
     }
 
     public Tile[][] getAllTiles() {
@@ -65,6 +69,7 @@ public class ChessboardAdapter extends BaseAdapter {
 
             Tile tile = (Tile) mGrid.findViewById(R.id.single_tile);
             tile.initTile(position, mIsFlipped);
+            tile.setChessPiece(mBoardField[tile.getCol()][tile.getRow()].toString());
 
             allTiles[tile.getRow()][tile.getCol()] = tile;
             allTilesByPosition[position] = tile;
