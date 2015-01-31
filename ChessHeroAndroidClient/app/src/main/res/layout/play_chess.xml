@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/playChessView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#00477d"
@@ -11,6 +12,13 @@
         android:layout_gravity="center"
         android:background="#00477d"
         android:orientation="vertical">
+
+        <Button
+            android:id="@+id/log_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/moves_log" />
 
         <TextView
             android:id="@+id/oponentName"

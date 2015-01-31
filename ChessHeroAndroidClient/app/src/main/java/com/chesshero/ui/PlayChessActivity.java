@@ -1,11 +1,23 @@
 package com.chesshero.ui;
 
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.PaintDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,19 +34,90 @@ import java.util.List;
 
 /**
  * Created by Vasil on 30.11.2014 г..
+ * Play game & chessboard logic class
  */
 public class PlayChessActivity extends Activity implements EventCenterObserver {
 
-    public static boolean isFlipped = false;
-    private final ChessboardAdapter adapter = new ChessboardAdapter(PlayChessActivity.this,
-            isFlipped, client.getPlayer().getGame().getBoard());
+    /**
+     * Game client
+     */
     public static Client client;
+
+    /**
+     * Is the chessboard flipped (when the player's color is black)
+     */
+    public static boolean isFlipped = false;
+
+    /**
+     * Adapter used to inflate chess tiles on the board
+     */
+    private final ChessboardAdapter ADAPTER = new ChessboardAdapter(PlayChessActivity.this,
+            isFlipped, client.getPlayer().getGame().getBoard());
+
+    /**
+     * Layout inflater
+     */
+    private LayoutInflater inflater;
+
+    /**
+     * Device's display width
+     */
+    private int windowWidth;
+
+    /**
+     * Device's display height
+     */
+    private int windowHeight;
+
+    /**
+     * The chessboard gird
+     */
     private GridView grid;
+
+    /**
+     * Used to apply move restrictions
+     */
     private Restrictions restrictions;
+
+    /**
+     * Holding the previous tile clicked
+     */
     private Tile previousTileClicked;
+
+    /**
+     * Holding the current tile clicked
+     */
     private Tile currentTileClicked;
+
+    /**
+     * Indicates if it is a start of a new move
+     */
     private boolean newMove = true;
+
+    /**
+     * Used to check if player is in turn
+     */
     private boolean isMyTurn = true;
+
+    /**
+     * Signifies that the log menu is already visible
+     */
+    private boolean isLogAlreadyShowing = false;
+
+    /**
+     * Reference of the {@link android.widget.PopupWindow} which dims the screen
+     */
+    private PopupWindow fadePopup;
+
+    /**
+     * The translate animation
+     */
+    private Animation animation;
+
+    /**
+     * The view which needs to be translated
+     */
+    private LinearLayout baseView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +130,17 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         EventCenter.getSingleton().addObserver(this, Client.Event.END_GAME_PUSH);
         EventCenter.getSingleton().addObserver(this, Client.Event.EXIT_GAME_RESULT);
 
+        inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        findViewById(R.id.log_btn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!isLogAlreadyShowing) {
+                    isLogAlreadyShowing = true;
+                    openSlidingMenu();
+                }
+            }
+        });
+
         // set player names
         final TextView playerName = (TextView) findViewById(R.id.playerName);
         final TextView oponentName = (TextView) findViewById(R.id.oponentName);
@@ -54,8 +148,16 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         oponentName.setText(client.getPlayer().getOpponent().getName());
 
         grid = (GridView) findViewById(R.id.chessboard_grid);
-        grid.setAdapter(adapter);
-        restrictions = new Restrictions(adapter.getAllTiles());
+        grid.setAdapter(ADAPTER);
+        restrictions = new Restrictions(ADAPTER.getAllTiles());
+
+        Display display = getWindowManager().getDefaultDisplay();
+        windowHeight = display.getHeight();
+        windowWidth = display.getWidth();
+        ViewGroup.LayoutParams layoutParams = grid.getLayoutParams();
+        layoutParams.height = windowWidth;
+        layoutParams.width = windowWidth;
+        grid.setLayoutParams(layoutParams);
 
         if (isFlipped) {
             grid.setBackgroundResource(R.drawable.board_flipped);
@@ -97,57 +199,22 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
                         Toast.makeText(PlayChessActivity.this, "Illegal move", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    //todo log
-                    boolean capture = currentTileClicked.isOponent();
-                    // x - captured
-                    // > - moved to
-//                    oponentName.setText(currentTileClicked.getTileImageName() + " "
-//                            + previousTileClicked.toString()
-//                            + (capture ? " x " : " > ")
-//                            + currentTileClicked.toString());
-
                     client.executeMove(previousTileClicked.getPosition(), currentTileClicked.getPosition());
                     restrictions.clear();
                     newMove = true;
                 }
-//                //todo remove this after we are done coding (used for debugging)
-//                playerName.setText("Position: " + position + "\n"
-//                        + currentTileClicked.getPosition().toString());
             }
         });
-
-//        final VerticalPager pager = (VerticalPager) findViewById(R.id.pager);
-//        final LinearLayout list = (LinearLayout) findViewById(R.id.log);
-//
-//        TextView text;
-//
-//        for(int i = 0; i < 40; i++ ) {
-//            text = new TextView(this);
-//            text.setText("test: "+i);
-//            text.setTextSize(30);
-//            list.addView(text);
-//        }
-//
-//        pager.addOnScrollListener(new VerticalPager.OnScrollListener() {
-//            public void onScroll(int scrollX) {
-//                //Log.d("TestActivity", "scrollX=" + scrollX);
-//            }
-//
-//            public void onViewScrollFinished(int currentPage) {
-//                //Log.d("TestActivity", "viewIndex=" + currentPage);
-//            }
-//        });
     }
 
     @Override
     public void eventCenterDidPostEvent(String eventName, Object userData) {
+        
         List<Move> moves = client.getGame().getExecutedMoves();
 
         if (eventName == Client.Event.MOVE_RESULT) {
             drawMove(moves.get(moves.size() - 1));
             isMyTurn = false;
-            //vij drugite raoti tuk w game obekta
-            //  Log.i("", currentLastMove.executor.getName());
         }
         if (eventName == Client.Event.MOVE_PUSH) {
             drawMove(moves.get(moves.size() - 1));
@@ -171,14 +238,104 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
             endRow = 8 - Integer.parseInt(move.code.charAt(3) + "");
         }
 
-        Tile previousTile = adapter.getTileAt(startRow, startCol);
-        Tile currentTile = adapter.getTileAt(endRow, endCol);
+        Tile previousTile = ADAPTER.getTileAt(startRow, startCol);
+        Tile currentTile = ADAPTER.getTileAt(endRow, endCol);
 
         currentTile.setTileImageId(previousTile.getTileImageId());
         previousTile.setTileImageId(0);
 
         Log.i("PlayChessActivity",
                 String.format("drawing move from {%d,%d} to {%d,%d}", startRow, startCol, endRow, endCol));
+    }
+
+    /**
+     * Opens the sliding Menu
+     */
+    private void openSlidingMenu() {
+        showFadePopup();
+        // The amount of view which needs to be moved out. equivalent to the
+        // width of the menu
+        int width = RelativeLayout.LayoutParams.FILL_PARENT;
+        int height = (int) (windowHeight * 0.30f);
+        translateView((float) height);
+        // creating a popup
+
+        final View layout = inflater.inflate(R.layout.moves_log, (ViewGroup) findViewById(R.id.moves_log_layout));
+
+        LinearLayout list = (LinearLayout) layout.findViewById(R.id.moves_log_layout);
+        List<Move> moves = client.getGame().getExecutedMoves();
+        for (Move move : moves) {
+            TextView text = new TextView(this);
+            text.setText(move.executor.getName() + ":  " + move.code);
+            text.setTextSize(18);
+            text.setTextColor(Color.WHITE);
+            text.setGravity(Gravity.CENTER);
+            list.addView(text);
+        }
+
+        final PopupWindow movesLogPopup = new PopupWindow(layout, width, height, true);
+        movesLogPopup.setBackgroundDrawable(new PaintDrawable());
+
+        movesLogPopup.showAtLocation(layout, Gravity.NO_GRAVITY, 0, 0);
+
+        movesLogPopup.setOnDismissListener(new PopupWindow.OnDismissListener() {
+
+            public void onDismiss() {
+                //Removing the fade effect
+                fadePopup.dismiss();
+                //to clear the previous animation transition in
+                cleanUp();
+                //move the view out
+                translateView(0);
+                //to clear the latest animation transition out
+                cleanUp();
+                //resetting the variable
+                isLogAlreadyShowing = false;
+            }
+        });
+    }
+
+    /**
+     * This method is responsible for view translation. It applies a translation
+     * animation on the root view of the activity
+     *
+     * @param moveTo The position to translate to
+     */
+    private void translateView(float moveTo) {
+
+        animation = new TranslateAnimation(0f, 0f, 0f, moveTo);
+        animation.setDuration(300);
+        animation.setFillEnabled(true);
+        animation.setFillAfter(true);
+
+        baseView = (LinearLayout) findViewById(R.id.playChessView);
+        baseView.startAnimation(animation);
+        baseView.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Fades the entire screen, gives a dim background
+     */
+    private void showFadePopup() {
+        final View layout = inflater.inflate(R.layout.fadepopup, (ViewGroup) findViewById(R.id.fadePopup));
+        fadePopup = new PopupWindow(layout, windowWidth, windowHeight, false);
+        fadePopup.showAtLocation(layout, Gravity.NO_GRAVITY, 0, 0);
+    }
+
+    /**
+     * Basic cleanup to avoid memory issues. Not everything is release after
+     * animation, so to immediately release it doing it manually
+     */
+    private void cleanUp() {
+        if (null != baseView) {
+            baseView.clearAnimation();
+            baseView = null;
+        }
+        if (null != animation) {
+            animation.cancel();
+            animation = null;
+        }
+        fadePopup = null;
     }
 }
 

@@ -15,7 +15,6 @@ import com.chesshero.client.Client;
 import com.chesshero.client.parsers.GameTicket;
 import com.chesshero.event.EventCenter;
 import com.chesshero.event.EventCenterObserver;
-import com.chesshero.ui.chessboard.CreateGameActivity;
 import com.kt.api.Result;
 
 import java.util.List;

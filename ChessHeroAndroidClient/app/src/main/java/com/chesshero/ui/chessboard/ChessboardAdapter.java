@@ -24,11 +24,12 @@ public class ChessboardAdapter extends BaseAdapter {
 
     private Context mContext;
 
-    private View mGrid;
+    private View mTile;
 
     private boolean mIsFlipped;
 
     private BoardField[][] mBoardField;
+
 
     public ChessboardAdapter(Context context, boolean isFlipped, BoardField[][] boardField) {
         mContext = context;
@@ -65,17 +66,17 @@ public class ChessboardAdapter extends BaseAdapter {
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         if (convertView == null) {
-            mGrid = inflater.inflate(R.layout.tile, null);
+            mTile = inflater.inflate(R.layout.tile, null);
 
-            Tile tile = (Tile) mGrid.findViewById(R.id.single_tile);
+            Tile tile = (Tile) mTile.findViewById(R.id.single_tile);
             tile.initTile(position, mIsFlipped);
             tile.setChessPiece(mBoardField[tile.getCol()][tile.getRow()].toString());
 
             allTiles[tile.getRow()][tile.getCol()] = tile;
             allTilesByPosition[position] = tile;
         } else {
-            mGrid = convertView;
+            mTile = convertView;
         }
-        return mGrid;
+        return mTile;
     }
 }
