@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.chesshero" >
+    package="com.chesshero">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -9,7 +9,7 @@
         android:allowBackup="true"
         android:icon="@drawable/carche"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <service
             android:name="com.chesshero.service.ServerCommunicationService"
             android:exported="false" />
@@ -22,9 +22,7 @@
             </intent-filter>
         </activity>
         -->
-        <activity
-            android:name="com.chesshero.ui.MainActivity"
-            android:label="@string/app_name" >
+        <activity android:name="com.chesshero.ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -33,26 +31,15 @@
         </activity>
 
         <!-- Entry for RegisterActivity.class -->
-        <activity
-            android:name="com.chesshero.ui.RegisterActivity"
-            android:label="Register New Account" />
+        <activity android:name="com.chesshero.ui.RegisterActivity" />
 
         <!-- Entry for PlayChessActivity.class -->
-        <activity
-            android:name="com.chesshero.ui.PlayChessActivity"
-            android:label="Register New Account" />
-        <activity
-            android:name="com.chesshero.ui.LobbyActiviy"
-            android:label="@string/title_activity_lobby_activiy" >
-        </activity>
+        <activity android:name="com.chesshero.ui.PlayChessActivity" />
+
+        <!-- Entry for LobbyActiviy.class -->
+        <activity android:name="com.chesshero.ui.LobbyActiviy" />
 
         <!-- Entry for CreateGameActivity-->
-        <activity
-            android:name="com.chesshero.ui.chessboard.CreateGameActivity"
-            android:label="Create Game Page "/>
-
-
-
+        <activity android:name=".ui.CreateGameActivity" />
     </application>
-
 </manifest>

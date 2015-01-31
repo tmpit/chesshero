@@ -23,5 +23,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="exception"></string>
+    <string name="moves_log">show previous moves</string>
 
 </resources>
