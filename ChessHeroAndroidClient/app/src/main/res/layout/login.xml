@@ -46,7 +46,6 @@
 
         <!-- Login Form -->
         <LinearLayout
-            android:id="@+id/linearLayout2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/header"
@@ -85,44 +84,43 @@
                 android:inputType="textPassword"
                 android:singleLine="true" />
 
-            <!--  Text field for authentication exception -->
+            <!--  Text field for authentication exceptions -->
             <TextView
-            android:id="@+id/loginExceptions"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/exception"
-            android:textColor="#FF0000"
-            android:textSize="10pt"
-            android:textStyle="bold" />
+                android:id="@+id/loginExceptions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/exception"
+                android:textColor="#FF0000"
+                android:textSize="10pt"
+                android:textStyle="bold" />
+
+            <!--  Login button -->
+            <Button
+                android:id="@+id/btnLogin"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dip"
+                android:background="#ffffd204"
+                android:onClick="login"
+                android:text="@string/login"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+
+            <!--  Link to registration page -->
+            <TextView
+                android:id="@+id/link_to_register"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="40dip"
+                android:layout_marginTop="40dip"
+                android:clickable="true"
+                android:gravity="center"
+                android:onClick="openRegisterPage"
+                android:text="@string/registration_link"
+                android:textColor="#00467f"
+                android:textSize="20sp" />
+
         </LinearLayout>
-
-        <!--  Link to registration page -->
-        <TextView
-            android:id="@+id/link_to_register"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/btnLogin"
-            android:clickable="true"
-            android:gravity="center"
-            android:onClick="openRegisterPage"
-            android:text="@string/registration_link"
-            android:textColor="#00467f"
-            android:textSize="20sp" />
-
-        <!--  Login button -->
-        <Button
-            android:id="@+id/btnLogin"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/linearLayout2"
-            android:onClick="login"
-            android:text="@string/login"
-            android:textColor="#00467f" />
-
         <!-- Login Form Ends -->
     </RelativeLayout>
 </ScrollView>

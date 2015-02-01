@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -29,6 +30,7 @@ public class MainActivity extends Activity implements EventCenterObserver {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         initClient(((ChessHeroApplication) getApplication()).getClient());
         EventCenter.getSingleton().addObserver(this, Client.Event.LOGIN_RESULT);
         exceptionMsg = (TextView) findViewById(R.id.loginExceptions);

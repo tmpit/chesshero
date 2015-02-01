@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -27,10 +28,9 @@ public class RegisterActivity extends Activity implements EventCenterObserver {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register);
-
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         EventCenter.getSingleton().addObserver(this, Client.Event.REGISTER_RESULT);
         EventCenter.getSingleton().addObserver(this, Client.Event.LOGIN_RESULT);
-
         exceptionMsg = (TextView) findViewById(R.id.registerExceptions);
     }
 

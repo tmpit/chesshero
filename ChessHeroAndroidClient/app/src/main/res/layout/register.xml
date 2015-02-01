@@ -45,7 +45,6 @@
 
         <!-- Registration Form -->
         <LinearLayout
-
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/header"
@@ -98,7 +97,7 @@
                 android:inputType="textPassword"
                 android:singleLine="true" />
 
-            <!--  Text field for authentication exception -->
+            <!--  Text field for registration exceptions -->
             <TextView
                 android:id="@+id/registerExceptions"
                 android:layout_width="wrap_content"
@@ -114,9 +113,11 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dip"
+                android:background="#ffffd204"
                 android:onClick="register"
                 android:text="@string/register"
-                android:textColor="#00467f" />
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
 
             <!-- Link to Login Screen -->
             <TextView
