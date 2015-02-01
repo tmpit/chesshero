@@ -18,7 +18,7 @@
     <string name="max_level">Maximum Opponent Level</string>
     <string name="cancel_game"> Cancel Game </string>
     <string name="back_lobby"> Back to Lobby </string>
-    <string name="Enter_game_name">Enter a Name for Your Game </string>
+    <string name="Enter_game_name">Enter a Name for Your Game</string>
     <string name="title_activity_lobby_activiy">LobbyActiviy</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -33,5 +33,6 @@
     <string name="logout_btn_title">Logout</string>
     <string name="refresh_btn_title">Refresh</string>
     <string name="join_game_instructions"> *Tap on a game to join</string>
+    <string name="create_game_page_title">Create New Game</string>
 
 </resources>

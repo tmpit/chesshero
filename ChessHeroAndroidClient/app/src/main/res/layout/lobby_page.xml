@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/adaad"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="#ffffff">
@@ -25,37 +25,35 @@
     </LinearLayout>
     <!--Header ends  -->
 
-    <!-- Lobby Table -->
+    <!-- Lobby beggins -->
     <LinearLayout
-        android:id="@+id/linearLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/header"
         android:orientation="vertical"
         android:padding="10dip"
-        android:visibility="visible"
-        android:weightSum="1">
+        android:visibility="visible">
 
         <Button
             android:id="@+id/refresh_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
             android:background="#ffffd204"
             android:gravity="center"
             android:onClick="refresh"
             android:text="@string/refresh_btn_title"
-            android:textColor="#ffffff"
-            android:textStyle="bold"
-            android:layout_marginBottom="5dp" />
+            android:textColor="#00467f"
+            android:textStyle="bold" />
 
-        <ScrollView xmlns:tools="http://schemas.android.com/tools"
+        <ScrollView
             android:layout_width="fill_parent"
             android:layout_height="300dip"
             android:fillViewport="true"
             android:orientation="vertical"
             tools:ignore="ContentDescription">
 
-            <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            <TableLayout
                 android:id="@+id/table"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
@@ -72,7 +70,6 @@
                     android:gravity="center_horizontal">
 
                     <TextView
-                        android:id="@+id/lobby"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="1dip"
@@ -92,8 +89,6 @@
                     android:layout_height="wrap_content">
 
                     <TextView
-                        android:id="@+id/TextView01"
-                        android:layout_weight="1"
                         android:background="#d3d3d3"
                         android:gravity="center"
                         android:padding="20dip"
@@ -103,8 +98,6 @@
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/TextView02"
-                        android:layout_weight="1"
                         android:background="#d3d3d3"
                         android:gravity="center"
                         android:padding="20dip"
@@ -114,8 +107,6 @@
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/TextView03"
-                        android:layout_weight="1"
                         android:background="#d3d3d3"
                         android:gravity="center"
                         android:padding="20dip"
@@ -141,29 +132,29 @@
             android:id="@+id/create_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="5dp"
             android:background="#ffffd204"
             android:gravity="center"
             android:onClick="createGame"
             android:text="@string/create_game_btn_title"
-            android:textColor="#ffffff"
-            android:textStyle="bold"
-            android:layout_margin="5dp" />
+            android:textColor="#00467f"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/logout_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="5dp"
             android:background="#ffffd204"
+            android:focusableInTouchMode="false"
             android:gravity="center"
             android:onClick="logout"
             android:text="@string/logout_btn_title"
             android:textColor="#ffffff"
-            android:textStyle="bold"
-            android:layout_margin="5dp"
-            android:focusableInTouchMode="false" />
-
+            android:textStyle="bold" />
     </LinearLayout>
-</RelativeLayout><!-- Form Ends -->
+    <!-- Lobby ends -->
+</RelativeLayout>
 
 
 
