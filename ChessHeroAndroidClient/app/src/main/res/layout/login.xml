@@ -87,13 +87,13 @@
 
             <!--  Text field for authentication exception -->
             <TextView
-                android:id="@+id/exceptions"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/exception"
-                android:textColor="#FF0000"
-                android:textSize="10pt"
-                android:textStyle="bold" />
+            android:id="@+id/loginExceptions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/exception"
+            android:textColor="#FF0000"
+            android:textSize="10pt"
+            android:textStyle="bold" />
         </LinearLayout>
 
         <!--  Link to registration page -->
@@ -122,7 +122,7 @@
             android:onClick="login"
             android:text="@string/login"
             android:textColor="#00467f" />
-        
+
         <!-- Login Form Ends -->
     </RelativeLayout>
 </ScrollView>

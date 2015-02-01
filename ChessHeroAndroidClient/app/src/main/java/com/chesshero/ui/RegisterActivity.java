@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.chesshero.R;
 import com.chesshero.client.Client;
@@ -21,6 +21,7 @@ public class RegisterActivity extends Activity implements EventCenterObserver {
 
     public static Client client;
     private Intent pageToOpen;
+    private TextView exceptionMsg;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -29,6 +30,8 @@ public class RegisterActivity extends Activity implements EventCenterObserver {
 
         EventCenter.getSingleton().addObserver(this, Client.Event.REGISTER_RESULT);
         EventCenter.getSingleton().addObserver(this, Client.Event.LOGIN_RESULT);
+
+        exceptionMsg = (TextView) findViewById(R.id.registerExceptions);
     }
 
     @Override
@@ -54,8 +57,12 @@ public class RegisterActivity extends Activity implements EventCenterObserver {
         String password = ((EditText) findViewById(R.id.reg_password)).getText().toString();
         String password2 = ((EditText) findViewById(R.id.reg_password2)).getText().toString();
 
+        if (username.trim().length() == 0 || password.length() == 0 || password2.trim().length() == 0) {
+            exceptionMsg.setText(" *Please, fill in all the required fields ");
+            return;
+        }
         if (!password.equals(password2)) {
-            Toast.makeText(RegisterActivity.this, "Password does not match", Toast.LENGTH_SHORT).show();
+            exceptionMsg.setText(" *Passwords does not match ");
             return;
         }
         client.register(username, password);
@@ -68,6 +75,16 @@ public class RegisterActivity extends Activity implements EventCenterObserver {
                 pageToOpen = new Intent(this, LobbyActiviy.class);
                 startActivity(pageToOpen);
                 finish();
+            } else if (userData != null && (Integer) userData == Result.INTERNAL_ERROR) {
+                exceptionMsg.setText(" *Server error ");
+            } else if (userData != null && (Integer) userData == Result.BAD_USER) {
+                exceptionMsg.setText(" *Bad user ");
+            } else if (userData != null && (Integer) userData == Result.INVALID_NAME) {
+                exceptionMsg.setText(" *Invalid username ");
+            } else if (userData != null && (Integer) userData == Result.INVALID_PASS) {
+                exceptionMsg.setText(" *Invalid password ");
+            } else if (userData != null && (Integer) userData == Result.USER_EXISTS) {
+                exceptionMsg.setText(" *This user already had an account registered ");
             }
         }
     }

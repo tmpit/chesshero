@@ -17,9 +17,9 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="@layout/header_gradient"
+            android:gravity="center"
             android:paddingBottom="5dip"
-            android:paddingTop="5dip"
-            android:gravity="center">
+            android:paddingTop="5dip">
 
             <!-- Logo -->
             <ImageView
@@ -88,10 +88,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/password2"
-
                 android:textColor="#00467f" />
-
-
 
             <EditText
                 android:id="@+id/reg_password2"
@@ -101,6 +98,16 @@
                 android:inputType="textPassword"
                 android:singleLine="true" />
 
+            <!--  Text field for authentication exception -->
+            <TextView
+                android:id="@+id/registerExceptions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/exception"
+                android:textColor="#FF0000"
+                android:textSize="10pt"
+                android:textStyle="bold" />
+
             <!-- Register Button -->
             <Button
                 android:id="@+id/btnRegister"
@@ -109,10 +116,7 @@
                 android:layout_marginTop="10dip"
                 android:onClick="register"
                 android:text="@string/register"
-                android:textColor="#00467f"/>
-
-
-
+                android:textColor="#00467f" />
 
             <!-- Link to Login Screen -->
             <TextView
@@ -130,7 +134,5 @@
 
         </LinearLayout>
         <!-- Registration Form Ends -->
-
     </RelativeLayout>
-
 </ScrollView>

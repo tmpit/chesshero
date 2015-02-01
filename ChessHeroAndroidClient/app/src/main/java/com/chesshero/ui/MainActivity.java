@@ -29,15 +29,9 @@ public class MainActivity extends Activity implements EventCenterObserver {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
-
-        client = ((ChessHeroApplication) getApplication()).getClient();
-        PlayChessActivity.client = client;
-        RegisterActivity.client = client;
-        LobbyActiviy.client = client;
-        CreateGameActivity.client = client;
+        initClient(((ChessHeroApplication) getApplication()).getClient());
         EventCenter.getSingleton().addObserver(this, Client.Event.LOGIN_RESULT);
-
-        exceptionMsg = (TextView) findViewById(R.id.exceptions);
+        exceptionMsg = (TextView) findViewById(R.id.loginExceptions);
     }
 
     @Override
@@ -72,16 +66,22 @@ public class MainActivity extends Activity implements EventCenterObserver {
                 pageToOpen = new Intent(this, LobbyActiviy.class);
                 startActivity(pageToOpen);
                 finish();
-            } else if (userData != null && (Integer) userData == Result.INVALID_NAME) {
-                exceptionMsg.setText(" *Invalid username ");
-            } else if (userData != null && (Integer) userData == Result.INVALID_PASS) {
-                exceptionMsg.setText(" *Invalid password ");
+            } else if (userData != null && (Integer) userData == Result.INTERNAL_ERROR) {
+                exceptionMsg.setText(" *Server error ");
             } else if (userData != null && (Integer) userData == Result.INVALID_CREDENTIALS) {
                 exceptionMsg.setText(" *Invalid name or password ");
             } else if (userData != null && (Integer) userData == Result.ALREADY_LOGGEDIN) {
                 exceptionMsg.setText(" *This user is already logged in ");
             }
         }
+    }
+
+    private void initClient(Client client) {
+        this.client = client;
+        RegisterActivity.client = client;
+        LobbyActiviy.client = client;
+        CreateGameActivity.client = client;
+        PlayChessActivity.client = client;
     }
 
     private void showExitGameDialog() {
