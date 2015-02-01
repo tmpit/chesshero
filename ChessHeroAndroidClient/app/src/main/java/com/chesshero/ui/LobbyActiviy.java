@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.chesshero.R;
 import com.chesshero.client.Client;
@@ -31,11 +32,8 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.lobby_page);
         table = (TableLayout) findViewById(R.id.table);
-
-        EventCenter.getSingleton().addObserver(this, Client.Event.CREATE_GAME_RESULT);
         EventCenter.getSingleton().addObserver(this, Client.Event.JOIN_GAME_RESULT);
         EventCenter.getSingleton().addObserver(this, Client.Event.PENDING_GAMES_LOAD_RESULT);
-        EventCenter.getSingleton().addObserver(this, Client.Event.JOIN_GAME_PUSH);
         EventCenter.getSingleton().addObserver(this, Client.Event.LOGOUT);
         refreshGames();
     }
@@ -44,10 +42,13 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             client.logout();
-
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    public void logout(View view) {
+        client.logout();
     }
 
     public void joinGame(GameTicket gameTicket) {
@@ -71,13 +72,25 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
             if (userData != null && (Integer) userData == Result.OK) {
                 if (client.getCachedPendingGames() != null) {
                     loadGames();
+                } else {
+                    TableRow noGamesRow = new TableRow(this);
+                    TextView noGamesTxt = new TextView(this);
+                    noGamesTxt.setText("No pending games");
+                    noGamesTxt.setTextColor(Color.RED);
+                    noGamesTxt.setGravity(Gravity.CENTER);
+                    noGamesRow.addView(noGamesTxt);
+                    table.addView(noGamesRow);
                 }
-            } else {
-                //todo
             }
         } else if (eventName == Client.Event.JOIN_GAME_RESULT) {
             if (userData != null && (Integer) userData == Result.OK) {
                 joinGame();
+            } else if ((userData != null && (Integer) userData == Result.ALREADY_PLAYING) ||
+                    (userData != null && (Integer) userData == Result.INVALID_GAME_ID) ||
+                    (userData != null && (Integer) userData == Result.MISSING_PARAMETERS) ||
+                    (userData != null && (Integer) userData == Result.INTERNAL_ERROR)) {
+                Toast.makeText(LobbyActiviy.this, "Game not found", Toast.LENGTH_SHORT).show();
+                refreshGames();
             }
         } else if (eventName == Client.Event.LOGOUT) {
             pageToOpen = new Intent(this, MainActivity.class);
@@ -109,28 +122,25 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
             TableRow gamesRow = new TableRow(this);
             TextView gameName = new TextView(this);
             TextView createdBy = new TextView(this);
-            TextView oponent = new TextView(this);
             TextView opponent = new TextView(this);
 
             gameName.setText(game.gameName);
-            createdBy.setText(game.opponentName);
+            gameName.setTextColor(Color.BLACK);
             gameName.setGravity(Gravity.CENTER);
             createdBy.setText(game.opponentName);
-            oponent.setText(game.opponentColor.toString());
-
-            createdBy.setTextColor(Color.BLUE);
+            createdBy.setTextColor(Color.BLACK);
             createdBy.setGravity(Gravity.CENTER);
-            opponent.setText(client.getPlayer().getName());
-            opponent.setTextColor(Color.BLUE);
+            opponent.setText(game.opponentColor.toString());
+            opponent.setTextColor(Color.BLACK);
             opponent.setGravity(Gravity.CENTER);
 
             if (table.getChildCount() % 2 == 0) {
                 gamesRow.setBackgroundColor(Color.YELLOW);
             }
-            gamesRow.setPadding(12, 12, 12, 12);
+            gamesRow.setPadding(0, 12, 0, 12);
             gamesRow.addView(gameName);
             gamesRow.addView(createdBy);
-            gamesRow.addView(oponent);
+            gamesRow.addView(opponent);
             gamesRow.setClickable(true);
             gamesRow.setOnClickListener(new View.OnClickListener() {
                 @Override

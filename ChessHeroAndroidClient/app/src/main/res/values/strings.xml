@@ -25,5 +25,13 @@
     <string name="exception"></string>
     <string name="moves_log">show previous moves</string>
     <string name="leave_game">leave game</string>
+    <string name="lobby_page_title">Available Games</string>
+    <string name="game_name_title">Game name</string>
+    <string name="created_by_title">Created by</string>
+    <string name="oponnent_color_title">Opponent Color</string>
+    <string name="create_game_btn_title">Create Game</string>
+    <string name="logout_btn_title">Logout</string>
+    <string name="refresh_btn_title">Refresh</string>
+    <string name="join_game_instructions"> *Tap on a game to join</string>
 
 </resources>

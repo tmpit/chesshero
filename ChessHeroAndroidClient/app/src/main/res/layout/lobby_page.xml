@@ -1,65 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/adaad"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="#ffffff">
 
-
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/adaad"
+    <!-- Header -->
+    <LinearLayout
+        android:id="@+id/header"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="#ffffff">
-
-        <!-- Header -->
-        <LinearLayout
-            android:id="@+id/header"
-            android:layout_width="fill_parent"
+        android:background="@layout/header_gradient"
+        android:gravity="center"
+        android:paddingBottom="5dip"
+        android:paddingTop="5dip">
+        <!-- Logo -->
+        <ImageView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@layout/header_gradient"
-            android:gravity="center"
-            android:paddingBottom="5dip"
-            android:paddingTop="5dip">
+            android:layout_marginLeft="10dip"
+            android:layout_marginStart="10dip"
+            android:src="@drawable/chesshero" />
+        <!-- Logo ends -->
+    </LinearLayout>
+    <!--Header ends  -->
 
-            <!-- Logo -->
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dip"
-                android:layout_marginStart="10dip"
-                android:src="@drawable/chesshero" />
-            <!-- Logo ends -->
+    <!-- Lobby Table -->
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/header"
+        android:orientation="vertical"
+        android:padding="10dip"
+        android:visibility="visible"
+        android:weightSum="1">
 
-        </LinearLayout>
-        <!--Header ends  -->
-
-        <!--Footer starts-->
-        <LinearLayout
-            android:id="@+id/footer"
-            android:layout_width="fill_parent"
-            android:layout_height="90dip"
-            android:layout_alignParentBottom="true"
-            android:background="@layout/footer_repeat"
-            android:orientation="vertical" />
-        <!--Footer ends -->
-
-        <!-- Lobby Table -->
-
-
-
-        <LinearLayout
-            android:id="@+id/linearLayout"
+        <Button
+            android:id="@+id/refresh_button"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#ffffd204"
+            android:gravity="center"
+            android:onClick="refresh"
+            android:text="@string/refresh_btn_title"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:layout_marginBottom="5dp" />
+
+        <ScrollView xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="fill_parent"
             android:layout_height="300dip"
-            android:layout_below="@id/header"
+            android:fillViewport="true"
             android:orientation="vertical"
-            android:padding="10dip"
-            android:visibility="visible"
-            android:weightSum="1">
-            <ScrollView
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_below="@+id/header"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:fillViewport="true"
-                android:orientation="vertical"
-                tools:ignore="ContentDescription">
+            tools:ignore="ContentDescription">
 
             <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/table"
@@ -86,10 +80,9 @@
                         android:background="#b0b0b0"
                         android:gravity="center_horizontal"
                         android:padding="18dip"
-                        android:text="Lobby Page"
+                        android:text="@string/lobby_page_title"
                         android:textColor="#00467f"
-                        android:textSize="30dp" />
-
+                        android:textSize="20sp" />
                 </TableRow>
 
                 <!-- Subtitle Row -->
@@ -104,9 +97,9 @@
                         android:background="#d3d3d3"
                         android:gravity="center"
                         android:padding="20dip"
-                        android:text="Game name"
+                        android:text="@string/game_name_title"
                         android:textColor="#00467f"
-                        android:textSize="12dp"
+                        android:textSize="12sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -115,10 +108,9 @@
                         android:background="#d3d3d3"
                         android:gravity="center"
                         android:padding="20dip"
-                        android:text="Created by"
+                        android:text="@string/created_by_title"
                         android:textColor="#00467f"
-                        android:textSize="12dp"
-
+                        android:textSize="12sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -127,72 +119,51 @@
                         android:background="#d3d3d3"
                         android:gravity="center"
                         android:padding="20dip"
-                        android:text="Opponent"
+                        android:text="@string/oponnent_color_title"
                         android:textColor="#00467f"
-                        android:textSize="12dp"
+                        android:textSize="12sp"
                         android:textStyle="bold" />
-
                 </TableRow>
 
             </TableLayout>
-</ScrollView>
+        </ScrollView>
 
-        </LinearLayout>
+        <TextView
+            android:id="@+id/join_instructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
+            android:text="@string/join_game_instructions"
+            android:textColor="#00467f"
+            android:textSize="20sp" />
 
-    <Button
+        <Button
             android:id="@+id/create_button"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="#ffffd204"
+            android:gravity="center"
+            android:onClick="createGame"
+            android:text="@string/create_game_btn_title"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:layout_margin="5dp" />
 
-
-            android:text=" Create game  "
-            android:textColor="#00467f"
-            android:layout_toStartOf="@+id/logout_button"
-            android:layout_below="@+id/refresh_button"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:onClick="createGame"/>
-
-    <Button
+        <Button
             android:id="@+id/logout_button"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="   Logout     "
-            android:textColor="#00467f"
-            android:layout_gravity="center_horizontal"
-            android:layout_toStartOf="@+id/join_button"
-            android:layout_below="@+id/create_button"
-            android:layout_centerHorizontal="true" />
+            android:background="#ffffd204"
+            android:gravity="center"
+            android:onClick="logout"
+            android:text="@string/logout_btn_title"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:layout_margin="5dp"
+            android:focusableInTouchMode="false" />
 
-    <Button
-            android:id="@+id/join_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="  Join game   "
-            android:textColor="#00467f"
-            android:layout_gravity="right"
-            android:layout_below="@+id/refresh_button"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
-
-
-
-    <Button
-        android:id="@+id/refresh_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-
-        android:onClick="refresh"
-        android:text="    Refresh   "
-        android:textColor="#00467f"
-
-        android:layout_below="@+id/linearLayout"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-
-</RelativeLayout>
-    <!-- Form Ends -->
+    </LinearLayout>
+</RelativeLayout><!-- Form Ends -->
 
 
 
