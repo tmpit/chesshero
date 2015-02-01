@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -35,18 +36,28 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
         EventCenter.getSingleton().addObserver(this, Client.Event.JOIN_GAME_RESULT);
         EventCenter.getSingleton().addObserver(this, Client.Event.PENDING_GAMES_LOAD_RESULT);
         EventCenter.getSingleton().addObserver(this, Client.Event.JOIN_GAME_PUSH);
+        EventCenter.getSingleton().addObserver(this, Client.Event.LOGOUT);
         refreshGames();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            client.logout();
+
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     public void joinGame(GameTicket gameTicket) {
         client.joinGame(gameTicket);
     }
 
-
-
-    public void createGame (View view) {
+    public void createGame(View view) {
         pageToOpen = new Intent(this, CreateGameActivity.class);
         startActivity(pageToOpen);
+        finish();
     }
 
     public void refresh(View view) {
@@ -66,26 +77,26 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
             }
         } else if (eventName == Client.Event.JOIN_GAME_RESULT) {
             if (userData != null && (Integer) userData == Result.OK) {
-                // todo game not starting?
-                // request is completed successfully ?!?
-                // playchessactivity still not starting...
                 joinGame();
             }
+        } else if (eventName == Client.Event.LOGOUT) {
+            pageToOpen = new Intent(this, MainActivity.class);
+            startActivity(pageToOpen);
+            finish();
         }
     }
 
     private void joinGame() {
         PlayChessActivity.isFlipped = client.getGame().getBlackPlayer().equals(client.getPlayer());
-
         pageToOpen = new Intent(this, PlayChessActivity.class);
         startActivity(pageToOpen);
+        finish();
     }
 
     private void refreshGames() {
         client.loadPendingGames();
         TableRow titleRow = (TableRow) findViewById(R.id.row_title);
         TableRow subtitleRow = (TableRow) findViewById(R.id.row_subtitle);
-
         table.removeAllViews();
         table.addView(titleRow);
         table.addView(subtitleRow);
@@ -113,8 +124,10 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
             opponent.setTextColor(Color.BLUE);
             opponent.setGravity(Gravity.CENTER);
 
-            if(table.getChildCount() % 2 == 0) {gamesRow.setBackgroundColor(Color.YELLOW);}
-            gamesRow.setPadding(12,12,12,12);
+            if (table.getChildCount() % 2 == 0) {
+                gamesRow.setBackgroundColor(Color.YELLOW);
+            }
+            gamesRow.setPadding(12, 12, 12, 12);
             gamesRow.addView(gameName);
             gamesRow.addView(createdBy);
             gamesRow.addView(oponent);

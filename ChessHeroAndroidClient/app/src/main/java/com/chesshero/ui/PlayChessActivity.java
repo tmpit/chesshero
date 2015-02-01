@@ -1,13 +1,17 @@
 package com.chesshero.ui;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.PaintDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -190,7 +194,6 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
                         newMove = true;
                         return;
                     }
-
                     previousTileClicked = currentTileClicked;
                     newMove = false;
                 } //if not new move, then move the piece from the first click to the second one.
@@ -208,18 +211,33 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
     }
 
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            showLeaveGameDialog();
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public void leaveGame(View view) {
+        showLeaveGameDialog();
+    }
+
+    @Override
     public void eventCenterDidPostEvent(String eventName, Object userData) {
-        
+
         List<Move> moves = client.getGame().getExecutedMoves();
 
         if (eventName == Client.Event.MOVE_RESULT) {
             drawMove(moves.get(moves.size() - 1));
             isMyTurn = false;
-        }
-        if (eventName == Client.Event.MOVE_PUSH) {
+        } else if (eventName == Client.Event.MOVE_PUSH) {
             drawMove(moves.get(moves.size() - 1));
             isMyTurn = true;
+        } else if (eventName == Client.Event.EXIT_GAME_RESULT) {
+            startActivity(new Intent(this, LobbyActiviy.class));
+            finish();
         }
+        //todo handle END GAME PUSH
     }
 
     private void drawMove(Move move) {
@@ -246,6 +264,26 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
 
         Log.i("PlayChessActivity",
                 String.format("drawing move from {%d,%d} to {%d,%d}", startRow, startCol, endRow, endCol));
+    }
+
+    private void showLeaveGameDialog() {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        client.exitGame();
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure,\nyou want to the current game?")
+                .setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener)
+                .show();
     }
 
     /**

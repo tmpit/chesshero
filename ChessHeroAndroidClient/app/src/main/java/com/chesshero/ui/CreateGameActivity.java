@@ -3,6 +3,7 @@ package com.chesshero.ui;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 
 import com.chesshero.R;
@@ -24,12 +25,23 @@ public class CreateGameActivity extends Activity implements EventCenterObserver 
         setContentView(R.layout.create_game_page);
 
         EventCenter.getSingleton().addObserver(this, Client.Event.CREATE_GAME_RESULT);
+    }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            pageToOpen = new Intent(this, LobbyActiviy.class);
+            startActivity(pageToOpen);
+            finish();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     public void backToLobby(View view) {
         pageToOpen = new Intent(this, LobbyActiviy.class);
         startActivity(pageToOpen);
+        finish();
     }
 
     @Override

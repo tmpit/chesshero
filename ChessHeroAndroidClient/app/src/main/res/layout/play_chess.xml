@@ -17,7 +17,7 @@
             android:id="@+id/log_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:gravity="center|top"
             android:text="@string/moves_log" />
 
         <TextView
@@ -49,6 +49,14 @@
             android:textColor="#ffffff"
             android:textSize="28sp"
             android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/leave_game_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center|top"
+            android:onClick="leaveGame"
+            android:text="@string/leave_game" />
 
     </LinearLayout>
 
