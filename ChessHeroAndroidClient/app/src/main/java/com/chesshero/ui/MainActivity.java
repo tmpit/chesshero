@@ -23,6 +23,8 @@ public class MainActivity extends Activity implements EventCenterObserver {
 
     private Client client;
 
+    private TextView exceptionMsg;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +36,8 @@ public class MainActivity extends Activity implements EventCenterObserver {
         LobbyActiviy.client = client;
         CreateGameActivity.client = client;
         EventCenter.getSingleton().addObserver(this, Client.Event.LOGIN_RESULT);
+
+        exceptionMsg = (TextView) findViewById(R.id.exceptions);
     }
 
     @Override
@@ -55,8 +59,7 @@ public class MainActivity extends Activity implements EventCenterObserver {
         String password = ((EditText) findViewById(R.id.login_password)).getText().toString();
 
         if (username.trim().length() == 0 || password.length() == 0) {
-            TextView lastMsg = (TextView) findViewById(R.id.exceptions);
-            lastMsg.setText(" Please, fill in all the required fields ");
+            exceptionMsg.setText(" *Please, fill in all the required fields ");
             return;
         }
         client.login(username, password);
@@ -65,14 +68,18 @@ public class MainActivity extends Activity implements EventCenterObserver {
     @Override
     public void eventCenterDidPostEvent(String eventName, Object userData) {
         if (eventName == Client.Event.LOGIN_RESULT) {
-
-            //todo handle other result cases, open lobby
-
             if (userData != null && (Integer) userData == Result.OK) {
-
                 pageToOpen = new Intent(this, LobbyActiviy.class);
                 startActivity(pageToOpen);
                 finish();
+            } else if (userData != null && (Integer) userData == Result.INVALID_NAME) {
+                exceptionMsg.setText(" *Invalid username ");
+            } else if (userData != null && (Integer) userData == Result.INVALID_PASS) {
+                exceptionMsg.setText(" *Invalid password ");
+            } else if (userData != null && (Integer) userData == Result.INVALID_CREDENTIALS) {
+                exceptionMsg.setText(" *Invalid name or password ");
+            } else if (userData != null && (Integer) userData == Result.ALREADY_LOGGEDIN) {
+                exceptionMsg.setText(" *This user is already logged in ");
             }
         }
     }

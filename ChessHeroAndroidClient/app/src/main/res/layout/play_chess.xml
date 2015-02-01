@@ -54,7 +54,7 @@
             android:id="@+id/leave_game_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center|top"
+            android:gravity="center|bottom"
             android:onClick="leaveGame"
             android:text="@string/leave_game" />
 
