@@ -45,18 +45,21 @@ public class Restrictions {
 
     private void pawnMoves() {
         //first move rule
-        if (mCurrentRow == PAWN_FIRST_ROW && !mAllTiles[mCurrentRow - 1][mCurrentCol].isOponent()) {
+        if (mCurrentRow == PAWN_FIRST_ROW
+                && !mAllTiles[mCurrentRow - 1][mCurrentCol].isOponent()
+                && !mAllTiles[mCurrentRow - 2][mCurrentCol].isOponent()) {
             doMagic(mAllTiles[mCurrentRow - 2][mCurrentCol]);
         }
-        if (mCurrentRow >= BOARD_MIN && !mAllTiles[mCurrentRow - 1][mCurrentCol].isOponent()) {
+        if (mCurrentRow >= BOARD_MIN
+                && !mAllTiles[mCurrentRow - 1][mCurrentCol].isOponent()) {
             doMagic(mAllTiles[mCurrentRow - 1][mCurrentCol]);
         }
-        if (mCurrentRow >= BOARD_MIN && mCurrentCol >= BOARD_MIN &&
-                mAllTiles[mCurrentRow - 1][mCurrentCol - 1].isOponent()) {
+        if (mCurrentRow >= BOARD_MIN && mCurrentCol >= BOARD_MIN
+                && mAllTiles[mCurrentRow - 1][mCurrentCol - 1].isOponent()) {
             doMagic(mAllTiles[mCurrentRow - 1][mCurrentCol - 1]);
         }
-        if (mCurrentRow >= BOARD_MIN && mCurrentCol <= BOARD_MAX &&
-                mAllTiles[mCurrentRow - 1][mCurrentCol + 1].isOponent()) {
+        if (mCurrentRow >= BOARD_MIN && mCurrentCol <= BOARD_MAX
+                && mAllTiles[mCurrentRow - 1][mCurrentCol + 1].isOponent()) {
             doMagic(mAllTiles[mCurrentRow - 1][mCurrentCol + 1]);
         }
     }
