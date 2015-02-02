@@ -18,8 +18,6 @@ public final class Tile extends ImageView {
 
     private int mCurrentTileImageId;
 
-    private String mCurrentTileImageName;
-
     private int mCol;
 
     private int mRow;
@@ -49,7 +47,6 @@ public final class Tile extends ImageView {
             setBackgroundResource(BLACK_BACKGROUND);
         }
 
-        setScaleType(ScaleType.FIT_XY);
         setScaleX(0.95f);
         setScaleY(0.95f);
     }
@@ -150,13 +147,6 @@ public final class Tile extends ImageView {
     public void setTileImageId(int imageId) {
         mCurrentTileImageId = imageId;
         setImageResource(mCurrentTileImageId);
-    }
-
-    public String getTileImageName() {
-        mCurrentTileImageName = getResources().getResourceName(mCurrentTileImageId);
-        mCurrentTileImageName = mCurrentTileImageName.substring(mCurrentTileImageName.lastIndexOf("/") + 1);
-        mCurrentTileImageName = mCurrentTileImageName.replace("_", " ");
-        return mCurrentTileImageName;
     }
 
     public boolean isMine() {
@@ -260,5 +250,13 @@ public final class Tile extends ImageView {
 
     public String toString() {
         return getColumnString() + getRowString();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        int width = getMeasuredWidth();
+        setMeasuredDimension(width, width);
     }
 }

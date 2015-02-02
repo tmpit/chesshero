@@ -158,10 +158,6 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         Display display = getWindowManager().getDefaultDisplay();
         windowHeight = display.getHeight();
         windowWidth = display.getWidth();
-        ViewGroup.LayoutParams layoutParams = grid.getLayoutParams();
-        layoutParams.height = windowWidth;
-        layoutParams.width = windowWidth;
-        grid.setLayoutParams(layoutParams);
 
         if (isFlipped) {
             grid.setBackgroundResource(R.drawable.board_flipped);
