@@ -42,6 +42,9 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             client.logout();
+            pageToOpen = new Intent(this, MainActivity.class);
+            startActivity(pageToOpen);
+            finish();
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -49,6 +52,9 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
 
     public void logout(View view) {
         client.logout();
+        pageToOpen = new Intent(this, MainActivity.class);
+        startActivity(pageToOpen);
+        finish();
     }
 
     public void joinGame(GameTicket gameTicket) {
@@ -93,9 +99,7 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
                 refreshGames();
             }
         } else if (eventName == Client.Event.LOGOUT) {
-            pageToOpen = new Intent(this, MainActivity.class);
-            startActivity(pageToOpen);
-            finish();
+
         }
     }
 
