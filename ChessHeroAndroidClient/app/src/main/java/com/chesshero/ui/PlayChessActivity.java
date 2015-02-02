@@ -2,6 +2,7 @@ package com.chesshero.ui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,6 +33,7 @@ import com.chesshero.event.EventCenterObserver;
 import com.chesshero.ui.chessboard.ChessboardAdapter;
 import com.chesshero.ui.chessboard.Restrictions;
 import com.chesshero.ui.chessboard.Tile;
+import com.kt.game.Game;
 import com.kt.game.Move;
 
 import java.util.List;
@@ -123,16 +125,27 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
      */
     private LinearLayout baseView;
 
+	private void subscribeForGameClientEvents() {
+		EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_RESULT);
+		EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_PUSH);
+		EventCenter.getSingleton().addObserver(this, Client.Event.END_GAME_PUSH);
+		EventCenter.getSingleton().addObserver(this, Client.Event.EXIT_GAME_RESULT);
+	}
+
+	private void unsubscribeFromGameClientEvents() {
+		EventCenter.getSingleton().removeObserver(this, Client.Event.MOVE_RESULT);
+		EventCenter.getSingleton().removeObserver(this, Client.Event.MOVE_PUSH);
+		EventCenter.getSingleton().removeObserver(this, Client.Event.END_GAME_PUSH);
+		EventCenter.getSingleton().removeObserver(this, Client.Event.EXIT_GAME_RESULT);
+	}
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play_chess);
 
         // init client service
-        EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_RESULT);
-        EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_PUSH);
-        EventCenter.getSingleton().addObserver(this, Client.Event.END_GAME_PUSH);
-        EventCenter.getSingleton().addObserver(this, Client.Event.EXIT_GAME_RESULT);
+        subscribeForGameClientEvents();
 
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         findViewById(R.id.log_btn).setOnClickListener(new View.OnClickListener() {
@@ -174,7 +187,7 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
                 currentTileClicked = (Tile) view;
 
                 if (!isMyTurn) {
-                    Toast.makeText(PlayChessActivity.this, "Not your turn", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PlayChessActivity.this, "It is not your turn", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -186,7 +199,7 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
 
                 if (newMove) {
                     if (currentTileClicked.isEmpty() || currentTileClicked.isOponent()) {
-                        Toast.makeText(PlayChessActivity.this, "Please select a your chess piece", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PlayChessActivity.this, "This is not your chess piece", Toast.LENGTH_SHORT).show();
                         newMove = true;
                         return;
                     }
@@ -230,10 +243,10 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
             drawMove(moves.get(moves.size() - 1));
             isMyTurn = true;
         } else if (eventName == Client.Event.EXIT_GAME_RESULT) {
-            startActivity(new Intent(this, LobbyActiviy.class));
-            finish();
-        }
-        //todo handle END GAME PUSH
+            navigateToLobby();
+        } else if (eventName == Client.Event.END_GAME_PUSH) {
+			showGameEndDialogue(client.getGame().getWinner().equals(client.getPlayer()), client.getGame().getEnding());
+		}
     }
 
     private void drawMove(Move move) {
@@ -262,6 +275,59 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
                 String.format("drawing move from {%d,%d} to {%d,%d}", startRow, startCol, endRow, endCol));
     }
 
+	private void navigateToLobby() {
+		unsubscribeFromGameClientEvents();
+		startActivity(new Intent(this, LobbyActiviy.class));
+		finish();
+	}
+
+	private void showGameEndDialogue(boolean iAmWinner, Game.Ending ending) {
+		DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialogInterface, int i) {
+				dialogInterface.dismiss();
+				navigateToLobby();
+			}
+		};
+
+		DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface dialogInterface) {
+				dialogInterface.dismiss();
+				navigateToLobby();
+			}
+		};
+
+		String message = "";
+
+		switch (ending) {
+			case CHECKMATE:
+				message = "Checkmate! ";
+				break;
+
+			case SUDDED_DEATH:
+				message = "Time is up! ";
+				break;
+
+			case SURRENDER:
+				// If a player surrenders, only the winner receives a game end event
+				message = "Your opponent has surrendered! ";
+				break;
+		}
+
+		if (iAmWinner) {
+			message += "You won!";
+		} else {
+			message += "You lost.";
+		}
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(message)
+				.setPositiveButton("Go back to lobby", clickListener)
+				.setOnCancelListener(cancelListener)
+				.show();
+	}
+
     private void showLeaveGameDialog() {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
@@ -276,7 +342,7 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
             }
         };
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure,\nyou want to the current game?")
+        builder.setMessage("Are you sure you want to exit the current game?")
                 .setPositiveButton("Yes", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener)
                 .show();
