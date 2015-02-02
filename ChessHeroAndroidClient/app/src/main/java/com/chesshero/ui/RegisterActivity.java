@@ -84,7 +84,7 @@ public class RegisterActivity extends Activity implements EventCenterObserver {
             } else if (userData != null && (Integer) userData == Result.INVALID_PASS) {
                 exceptionMsg.setText(" *Invalid password ");
             } else if (userData != null && (Integer) userData == Result.USER_EXISTS) {
-                exceptionMsg.setText(" *This user already had an account registered ");
+                exceptionMsg.setText(" *A user with that username already exists");
             }
         }
     }
