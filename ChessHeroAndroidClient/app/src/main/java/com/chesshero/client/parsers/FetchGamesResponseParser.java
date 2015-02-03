@@ -9,9 +9,15 @@ import java.util.Map;
 
 /**
  * Created by Toshko on 12/10/14.
+ *
+ * Instances of this class can parse the response returned from a fetch games request as described in @{link com.kt.api.Action}
  */
 public class FetchGamesResponseParser extends ResponseParser
 {
+	/**
+	 * The list of @{code GameTicket} objects describing the pending games on the server. Can be @{code null} if there are no
+	 * pending games
+	 */
 	public List<GameTicket> games;
 
 	@Override

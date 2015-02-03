@@ -22,57 +22,86 @@ import java.util.Map;
 
 /**
  * Created by Toshko on 12/7/14.
+ *
+ * This class is the interface between the UI and the @{code ServerCommunicationService}. It provides an abstraction
+ * over server interaction and user and game state management
  */
 public class Client implements ServiceEventListener
 {
-	// These are event names for all events that the Client can notify observers about
-	// Events are posted through the EventCenter
-	// Each event may or may not have an Integer result code passed as user data to the EventCenter
-	// All events that end in '_RESULT' have an associated result code
-	// All result codes are from the com.kt.api.Result class
+	/**
+	 * Static class containing the event names for all events that the Client can notify observers about
+	 * Events are posted through the EventCenter
+	 * Each event may or may not have an Integer result code passed as user data to the EventCenter
+	 * All events that end in '_RESULT' have an associated result code
+	 * All result codes are from the com.kt.api.Result class
+	 */
 	public static class Event
 	{
-		// The user has been logged out
-		// Only posted if a user had been logged in/registered beforehand
+		/**
+		 * The user has been logged out
+		 * Only posted if a user had been logged in/registered beforehand
+		 */
 		public static final String LOGOUT = "client.result.logout";
 
-		// Posted when a login request completes
+		/**
+		 * Posted when a login request completes
+		 */
 		public static final String LOGIN_RESULT = "client.result.login";
 
-		// Posted when a register request completes
+		/**
+		 * Posted when a register request completes
+		 */
 		public static final String REGISTER_RESULT = "client.result.register";
 
-		// Posted when a create game request completes
+		/**
+		 * Posted when a create game request completes
+		 */
 		public static final String CREATE_GAME_RESULT = "client.result.creategame";
 
-		// Posted when a cancel game request completes
+		/**
+		 * Posted when a cancel game request completes
+		 */
 		public static final String CANCEL_GAME_RESULT = "client.result.cancelgame";
 
-		// Posted when a pending games load request completes
+		/**
+		 * Posted when a pending games load request completes
+		 */
 		public static final String PENDING_GAMES_LOAD_RESULT = "client.result.pendinggames";
 
-		// Posted when a join game request completes
+		/**
+		 * Posted when a join game request completes
+		 */
 		public static final String JOIN_GAME_RESULT = "client.result.joingame";
 
-		// Posted when an exit game request completes
+		/**
+		 * Posted when an exit game request completes
+		 */
 		public static final String EXIT_GAME_RESULT = "client.result.exitgame";
 
-		// Posted when a move request completes
+		/**
+		 * Posted when a move request completes
+		 */
 		public static final String MOVE_RESULT = "client.result.move";
 
-		// Posted when a join game push message is received
-		// When you receive this event, it means that an opponent has joined your game
-		// and that the game has started
+		/**
+		 * Posted when a join game push message is received
+		 * When you receive this event, it means that an opponent has joined your game
+		 * and that the game has started
+		 */
 		public static final String JOIN_GAME_PUSH = "client.push.joingame";
 
-		// Posted when an end game push message is received
-		// When you receive this event, it means that the game has ended
-		// All game state and information regarding how the game has ended is kept in the Game object
+		/**
+		 * Posted when an end game push message is received
+		 * When you receive this event, it means that the game has ended
+		 * All game state and information regarding how the game has ended is kept in the Game object
+		 */
 		public static final String END_GAME_PUSH = "client.push.endgame";
 
-		// Posted when a move push message is received
-		// When you receive this message, it means that your opponent has executed a move
-		// You can fetch the move via the Game object's list of executed moves
+		/**
+		 * Posted when a move push message is received
+		 * When you receive this message, it means that your opponent has executed a move
+		 * You can fetch the move via the Game object's list of executed moves
+		 */
 		public static final String MOVE_PUSH = "client.push.move";
 	}
 
@@ -130,39 +159,52 @@ public class Client implements ServiceEventListener
 		context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 	}
 
-	// Returns true if a user is logged in
+	/**
+	 * Call to determine if the user is logged in
+	 * @return @{code true} if a user is logged in, @{code false} otherwise
+	 */
 	public boolean isLoggedIn()
 	{
 		return player != null;
 	}
 
-	// Returns the currently logged in user
-	// A user exists after successful login or register and is destroyed on logout
+	/**
+	 * Gets the currently logged in user. A user exists after a successful login or register and is destroyed on logout
+	 * @return A @{code Player} instance representing the user
+	 */
 	public Player getPlayer()
 	{
 		return player;
 	}
 
-	// Returns the last created/played game
-	// Will return an existing game after a successful create game or join game request
-	// The game is destroyed on logout or after a successful cancel game request and otherwise is cached until the next game creation
-	// so even after a game has ended you can fetch the game object and query it for status
-	// That is how, for example, you can find out who won the current game and how did it end
+	/**
+	 * Gets the last created/played game
+	 * Will return an existing game after a successful create game or join game request
+	 * The game is destroyed on logout or after a successful cancel game request and otherwise is cached until the next game creation
+	 * so even after a game has ended you can fetch the game object and query it for status.
+	 * That is how, for example, you can find out who won the current game and how it ended
+	 * @return A @{code Game} object if the player has created or played a game and has not disconnected, @{code null} otherwise
+	 */
 	public Game getGame()
 	{
 		return gameController.getGame();
 	}
 
-	// Returns the list of pending games cached from the last loadPendingGames request
-	// Will be null if there are no games on the server or no load request has been made
+	/**
+	 * Gets the list of pending games cached from the last @{code loadPendingGames()} request
+	 * @return A @{code List} of @{code GameTicket}'s. Will be @{code null} if there are not games on the server
+	 * or no @{code loadPendingGames()} request has been made
+	 */
 	public List<GameTicket> getCachedPendingGames()
 	{
 		return cachedPendingGames;
 	}
 
-	// Attempts to register a user
-	// Registration also logs the user in
-	// You must provide a username and a password
+	/**
+	 * Attempts to register a user. Registration also logs the user in automatically
+	 * @param userName A username. Must not be @{code null}
+	 * @param password A password. Must not be @{code null}
+	 */
 	public void register(String userName, String password)
 	{
 		if (null == userName || null == password || 0 == userName.trim().length() || 0 == password.trim().length())
@@ -174,8 +216,11 @@ public class Client implements ServiceEventListener
 		trySendRequest(RequestFactory.createRegisterRequest(userName.trim(), password.trim()));
 	}
 
-	// Attempts to log a user in
-	// You must provide a username and a password
+	/**
+	 * Attempts to log a user in
+	 * @param userName A username. Must not be @{code null}
+	 * @param password A password. Must not be @{code null}
+	 */
 	public void login(String userName, String password)
 	{
 		if (null == userName || null == password || 0 == userName.trim().length() || 0 == password.trim().length())
@@ -187,7 +232,10 @@ public class Client implements ServiceEventListener
 		trySendRequest(RequestFactory.createLoginRequest(userName.trim(), password.trim()));
 	}
 
-	// Logs out the user and clears game
+	/**
+	 * Logs out the user and clears @{code Client} state. Since the client disconnects from the server, if a
+	 * game is in progress, the player will this way concede defeat
+	 */
 	public void logout()
 	{
 		shouldAutomaticallyConnect = false;
@@ -214,9 +262,11 @@ public class Client implements ServiceEventListener
 		}
 	}
 
-	// Attempts to create a game
-	// You must provide the game name
-	// The player's color is optional and if not provided, a white color will be chosen
+	/**
+	 * Attempts to create a game
+	 * @param name The name of the game. Must not be @{code null}
+	 * @param color The color the player will play as in the game. This is optional and if not provided, white will be chosen
+	 */
 	public void createGame(String name, Color color)
 	{
 		if (null == name || 0 == name.trim().length())
@@ -228,8 +278,10 @@ public class Client implements ServiceEventListener
 		trySendRequest(RequestFactory.createCreateGameRequest(name.trim(), color.toString(), Game.NO_TIMEOUT));
 	}
 
-	// Attempts to cancel the current game
-	// You can cancel the current game only if you've created it and an opponent has not joined yet
+	/**
+	 * Attempts to cancel the current game.
+	 * You can cancel the current game only if you've created it and an opponent has not joined yet
+	 */
 	public void cancelGame()
 	{
 		if (null == gameController)
@@ -241,16 +293,20 @@ public class Client implements ServiceEventListener
 		trySendRequest(RequestFactory.createCancelGameRequest(gameController.getGame().getID()));
 	}
 
-	// Attempts to load and cache the pending games
-	// Pending games are games in which a player waits for an opponent to join
+	/**
+	 * Attempts to load and cache the pending games.
+	 * Pending games are games in which a player waits for an opponent to join
+	 */
 	public void loadPendingGames()
 	{
 		trySendRequest(RequestFactory.createFetchGamesRequest("pending", null, null));
 	}
 
-	// Attempts to join a game
-	// You must provide a valid game ticket
-	// A ticket can be acquired from the list returned by getCachedPendingGames method
+	/**
+	 * Attempts to join a game described by a @{code GameTicket} object.
+	 * A ticket can be acquired from the list returned by the @{code getCachedPendingGames()} method
+	 * @param ticket The ticket describing the game. Must not be @{code null}
+	 */
 	public void joinGame(GameTicket ticket)
 	{
 		if (null == ticket)
@@ -263,10 +319,12 @@ public class Client implements ServiceEventListener
 		trySendRequest(RequestFactory.createJoinGameRequest(ticket.gameID));
 	}
 
-	// Attempts to exit the current game
-	// You can exit the game any time when the game is running
-	// You cannot exit the game if you are waiting for an opponent to join
-	// You lose the game when you successfully exit
+	/**
+	 * Attempts to exit the current game.
+	 * You can exit the game any time when the game is running.
+	 * Exiting the game is interpreted as conceding defeat.
+	 * You cannot exit the game if you are waiting for an opponent to join your game
+	 */
 	public void exitGame()
 	{
 		if (null == gameController)
@@ -278,17 +336,24 @@ public class Client implements ServiceEventListener
 		trySendRequest(RequestFactory.createExitGameRequest(gameController.getGame().getID()));
 	}
 
-	// Attempts to execute a move
-	// You must provide from and to positions
+	/**
+	 * Attempts to execute a move
+	 * @param from The starting position on the board. Must not be @{code null}
+	 * @param to The destination position on the board. Must not be @{code null}
+	 */
 	public void executeMove(Position from, Position to)
 	{
 		executeMove(from, to, null);
 	}
 
-	// Attempts to execute a move
-	// You must provide from and to positions
-	// The promotion is optional. You can always pass promotion and until the server requires it, it will be ignored
-	// Otherwise, if the server requires it and no promotion is provided, the move will fail
+	/**
+	 * Attempts to execute a move on a chess piece and if it is a pawn, promote it
+	 * @param from The starting position on the board. Must not be @{code null}
+	 * @param to The destination position on the board. Must not be @{code null}
+	 * @param promotion The pawn's promotion. This parameter is optional and will be ignored if promotion does
+	 *                  not apply to the move. If the move describes a pawn moving to the last row, the server will
+	 *                  require promotion and if not provided, the move will fail
+	 */
 	public void executeMove(Position from, Position to, Promotion promotion)
 	{
 		if (null == from || null == to)

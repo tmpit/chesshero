@@ -4,10 +4,20 @@ import java.util.HashMap;
 
 /**
  * Created by Toshko on 12/8/14.
+ *
+ * Instances of this class can parse the response returned from a login request as described in
+ * @{link com.kt.api.Action}
  */
 public class LoginResponseParser extends ResponseParser
 {
+	/**
+	 * The user id of the logged in user
+	 */
 	public Integer userID;
+
+	/**
+	 * The user name of the logged in user
+	 */
 	public String userName;
 
 	@Override

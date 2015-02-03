@@ -2,6 +2,8 @@ package com.chesshero.client;
 
 /**
  * Created by Toshko on 12/17/14.
+ *
+ * Enumeration describing pawn promotion choices
  */
 public enum Promotion
 {

@@ -4,10 +4,19 @@ import java.util.HashMap;
 
 /**
  * Created by Toshko on 12/17/14.
+ *
+ * Instances of this class can parse a chess move push message as described in @{link com.kt.api.Push}
  */
 public class GameMovePushParser extends PushParser
 {
+	/**
+	 * The encoded chess move
+	 */
 	public String move;
+
+	/**
+	 * The current in-game time of the player executing the move. Can be @{code null} if the game has no timeout
+	 */
 	public Integer playerTime;
 
 	@Override

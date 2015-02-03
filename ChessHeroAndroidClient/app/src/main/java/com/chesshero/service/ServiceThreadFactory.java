@@ -4,6 +4,8 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * Created by Toshko on 12/2/14.
+ *
+ * A thread factory that creates threads with background priority
  */
 public class ServiceThreadFactory implements ThreadFactory
 {

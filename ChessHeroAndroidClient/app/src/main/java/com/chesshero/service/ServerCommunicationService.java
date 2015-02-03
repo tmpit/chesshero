@@ -14,6 +14,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Toshko on 11/24/14.
+ *
+ * This class provides an interface for interaction with the server. It does all networking on a background
+ * thread and notifies on the main thread. Communication with the service is done only through the
+ * @{code ServerCommunicationService.Proxy} class. This class is thread-safe
  */
 public class ServerCommunicationService extends Service
 {
@@ -461,40 +465,70 @@ public class ServerCommunicationService extends Service
 
 	public class Proxy extends Binder
 	{
+		/**
+		 * Adds an event listener to the service. Listeners will be notified for state changes in the service
+		 * @param listener An object implementing the @{code ServiceEventListener} interface. Must not be @{code null}
+		 */
 		public void addEventListener(ServiceEventListener listener)
 		{
 			Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_ADD_LISTENER, listener);
 			notificationHandler.sendMessage(msg);
 		}
 
+		/**
+		 * Removes an event listener from the service
+		 * @param listener An object implementing the @{code ServiceEventListener} interface. Must not be @{code null}
+		 */
 		public void removeEventListener(ServiceEventListener listener)
 		{
 			Message msg = notificationHandler.obtainMessage(NOTIFICATION_MSG_ACTION_RM_LISTENER, listener);
 			notificationHandler.sendMessage(msg);
 		}
 
+		/**
+		 * Call to check if the service has established a connection to the server
+		 * @return @{code true} if the service has established a connection to the server, @{code false} otherwise
+		 */
 		public boolean isConnected()
 		{
 			return ServerCommunicationService.this.isConnected();
 		}
 
+		/**
+		 * Call to check if the service is in the process of establishing a connection to the server
+		 * @return @{code true} if the service is in the process of establishing a connection to the server, @{code false} otherwise
+		 */
 		public boolean isConnecting()
 		{
 			return ServerCommunicationService.this.isConnecting();
 		}
 
+		/**
+		 * Attempt to connect to the server. On completion, event listeners will have their @{code serviceDidFailToConnect()}
+		 * or @{code serviceDidConnect()} methods as per the connection attempt result
+		 */
 		public void connect()
 		{
 			Message msg = workDispatchHandler.obtainMessage(WORK_DISPATCH_MSG_ACTION_CONNECT);
 			workDispatchHandler.sendMessage(msg);
 		}
 
+		/**
+		 * Disconnects from the server. Does nothing if the service is not connected. After disconnecting, a new
+		 * connection attempt can be safely made immediately. After disconnecting, the event listeners will have their
+		 * @{code serviceDidDisconnect()} method invoked
+		 */
 		public void disconnect()
 		{
 			Message msg = workDispatchHandler.obtainMessage(WORK_DISPATCH_MSG_ACTION_DISCONNECT);
 			workDispatchHandler.sendMessage(msg);
 		}
 
+		/**
+		 * Attempt to execute a request to the server. On completion, event listeners will have their @{code serviceDidCompleteRequest()}
+		 * methods invoked with the result of the attempt
+		 * @param request The request to execute. Must not be @{code null}
+		 */
 		public void sendRequest(ServiceRequest request)
 		{
 			Message msg = workDispatchHandler.obtainMessage(WORK_DISPATCH_MSG_ACTION_REQUEST, request);
