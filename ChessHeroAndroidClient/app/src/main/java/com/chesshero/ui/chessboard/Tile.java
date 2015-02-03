@@ -16,13 +16,19 @@ public final class Tile extends ImageView {
 
     private static final int WHITE_BACKGROUND = R.drawable.transperant_white_cube;
 
-    private int mCurrentTileImageId;
+    private static final int BLACK_HIGHLIGHTED_BACKGROUND = R.drawable.transperant_black_cube_highlighted;
+
+    private static final int WHITE_HIGHLIGHTED_BACKGROUND = R.drawable.transperant_white_cube_highlighted;
+
+    private int mImageResourceId;
 
     private int mCol;
 
     private int mRow;
 
     private Position mPosition;
+
+    private boolean mIsBlackBackground = false;
 
     private boolean mIsFlipped = false;
 
@@ -45,6 +51,7 @@ public final class Tile extends ImageView {
             setBackgroundResource(WHITE_BACKGROUND);
         } else {
             setBackgroundResource(BLACK_BACKGROUND);
+            mIsBlackBackground = true;
         }
 
         setScaleX(0.95f);
@@ -59,53 +66,53 @@ public final class Tile extends ImageView {
         // in order to flip black and white chess pieces
         // because in my implementation element[0][0] is up-left,
         // and on the server element[0][0] is down-left
-        if(!mIsFlipped) {
+        if (!mIsFlipped) {
             if (piece > 64 && piece < 91) piece += 32;
             else piece -= 32;
         }
 
         switch (piece) {
             case '-':
-                mCurrentTileImageId = 0;
+                mImageResourceId = 0;
                 break;
             case 'P':
-                mCurrentTileImageId = R.drawable.white_pawn;
+                mImageResourceId = R.drawable.white_pawn;
                 break;
             case 'p':
-                mCurrentTileImageId = R.drawable.black_pawn;
+                mImageResourceId = R.drawable.black_pawn;
                 break;
             case 'K':
-                mCurrentTileImageId = mIsFlipped ? R.drawable.white_queen : R.drawable.white_king;
+                mImageResourceId = mIsFlipped ? R.drawable.white_queen : R.drawable.white_king;
                 break;
             case 'k':
-                mCurrentTileImageId = mIsFlipped ? R.drawable.black_queen : R.drawable.black_king;
+                mImageResourceId = mIsFlipped ? R.drawable.black_queen : R.drawable.black_king;
                 break;
             case 'B':
-                mCurrentTileImageId = R.drawable.white_bishop;
+                mImageResourceId = R.drawable.white_bishop;
                 break;
             case 'b':
-                mCurrentTileImageId = R.drawable.black_bishop;
+                mImageResourceId = R.drawable.black_bishop;
                 break;
             case 'R':
-                mCurrentTileImageId = R.drawable.white_rook;
+                mImageResourceId = R.drawable.white_rook;
                 break;
             case 'r':
-                mCurrentTileImageId = R.drawable.black_rook;
+                mImageResourceId = R.drawable.black_rook;
                 break;
             case 'Q':
-                mCurrentTileImageId = mIsFlipped ? R.drawable.white_king : R.drawable.white_queen;
+                mImageResourceId = mIsFlipped ? R.drawable.white_king : R.drawable.white_queen;
                 break;
             case 'q':
-                mCurrentTileImageId = mIsFlipped ? R.drawable.black_king : R.drawable.black_queen;
+                mImageResourceId = mIsFlipped ? R.drawable.black_king : R.drawable.black_queen;
                 break;
             case 'N':
-                mCurrentTileImageId = R.drawable.white_knight;
+                mImageResourceId = R.drawable.white_knight;
                 break;
             case 'n':
-                mCurrentTileImageId = R.drawable.black_knight;
+                mImageResourceId = R.drawable.black_knight;
                 break;
         }
-        setImageResource(mCurrentTileImageId);
+        setImageResource(mImageResourceId);
 
         if (isMine()) {
             mIsAvailableMove = true;
@@ -141,12 +148,12 @@ public final class Tile extends ImageView {
     }
 
     public int getTileImageId() {
-        return mCurrentTileImageId;
+        return mImageResourceId;
     }
 
     public void setTileImageId(int imageId) {
-        mCurrentTileImageId = imageId;
-        setImageResource(mCurrentTileImageId);
+        mImageResourceId = imageId;
+        setImageResource(mImageResourceId);
     }
 
     public boolean isMine() {
@@ -158,13 +165,13 @@ public final class Tile extends ImageView {
     }
 
     public boolean isEmpty() {
-        return mCurrentTileImageId == 0;
+        return mImageResourceId == 0;
     }
 
     public boolean isBlackFigure() {
         if (isEmpty()) return false;
 
-        switch (mCurrentTileImageId) {
+        switch (mImageResourceId) {
             case R.drawable.black_pawn:
                 return true;
             case R.drawable.black_knight:
@@ -184,7 +191,7 @@ public final class Tile extends ImageView {
     public boolean isWhiteFigure() {
         if (isEmpty()) return false;
 
-        switch (mCurrentTileImageId) {
+        switch (mImageResourceId) {
             case R.drawable.white_pawn:
                 return true;
             case R.drawable.white_knight:
@@ -202,13 +209,19 @@ public final class Tile extends ImageView {
     }
 
     public void applyHighlight() {
-        setScaleX(0.80f);
-        setScaleY(0.80f);
+        if (mIsBlackBackground) {
+            setBackgroundResource(BLACK_HIGHLIGHTED_BACKGROUND);
+        } else {
+            setBackgroundResource(WHITE_HIGHLIGHTED_BACKGROUND);
+        }
     }
 
     public void removeHighlight() {
-        setScaleX(0.95f);
-        setScaleY(0.95f);
+        if (mIsBlackBackground) {
+            setBackgroundResource(BLACK_BACKGROUND);
+        } else {
+            setBackgroundResource(WHITE_BACKGROUND);
+        }
     }
 
     public String getColumnString() {
