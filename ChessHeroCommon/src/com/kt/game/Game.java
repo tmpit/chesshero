@@ -44,12 +44,34 @@ public class Game
 	 */
 	public static final short STATE_WAITING		= 5;
 
+	/**
+	 * The minimum character length of a game name
+	 */
 	public static final int MIN_NAME_LENGTH = 3;
+
+	/**
+	 * The maximum character length of a game name
+	 */
 	public static final int MAX_NAME_LENGTH = 256;
 
-	public static final int MIN_TIMEOUT = 3; // In minutes
+	/**
+	 * The minimum game timeout time in minutes
+	 */
+	public static final int MIN_TIMEOUT = 3;
+
+	/**
+	 * The maximum game timeout time in minutes
+	 */
 	public static final int MAX_TIMEOUT = 30;
+
+	/**
+	 * Specifies no game timeout. The game continues indefinitely
+	 */
 	public static final int NO_TIMEOUT = 0;
+
+	/**
+	 * The default game timeout value
+	 */
 	public static final int DEFAULT_TIMEOUT = NO_TIMEOUT;
 
 	public static final int BOARD_SIDE = 8;
@@ -228,6 +250,10 @@ public class Game
 		return saved;
 	}
 
+	/**
+	 * Call to determine if this @{code Game} object is a new game or a continuation of a saved game
+	 * @return @{code true} if the game is a continuation of a saved game. @{code false} if this is a new game
+	 */
 	public boolean wasResumed() { return initializedFromSavedState; }
 
 	/**
@@ -248,6 +274,10 @@ public class Game
 		return player2;
 	}
 
+	/**
+	 * Call to get the white player in this game
+	 * @return A @{code Player} instance if there is a white player in the game, otherwise returns @{code null}
+	 */
     public Player getWhitePlayer()
     {
         if (null == player1 || null == player2)
@@ -263,6 +293,10 @@ public class Game
         return whitePlayer;
     }
 
+	/**
+	 * Call to get the black player in this game
+	 * @return A @{code Player} instance if there is a black player in the game, otherwise returns @{code null}
+	 */
     public Player getBlackPlayer()
     {
         if (null == player1 || null == player2)
@@ -305,6 +339,13 @@ public class Game
 		return winner;
 	}
 
+	/**
+	 * Call to determine if a specified player is in check
+	 * @param player The @{code Player} instance to check against. Can be @{code null} in which case the method will
+	 *               just return @{code false}
+	 * @return @{code true} if @{code player} is the player in check. Returns @{code false} if there is no player
+	 * in check, @{code player} is @{code null}, or if the player in check is not the provided @{code Player} instance
+	 */
     public boolean getIsInCheck(Player player)
     {
         Player playerInCheck = this.inCheck;
@@ -318,11 +359,20 @@ public class Game
         }
     }
 
+	/**
+	 * Call to get the @{code BoardField} instance at the specified @{code position}
+	 * @param position A @{code Position} instance. Must not be @{code null}
+	 * @return A @{code BoardField} instance at the specified @{code position}
+	 */
     public BoardField getField(Position position)
     {
         return this.board[position.getX()][position.getY()];
     }
 
+	/**
+	 * Call to get the @{code Game.Ending} value for this game. A value is available when the game has finished.
+	 * @return A @{code Game.Ending} value if the game has finished. Returns @{code null} otherwise
+	 */
 	public Ending getEnding()
 	{
 		return ending;

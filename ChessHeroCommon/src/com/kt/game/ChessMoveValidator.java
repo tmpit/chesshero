@@ -7,32 +7,60 @@ import java.util.ArrayList;
 
 /**
  * Created by Toshko on 12/17/14.
+ *
+ * An abstract class implementing part of the logic required to fully validate a chess move
  */
 public abstract class ChessMoveValidator implements ChessMoveExecutor
 {
 	private Game game;
 	private BoardField board[][];
 
+	/**
+	 * Sets the @{code Game} instance this validator will operate on
+	 * @param game A @{code Game} object. Must not be @{code null} and the object must be in a @{code Game.STATE_ACTIVE} state
+	 */
 	protected void setGame(Game game)
 	{
 		this.game = game;
 	}
 
+	/**
+	 * Call to get the @{code Game} instance this validator operates on
+	 * @return A @{code Game} instance if set, @{code null} otherwise
+	 */
 	protected Game getGame()
 	{
 		return game;
 	}
 
+	/**
+	 * Sets the @{code BoardField} instance this validator will operate on
+	 * @param board A @{code BoardField[][]} instance. Must not be @{code null} and must be an 8 by 8 array
+	 */
 	protected void setBoard(BoardField[][] board)
 	{
 		this.board = board;
 	}
 
+	/**
+	 * Call to get the @{code BoardField[][]} instance this validator operates on
+	 * @return A @{code BoardField[][]} instance if set, @{code null} otherwise
+	 */
 	protected BoardField[][] getBoard()
 	{
 		return board;
 	}
 
+	/**
+	 * Performs analysis on the chess move determining if the chess piece can move in the specified fashion,
+	 * checks for special chess moves and if the @{code executor}'s king would be in check if the move is executed
+	 * @param executor A @{code Player} instance of the move's executor. Must not be @{code null}
+	 * @param movedPiece A @{code ChessPiece} instance of the piece that is being moved. Must not be @{code null}
+	 * @param from The starting @{code Position} of the @{code movedPiece}
+	 * @param to The destination @{code Position} of the @{code movedPiece}
+	 * @param ctx Optional. If provided, the method stores information in it regarding the move after the analysis
+	 * @return A @{code com.kt.api.Result} code
+	 */
 	protected int validateMove(Player executor, ChessPiece movedPiece, Position from, Position to, MoveContext ctx)
 	{
 		ChessPiece toPiece = board[to.x][to.y].getChessPiece(); // The chess piece that is at the destination position

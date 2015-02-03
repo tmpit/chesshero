@@ -10,6 +10,8 @@ import java.util.Iterator;
 
 /**
  * Created by Toshko on 12/17/14.
+ *
+ * A concrete @{code ChessMoveValidator} subclass implementing logic for executing chess moves
  */
 public class MasterChessMoveExecutor extends ChessMoveValidator implements ChessMoveExecutor
 {
