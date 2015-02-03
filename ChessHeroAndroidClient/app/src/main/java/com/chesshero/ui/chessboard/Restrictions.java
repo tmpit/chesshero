@@ -9,22 +9,46 @@ import java.util.ArrayList;
  */
 public class Restrictions {
 
+    /**
+     * Chessboard XY minimum index
+     */
     private static final int BOARD_MIN = 0;
 
+    /**
+     * Chessboard XY maximum index
+     */
     private static final int BOARD_MAX = 7;
 
+    /**
+     * Pawn's first row index
+     */
     private static final int PAWN_FIRST_ROW = 6;
 
+    /**
+     * Holds all previously highlighted tiles
+     */
     private static ArrayList<Tile> mPreviousHighlightedTiles = new ArrayList<Tile>();
 
+    /**
+     * Keeps all tiles, indexed by rows and columns
+     */
     private static Tile[][] mAllTiles;
 
-    private static Tile mCurrentTile;
-
+    /**
+     * Current tile row
+     */
     private static int mCurrentRow;
 
+    /**
+     * Current tile column
+     */
     private static int mCurrentCol;
 
+    /**
+     * Uses the chessboard tile set to apply proper restrictions
+     *
+     * @param allTiles see {@link #mAllTiles}
+     */
     public Restrictions(Tile[][] allTiles) {
         mAllTiles = allTiles;
     }
@@ -32,7 +56,7 @@ public class Restrictions {
     /**
      * Does magic!
      *
-     * @param tile
+     * @param tile the magic should be applied to
      */
     private void doMagic(Tile tile) {
         if (tile.isMine()) {
@@ -43,6 +67,9 @@ public class Restrictions {
         mPreviousHighlightedTiles.add(tile);
     }
 
+    /**
+     * Pawn specific restrictions
+     */
     private void pawnMoves() {
         //first move rule
         if (mCurrentRow == PAWN_FIRST_ROW
@@ -54,16 +81,19 @@ public class Restrictions {
                 && !mAllTiles[mCurrentRow - 1][mCurrentCol].isOponent()) {
             doMagic(mAllTiles[mCurrentRow - 1][mCurrentCol]);
         }
-        if (mCurrentRow >= BOARD_MIN && mCurrentCol >= BOARD_MIN
+        if (mCurrentRow >= BOARD_MIN && mCurrentCol > BOARD_MIN
                 && mAllTiles[mCurrentRow - 1][mCurrentCol - 1].isOponent()) {
             doMagic(mAllTiles[mCurrentRow - 1][mCurrentCol - 1]);
         }
-        if (mCurrentRow >= BOARD_MIN && mCurrentCol <= BOARD_MAX
+        if (mCurrentRow >= BOARD_MIN && mCurrentCol < BOARD_MAX
                 && mAllTiles[mCurrentRow - 1][mCurrentCol + 1].isOponent()) {
             doMagic(mAllTiles[mCurrentRow - 1][mCurrentCol + 1]);
         }
     }
 
+    /**
+     * Knight specific restrictions
+     */
     private void knightMoves() {
         //close left side
         if (mCurrentCol - 1 >= BOARD_MIN) {
@@ -103,6 +133,9 @@ public class Restrictions {
         }
     }
 
+    /**
+     * King specific restrictions
+     */
     private void kingMoves() {
         // side neighbours
         if (mCurrentCol - 1 >= BOARD_MIN) {
@@ -135,6 +168,9 @@ public class Restrictions {
         }
     }
 
+    /**
+     * Linear specific restrictions
+     */
     private void lineMoves() {
 
         int buffer;
@@ -169,6 +205,9 @@ public class Restrictions {
         }
     }
 
+    /**
+     * Diagonal specific restrictions
+     */
     private void diagonalMoves() {
 
         int colBuffer;
@@ -208,19 +247,35 @@ public class Restrictions {
         }
     }
 
+    /**
+     * Rook specific restrictions
+     * See {@link #lineMoves()}
+     */
     private void rookMoves() {
         lineMoves();
     }
 
+    /**
+     * Bishop specific restrictions
+     * See {@link #diagonalMoves()}
+     */
     private void bishopMoves() {
         diagonalMoves();
     }
 
+    /**
+     * Queen specific restrictions
+     * See {@link #lineMoves()}
+     * See {@link #diagonalMoves()}
+     */
     private void queenMoves() {
         lineMoves();
         diagonalMoves();
     }
 
+    /**
+     * Clears previously applied restrictions and highlights
+     */
     public void clear() {
         for (Tile tile : mPreviousHighlightedTiles) {
             tile.setAvailable(false);
@@ -228,17 +283,20 @@ public class Restrictions {
         }
     }
 
+    /**
+     * Applies restrictions and highlights base on the tile selected
+     *
+     * @param currentTile the selected tile
+     */
     public void apply(Tile currentTile) {
-        mCurrentTile = currentTile;
         mCurrentRow = currentTile.getRow();
         mCurrentCol = currentTile.getCol();
-
         mPreviousHighlightedTiles.clear();
 
-        mCurrentTile.applyHighlight();
-        mPreviousHighlightedTiles.add(mCurrentTile);
+        currentTile.applyHighlight();
+        mPreviousHighlightedTiles.add(currentTile);
 
-        switch (mCurrentTile.getTileImageId()) {
+        switch (currentTile.getTileImageId()) {
             case R.drawable.white_pawn:
             case R.drawable.black_pawn:
                 pawnMoves();

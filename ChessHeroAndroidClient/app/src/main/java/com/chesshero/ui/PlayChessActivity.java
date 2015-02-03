@@ -49,7 +49,7 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
     public static Client client;
 
     /**
-     * Is the chessboard flipped (when the player's color is black)
+     * True if the user is playing with black chess piece set, else false
      */
     public static boolean isFlipped = false;
 

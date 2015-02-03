@@ -9,35 +9,61 @@ import com.kt.game.Position;
 
 /**
  * Created by Vasil on 6.12.2014 г..
+ * Represents a chessboard tile with all its properties
  */
 public final class Tile extends ImageView {
 
-    private static final int BLACK_BACKGROUND = R.drawable.transperant_black_cube;
-
-    private static final int WHITE_BACKGROUND = R.drawable.transperant_white_cube;
-
-    private static final int BLACK_HIGHLIGHTED_BACKGROUND = R.drawable.transperant_black_cube_highlighted;
-
-    private static final int WHITE_HIGHLIGHTED_BACKGROUND = R.drawable.transperant_white_cube_highlighted;
-
+    /**
+     * Tile's image resource id
+     */
     private int mImageResourceId;
 
+    /**
+     * Tile's column up on the grid
+     */
     private int mCol;
 
+    /**
+     * Tile's row up on the grid
+     */
     private int mRow;
 
+    /**
+     * Column + Row position
+     */
     private Position mPosition;
 
+    /**
+     * True if tile's background is black, else false
+     */
     private boolean mIsBlackBackground = false;
 
+    /**
+     * True if the user is playing with black chess piece set, else false
+     */
     private boolean mIsFlipped = false;
 
+    /**
+     * True if the tile is available for next move, else false
+     */
     private boolean mIsAvailableMove = false;
 
+    /**
+     * Default constructor calling ImageView's constructor
+     *
+     * @param context context
+     * @param attrs attrs
+     */
     public Tile(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
+    /**
+     * Sets tile column, row and background
+     *
+     * @param position an integer used to set tile's column and row
+     * @param isFlipped see {@link #mIsFlipped}
+     */
     public void initTile(int position, boolean isFlipped) {
         mIsFlipped = isFlipped;
 
@@ -48,9 +74,9 @@ public final class Tile extends ImageView {
 
         //set background
         if ((mCol + mRow) % 2 == 0) {
-            setBackgroundResource(WHITE_BACKGROUND);
+            setBackgroundResource(R.drawable.transperant_white_cube);
         } else {
-            setBackgroundResource(BLACK_BACKGROUND);
+            setBackgroundResource(R.drawable.transperant_black_cube);
             mIsBlackBackground = true;
         }
 
@@ -58,6 +84,11 @@ public final class Tile extends ImageView {
         setScaleY(0.95f);
     }
 
+    /**
+     * Places a chess pieces on the tile
+     *
+     * @param chessPieceCode chess piece code
+     */
     public void setChessPiece(String chessPieceCode) {
 
         char piece = chessPieceCode.charAt(1);
@@ -113,61 +144,130 @@ public final class Tile extends ImageView {
                 break;
         }
         setImageResource(mImageResourceId);
-
+        // if the chess piece belongs to the user - make it available move
         if (isMine()) {
             mIsAvailableMove = true;
         }
     }
 
+    /**
+     * Getter of the column parameter
+     *
+     * @return mCol see {@link #mCol}
+     */
     public int getCol() {
         return mCol;
     }
 
+    /**
+     * Setter for the column parameter
+     *
+     * @param position an integer used to set tile's column
+     */
     public void setCol(int position) {
         mCol = position % 8;
     }
 
+    /**
+     * Getter of the row parameter
+     *
+     * @return mRow see {@link #mRow}
+     */
     public int getRow() {
         return mRow;
     }
 
+    /**
+     * Setter for the row parameter
+     *
+     * @param position an integer used to set tile's column
+     */
     public void setRow(int position) {
         mRow = position / 8;
     }
 
+    /**
+     * Getter of the position parameter
+     *
+     * @return mPosition see {@link #mPosition}
+     */
     public Position getPosition() {
         return mPosition;
     }
 
-    public boolean isAvailable() {
-        return mIsAvailableMove;
-    }
-
+    /**
+     * Setter for the available parameter
+     *
+     * @param isAvailable see {@link #mIsAvailableMove}
+     */
     public void setAvailable(boolean isAvailable) {
         mIsAvailableMove = isAvailable;
     }
 
-    public int getTileImageId() {
-        return mImageResourceId;
+    /**
+     * Getter of the available parameter
+     *
+     * @return mIsAvailableMove see {@link #mIsAvailableMove}
+     */
+    public boolean isAvailable() {
+        return mIsAvailableMove;
     }
 
+    /**
+     * Sets an image resource
+     *
+     * @param imageId id of the image resource to be set
+     */
     public void setTileImageId(int imageId) {
         mImageResourceId = imageId;
         setImageResource(mImageResourceId);
     }
 
+    /**
+     * Getter of the image resource id parameter
+     *
+     * @return mImageResourceId see {@link #mImageResourceId}
+     */
+    public int getTileImageId() {
+        return mImageResourceId;
+    }
+
+    /**
+     * See {@link #isWhiteFigure()}
+     * See {@link #isBlackFigure()}
+     * See {@link #isEmpty()}
+     *
+     * @return true if the tile's chess piece belongs to the user, else false
+     */
     public boolean isMine() {
         return !mIsFlipped && isWhiteFigure() || mIsFlipped && isBlackFigure();
     }
 
+    /**
+     * See {@link #isMine()}
+     * See {@link #isEmpty()}
+     *
+     * @return true if the tile is not empty and not mine, else false
+     */
     public boolean isOponent() {
         return !isEmpty() && !isMine();
     }
 
+    /**
+     * Checks if the tile is empty or there is a chess piece placed in it
+     *
+     * @return true if the tile is empty, else false
+     */
     public boolean isEmpty() {
         return mImageResourceId == 0;
     }
 
+    /**
+     * First checks if the tile is not empty
+     * Then, if it not empty, it is checks if its chess piece is black
+     *
+     * @return true if the tile is not empty and has black chess piece, else false
+     */
     public boolean isBlackFigure() {
         if (isEmpty()) return false;
 
@@ -188,6 +288,12 @@ public final class Tile extends ImageView {
         return false;
     }
 
+    /**
+     * First checks if the tile is not empty
+     * Then, if it not empty, it is checks if its chess piece is white
+     *
+     * @return true if the tile is not empty and has white chess piece, else false
+     */
     public boolean isWhiteFigure() {
         if (isEmpty()) return false;
 
@@ -208,22 +314,33 @@ public final class Tile extends ImageView {
         return false;
     }
 
+    /**
+     * Changes the background image with a highlighted one
+     */
     public void applyHighlight() {
         if (mIsBlackBackground) {
-            setBackgroundResource(BLACK_HIGHLIGHTED_BACKGROUND);
+            setBackgroundResource(R.drawable.transperant_black_cube_highlighted);
         } else {
-            setBackgroundResource(WHITE_HIGHLIGHTED_BACKGROUND);
+            setBackgroundResource(R.drawable.transperant_white_cube_highlighted);
         }
     }
 
+    /**
+     * Restores the original background image
+     */
     public void removeHighlight() {
         if (mIsBlackBackground) {
-            setBackgroundResource(BLACK_BACKGROUND);
+            setBackgroundResource(R.drawable.transperant_black_cube);
         } else {
-            setBackgroundResource(WHITE_BACKGROUND);
+            setBackgroundResource(R.drawable.transperant_white_cube);
         }
     }
 
+    /**
+     * Transforms column integer index to a character one
+     *
+     * @return A-H character string
+     */
     public String getColumnString() {
         int col = mCol;
         if (mIsFlipped) {
@@ -251,6 +368,11 @@ public final class Tile extends ImageView {
         }
     }
 
+    /**
+     * Parses row integer index to string
+     *
+     * @return 1-8 character string
+     */
     public String getRowString() {
         // To get the actual mRow, add 1 since 'mRow' is 0 indexed.
         int row = mRow + 1;
@@ -261,10 +383,22 @@ public final class Tile extends ImageView {
         return String.valueOf(row);
     }
 
+    /**
+     * See {@link #getColumnString()}
+     * See {@link #getRowString()}
+     *
+     * @return column + row string
+     */
     public String toString() {
         return getColumnString() + getRowString();
     }
 
+    /**
+     * Keeps the tile in a cubic shape, upon scale
+     *
+     * @param widthMeasureSpec width measure
+     * @param heightMeasureSpec height measure
+     */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
