@@ -2,7 +2,6 @@ package com.chesshero.ui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -125,29 +124,25 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
      */
     private LinearLayout baseView;
 
-	private void subscribeForGameClientEvents() {
-		EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_RESULT);
-		EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_PUSH);
-		EventCenter.getSingleton().addObserver(this, Client.Event.END_GAME_PUSH);
-		EventCenter.getSingleton().addObserver(this, Client.Event.EXIT_GAME_RESULT);
-	}
-
-	private void unsubscribeFromGameClientEvents() {
-		EventCenter.getSingleton().removeObserver(this, Client.Event.MOVE_RESULT);
-		EventCenter.getSingleton().removeObserver(this, Client.Event.MOVE_PUSH);
-		EventCenter.getSingleton().removeObserver(this, Client.Event.END_GAME_PUSH);
-		EventCenter.getSingleton().removeObserver(this, Client.Event.EXIT_GAME_RESULT);
-	}
-
+    /**
+     * Initializes all variables and sets listeners
+     *
+     * @param savedInstanceState saved state bundle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play_chess);
-
         // init client service
         subscribeForGameClientEvents();
 
+        // get inflater and display parameters
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        Display display = getWindowManager().getDefaultDisplay();
+        windowHeight = display.getHeight();
+        windowWidth = display.getWidth();
+
+        // set on click listener to for the log button
         findViewById(R.id.log_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -164,14 +159,12 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         playerName.setText(client.getPlayer().getName());
         oponentName.setText(client.getPlayer().getOpponent().getName());
 
+        // init chessboard grid and apply its adapter
         grid = (GridView) findViewById(R.id.chessboard_grid);
         grid.setAdapter(ADAPTER);
         restrictions = new Restrictions(ADAPTER.getAllTiles());
 
-        Display display = getWindowManager().getDefaultDisplay();
-        windowHeight = display.getHeight();
-        windowWidth = display.getWidth();
-
+        // handle straight and flipped cases
         if (isFlipped) {
             grid.setBackgroundResource(R.drawable.board_flipped);
             isMyTurn = false;
@@ -179,6 +172,7 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
             grid.setBackgroundResource(R.drawable.board);
         }
 
+        // set on item click listener for the chessboard grid tiles
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
@@ -190,13 +184,11 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
                     Toast.makeText(PlayChessActivity.this, "It is not your turn", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
                 if (currentTileClicked.isMine()) {
                     restrictions.clear();
                     restrictions.apply(currentTileClicked);
                     newMove = true;
                 }
-
                 if (newMove) {
                     if (currentTileClicked.isEmpty() || currentTileClicked.isOponent()) {
                         Toast.makeText(PlayChessActivity.this, "This is not your chess piece", Toast.LENGTH_SHORT).show();
@@ -219,6 +211,13 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         });
     }
 
+    /**
+     * Used to handle android's back button clicks
+     *
+     * @param keyCode KEYCODE_BACK
+     * @param event   event
+     * @return {@link #showLeaveGameDialog}
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -227,10 +226,21 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         return super.onKeyDown(keyCode, event);
     }
 
+    /**
+     * Executes when leave game button is clicked
+     *
+     * @param view leave game btn
+     */
     public void leaveGame(View view) {
         showLeaveGameDialog();
     }
 
+    /**
+     * Listens for server's responses
+     *
+     * @param eventName event name
+     * @param userData  user data
+     */
     @Override
     public void eventCenterDidPostEvent(String eventName, Object userData) {
 
@@ -245,10 +255,37 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         } else if (eventName == Client.Event.EXIT_GAME_RESULT) {
             navigateToLobby();
         } else if (eventName == Client.Event.END_GAME_PUSH) {
-			showGameEndDialogue(client.getGame().getWinner().equals(client.getPlayer()), client.getGame().getEnding());
-		}
+            showGameEndDialogue(client.getGame().getWinner().equals(client.getPlayer()), client.getGame().getEnding());
+        }
     }
 
+    /**
+     * Subscribes for the game client events
+     * For this activity: MOVE_RESULT, MOVE_PUSH, END_GAME_PUSH, EXIT_GAME_RESULT
+     */
+    private void subscribeForGameClientEvents() {
+        EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_RESULT);
+        EventCenter.getSingleton().addObserver(this, Client.Event.MOVE_PUSH);
+        EventCenter.getSingleton().addObserver(this, Client.Event.END_GAME_PUSH);
+        EventCenter.getSingleton().addObserver(this, Client.Event.EXIT_GAME_RESULT);
+    }
+
+    /**
+     * Unsubscribe from the game client events
+     */
+    private void unsubscribeFromGameClientEvents() {
+        EventCenter.getSingleton().removeObserver(this, Client.Event.MOVE_RESULT);
+        EventCenter.getSingleton().removeObserver(this, Client.Event.MOVE_PUSH);
+        EventCenter.getSingleton().removeObserver(this, Client.Event.END_GAME_PUSH);
+        EventCenter.getSingleton().removeObserver(this, Client.Event.EXIT_GAME_RESULT);
+    }
+
+    /**
+     * Drawing a move after the server posts a
+     * MOVE_RESULT or a MOVE_PUSH event
+     *
+     * @param move object containing the move code
+     */
     private void drawMove(Move move) {
         int startCol, startRow, endCol, endRow;
         // flipped - true
@@ -265,69 +302,81 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
             endRow = 8 - Integer.parseInt(move.code.charAt(3) + "");
         }
 
-        Tile previousTile = ADAPTER.getTileAt(startRow, startCol);
-        Tile currentTile = ADAPTER.getTileAt(endRow, endCol);
-
-        currentTile.setTileImageId(previousTile.getTileImageId());
-        previousTile.setTileImageId(0);
+        Tile startTile = ADAPTER.getTileAt(startRow, startCol);
+        Tile endTile = ADAPTER.getTileAt(endRow, endCol);
+        // moving image from start to end location
+        endTile.setTileImageId(startTile.getTileImageId());
+        startTile.setTileImageId(0);
 
         Log.i("PlayChessActivity",
                 String.format("drawing move from {%d,%d} to {%d,%d}", startRow, startCol, endRow, endCol));
     }
 
-	private void navigateToLobby() {
-		unsubscribeFromGameClientEvents();
-		startActivity(new Intent(this, LobbyActiviy.class));
-		finish();
-	}
+    /**
+     * Closes PlayChessActivity and opens LobbyActiviy
+     */
+    private void navigateToLobby() {
+        unsubscribeFromGameClientEvents();
+        startActivity(new Intent(this, LobbyActiviy.class));
+        finish();
+    }
 
-	private void showGameEndDialogue(boolean iAmWinner, Game.Ending ending) {
-		DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialogInterface, int i) {
-				dialogInterface.dismiss();
-				navigateToLobby();
-			}
-		};
+    /**
+     * Shows end game dialog
+     *
+     * @param iAmWinner used to determinate victory or loss
+     * @param ending    can be either CHECKMATE, SUDDED_DEATH or SURRENDER
+     */
+    private void showGameEndDialogue(boolean iAmWinner, Game.Ending ending) {
+        DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+                navigateToLobby();
+            }
+        };
 
-		DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
-			@Override
-			public void onCancel(DialogInterface dialogInterface) {
-				dialogInterface.dismiss();
-				navigateToLobby();
-			}
-		};
+        DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialogInterface) {
+                dialogInterface.dismiss();
+                navigateToLobby();
+            }
+        };
 
-		String message = "";
+        String message = "";
 
-		switch (ending) {
-			case CHECKMATE:
-				message = "Checkmate! ";
-				break;
+        switch (ending) {
+            case CHECKMATE:
+                message = "Checkmate! ";
+                break;
 
-			case SUDDED_DEATH:
-				message = "Time is up! ";
-				break;
+            case SUDDED_DEATH:
+                message = "Time is up! ";
+                break;
 
-			case SURRENDER:
-				// If a player surrenders, only the winner receives a game end event
-				message = "Your opponent has surrendered! ";
-				break;
-		}
+            case SURRENDER:
+                // If a player surrenders, only the winner receives a game end event
+                message = "Your opponent has surrendered! ";
+                break;
+        }
 
-		if (iAmWinner) {
-			message += "You won!";
-		} else {
-			message += "You lost.";
-		}
+        if (iAmWinner) {
+            message += "You won!";
+        } else {
+            message += "You lost.";
+        }
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(message)
-				.setPositiveButton("Go back to lobby", clickListener)
-				.setOnCancelListener(cancelListener)
-				.show();
-	}
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setPositiveButton("Go back to lobby", clickListener)
+                .setOnCancelListener(cancelListener)
+                .show();
+    }
 
+    /**
+     * Shows leave game dialog
+     */
     private void showLeaveGameDialog() {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
@@ -359,9 +408,8 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
         int height = (int) (windowHeight * 0.30f);
         translateView((float) height);
         // creating a popup
-
         final View layout = inflater.inflate(R.layout.moves_log, (ViewGroup) findViewById(R.id.moves_log_layout));
-
+        // populating move entries
         LinearLayout list = (LinearLayout) layout.findViewById(R.id.moves_log_layout);
         List<Move> moves = client.getGame().getExecutedMoves();
         for (Move move : moves) {
@@ -375,21 +423,15 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
 
         final PopupWindow movesLogPopup = new PopupWindow(layout, width, height, true);
         movesLogPopup.setBackgroundDrawable(new PaintDrawable());
-
         movesLogPopup.showAtLocation(layout, Gravity.NO_GRAVITY, 0, 0);
 
         movesLogPopup.setOnDismissListener(new PopupWindow.OnDismissListener() {
 
             public void onDismiss() {
-                //Removing the fade effect
                 fadePopup.dismiss();
-                //to clear the previous animation transition in
                 cleanUp();
-                //move the view out
                 translateView(0);
-                //to clear the latest animation transition out
                 cleanUp();
-                //resetting the variable
                 isLogAlreadyShowing = false;
             }
         });
@@ -402,7 +444,6 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
      * @param moveTo The position to translate to
      */
     private void translateView(float moveTo) {
-
         animation = new TranslateAnimation(0f, 0f, 0f, moveTo);
         animation.setDuration(300);
         animation.setFillEnabled(true);
