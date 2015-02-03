@@ -16,24 +16,48 @@ import com.chesshero.event.EventCenterObserver;
 import com.kt.api.Result;
 
 /**
- * Created by Lyubomira on 11/30/2014.
+ * Created by Lyubomira & Vasil on 11/30/2014.
+ * Handles register page logic
  */
 public class RegisterActivity extends Activity implements EventCenterObserver {
 
+    /**
+     * Game client
+     */
     public static Client client;
+
+    /**
+     * Next activity to be started
+     */
     private Intent pageToOpen;
+
+    /**
+     * Used for showing messages in exceptional cases
+     */
     private TextView exceptionMsg;
 
+    /**
+     * Initializes all clients, hides the keyboard on startup
+     *
+     * @param savedInstanceState saved state bundle
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        EventCenter.getSingleton().addObserver(this, Client.Event.REGISTER_RESULT);
-        EventCenter.getSingleton().addObserver(this, Client.Event.LOGIN_RESULT);
         exceptionMsg = (TextView) findViewById(R.id.registerExceptions);
+        // init client service
+        subscribeForGameClientEvents();
     }
 
+    /**
+     * Used to handle android's back button clicks
+     *
+     * @param keyCode KEYCODE_BACK
+     * @param event   event
+     * @return navigates back to login page
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -45,13 +69,25 @@ public class RegisterActivity extends Activity implements EventCenterObserver {
         return super.onKeyDown(keyCode, event);
     }
 
+    /**
+     * Executes when login text hyperlink is clicked
+     * Navigates back to login page
+     *
+     * @param view login text hyperlink
+     */
     public void openLoginPage(View view) {
+        unsubscribeFromGameClientEvents();
         pageToOpen = new Intent(this, MainActivity.class);
         startActivity(pageToOpen);
         finish();
     }
 
-    //todo add more password/username constraints/validations
+    /**
+     * Executes when register button is clicked
+     * Sends a register request to the server
+     *
+     * @param view register btn
+     */
     public void register(View view) {
         String username = ((EditText) findViewById(R.id.reg_username)).getText().toString();
         String password = ((EditText) findViewById(R.id.reg_password)).getText().toString();
@@ -68,10 +104,17 @@ public class RegisterActivity extends Activity implements EventCenterObserver {
         client.register(username, password);
     }
 
+    /**
+     * Listens for server's response
+     *
+     * @param eventName event name
+     * @param userData  user data
+     */
     @Override
     public void eventCenterDidPostEvent(String eventName, Object userData) {
         if (eventName == Client.Event.REGISTER_RESULT) {
             if (userData != null && (Integer) userData == Result.OK) {
+                unsubscribeFromGameClientEvents();
                 pageToOpen = new Intent(this, LobbyActiviy.class);
                 startActivity(pageToOpen);
                 finish();
@@ -87,5 +130,22 @@ public class RegisterActivity extends Activity implements EventCenterObserver {
                 exceptionMsg.setText(" *A user with that username already exists");
             }
         }
+    }
+
+    /**
+     * Subscribes for the game client events
+     * For this activity: REGISTER_RESULT, LOGIN_RESULT
+     */
+    private void subscribeForGameClientEvents() {
+        EventCenter.getSingleton().addObserver(this, Client.Event.REGISTER_RESULT);
+        EventCenter.getSingleton().addObserver(this, Client.Event.LOGIN_RESULT);
+    }
+
+    /**
+     * Unsubscribe from the game client events
+     */
+    private void unsubscribeFromGameClientEvents() {
+        EventCenter.getSingleton().removeObserver(this, Client.Event.REGISTER_RESULT);
+        EventCenter.getSingleton().removeObserver(this, Client.Event.LOGIN_RESULT);
     }
 }

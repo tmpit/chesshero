@@ -21,27 +21,55 @@ import com.kt.api.Result;
 
 import java.util.List;
 
+/**
+ * Created by Lyubomira & Vasil on 12/30/2014.
+ * Handles lobby page logic
+ */
 public class LobbyActiviy extends Activity implements EventCenterObserver {
 
+    /**
+     * Game client
+     */
     public static Client client;
+
+    /**
+     * Available games table
+     */
     private TableLayout table;
+
+    /**
+     * Next activity to be started
+     */
     private Intent pageToOpen;
 
+    /**
+     * Initializes all clients, refreshes the table
+     *
+     * @param savedInstanceState saved state bundle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.lobby_page);
         table = (TableLayout) findViewById(R.id.table);
-        EventCenter.getSingleton().addObserver(this, Client.Event.JOIN_GAME_RESULT);
-        EventCenter.getSingleton().addObserver(this, Client.Event.PENDING_GAMES_LOAD_RESULT);
-        EventCenter.getSingleton().addObserver(this, Client.Event.LOGOUT);
+        // init client service
+        subscribeForGameClientEvents();
+        // refresh the table content on startup
         refreshGames();
     }
 
+    /**
+     * Used to handle android's back button clicks
+     *
+     * @param keyCode KEYCODE_BACK
+     * @param event   event
+     * @return navigates back to login page
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             client.logout();
+            unsubscribeFromGameClientEvents();
             pageToOpen = new Intent(this, MainActivity.class);
             startActivity(pageToOpen);
             finish();
@@ -50,27 +78,58 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
         return super.onKeyDown(keyCode, event);
     }
 
+    /**
+     * Executes when logout button is clicked
+     * Navigates back to login screen and sends a logout request to the server
+     *
+     * @param view logout btn
+     */
     public void logout(View view) {
         client.logout();
+        unsubscribeFromGameClientEvents();
         pageToOpen = new Intent(this, MainActivity.class);
         startActivity(pageToOpen);
         finish();
     }
 
+    /**
+     * Sends a joinGame request to the server
+     *
+     * @param gameTicket game to join
+     */
     public void joinGame(GameTicket gameTicket) {
         client.joinGame(gameTicket);
     }
 
+    /**
+     * Executes when logout button is clicked
+     * Sends a createGame request to the server
+     *
+     * @param view create game btn
+     */
     public void createGame(View view) {
+        unsubscribeFromGameClientEvents();
         pageToOpen = new Intent(this, CreateGameActivity.class);
         startActivity(pageToOpen);
         finish();
     }
 
+    /**
+     * Executes when refresh button is clicked
+     * Refreshes available games table content
+     *
+     * @param view refresh btn
+     */
     public void refresh(View view) {
         refreshGames();
     }
 
+    /**
+     * Listens for server's response
+     *
+     * @param eventName event name
+     * @param userData  user data
+     */
     @Override
     public void eventCenterDidPostEvent(String eventName, Object userData) {
 
@@ -103,13 +162,40 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
         }
     }
 
+    /**
+     * Subscribes for the game client events
+     * For this activity: JOIN_GAME_RESULT, PENDING_GAMES_LOAD_RESULT, LOGOUT
+     */
+    private void subscribeForGameClientEvents() {
+        EventCenter.getSingleton().addObserver(this, Client.Event.JOIN_GAME_RESULT);
+        EventCenter.getSingleton().addObserver(this, Client.Event.PENDING_GAMES_LOAD_RESULT);
+        EventCenter.getSingleton().addObserver(this, Client.Event.LOGOUT);
+    }
+
+    /**
+     * Unsubscribe from the game client events
+     */
+    private void unsubscribeFromGameClientEvents() {
+        EventCenter.getSingleton().removeObserver(this, Client.Event.JOIN_GAME_RESULT);
+        EventCenter.getSingleton().removeObserver(this, Client.Event.PENDING_GAMES_LOAD_RESULT);
+        EventCenter.getSingleton().removeObserver(this, Client.Event.LOGOUT);
+    }
+
+    /**
+     * Starts PlayChessActivity after successful join game response
+     */
     private void joinGame() {
         PlayChessActivity.isFlipped = client.getGame().getBlackPlayer().equals(client.getPlayer());
+        unsubscribeFromGameClientEvents();
         pageToOpen = new Intent(this, PlayChessActivity.class);
         startActivity(pageToOpen);
         finish();
     }
 
+    /**
+     * Sends a loadPendingGames request to the server
+     * Refreshes the table
+     */
     private void refreshGames() {
         client.loadPendingGames();
         TableRow titleRow = (TableRow) findViewById(R.id.row_title);
@@ -119,6 +205,9 @@ public class LobbyActiviy extends Activity implements EventCenterObserver {
         table.addView(subtitleRow);
     }
 
+    /**
+     * Loads all pending games into the table
+     */
     private void loadGames() {
         List<GameTicket> games = client.getCachedPendingGames();
 

@@ -11,7 +11,7 @@ import com.kt.game.BoardField;
 
 /**
  * Created by Vasil on 6.12.2014 г..
- *
+ * Inflates chessboard tiles up on the chessboard grid
  */
 public class ChessboardAdapter extends BaseAdapter {
 

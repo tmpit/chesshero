@@ -5,7 +5,8 @@ import com.chesshero.R;
 import java.util.ArrayList;
 
 /**
- * Created by lmn7 on 14.12.2014 г..
+ * Created by Vasil on 14.12.2014 г..
+ * Applies highlights and move restrictions for a chessboard tile
  */
 public class Restrictions {
 

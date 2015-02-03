@@ -236,7 +236,7 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
     }
 
     /**
-     * Listens for server's responses
+     * Listens for server's response
      *
      * @param eventName event name
      * @param userData  user data
