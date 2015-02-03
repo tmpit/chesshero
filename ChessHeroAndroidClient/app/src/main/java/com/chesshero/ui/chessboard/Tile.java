@@ -75,10 +75,10 @@ public final class Tile extends ImageView {
                 mCurrentTileImageId = R.drawable.black_pawn;
                 break;
             case 'K':
-                mCurrentTileImageId = R.drawable.white_king;
+                mCurrentTileImageId = mIsFlipped ? R.drawable.white_queen : R.drawable.white_king;
                 break;
             case 'k':
-                mCurrentTileImageId = R.drawable.black_king;
+                mCurrentTileImageId = mIsFlipped ? R.drawable.black_queen : R.drawable.black_king;
                 break;
             case 'B':
                 mCurrentTileImageId = R.drawable.white_bishop;
@@ -93,10 +93,10 @@ public final class Tile extends ImageView {
                 mCurrentTileImageId = R.drawable.black_rook;
                 break;
             case 'Q':
-                mCurrentTileImageId = R.drawable.white_queen;
+                mCurrentTileImageId = mIsFlipped ? R.drawable.white_king : R.drawable.white_queen;
                 break;
             case 'q':
-                mCurrentTileImageId = R.drawable.black_queen;
+                mCurrentTileImageId = mIsFlipped ? R.drawable.black_king : R.drawable.black_queen;
                 break;
             case 'N':
                 mCurrentTileImageId = R.drawable.white_knight;
