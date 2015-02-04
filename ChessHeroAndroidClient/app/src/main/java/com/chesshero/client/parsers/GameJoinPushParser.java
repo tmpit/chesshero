@@ -5,7 +5,7 @@ import java.util.HashMap;
 /**
  * Created by Toshko on 12/17/14.
  *
- * Instances of this class can parse a game join push message as described in @{link com.kt.api.Push}
+ * Instances of this class can parse a game join push message as described in {@link com.kt.api.Push}
  */
 public class GameJoinPushParser extends PushParser
 {

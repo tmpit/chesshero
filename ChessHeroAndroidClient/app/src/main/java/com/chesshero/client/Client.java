@@ -23,22 +23,22 @@ import java.util.Map;
 /**
  * Created by Toshko on 12/7/14.
  *
- * This class is the interface between the UI and the @{code ServerCommunicationService}. It provides an abstraction
+ * This class is the interface between the UI and the {@code ServerCommunicationService}. It provides an abstraction
  * over server interaction and user and game state management
  */
 public class Client implements ServiceEventListener
 {
 	/**
-	 * Static class containing the event names for all events that the Client can notify observers about
-	 * Events are posted through the EventCenter
-	 * Each event may or may not have an Integer result code passed as user data to the EventCenter
-	 * All events that end in '_RESULT' have an associated result code
-	 * All result codes are from the com.kt.api.Result class
+	 * Static class containing the event names for all events that the Client can notify observers about.
+	 * Events are posted through the EventCenter.
+	 * Each event may or may not have an Integer result code passed as user data to the EventCenter.
+	 * All events that end in {@code _RESULT} have an associated result code.
+	 * All result codes are from the {@link com.kt.api.Result} class
 	 */
 	public static class Event
 	{
 		/**
-		 * The user has been logged out
+		 * The user has been logged out.
 		 * Only posted if a user had been logged in/registered beforehand
 		 */
 		public static final String LOGOUT = "client.result.logout";
@@ -84,22 +84,22 @@ public class Client implements ServiceEventListener
 		public static final String MOVE_RESULT = "client.result.move";
 
 		/**
-		 * Posted when a join game push message is received
-		 * When you receive this event, it means that an opponent has joined your game
+		 * Posted when a join game push message is received.
+		 * When you receive this event, it means that an opponent has joined your game.
 		 * and that the game has started
 		 */
 		public static final String JOIN_GAME_PUSH = "client.push.joingame";
 
 		/**
-		 * Posted when an end game push message is received
-		 * When you receive this event, it means that the game has ended
+		 * Posted when an end game push message is received.
+		 * When you receive this event, it means that the game has ended.
 		 * All game state and information regarding how the game has ended is kept in the Game object
 		 */
 		public static final String END_GAME_PUSH = "client.push.endgame";
 
 		/**
-		 * Posted when a move push message is received
-		 * When you receive this message, it means that your opponent has executed a move
+		 * Posted when a move push message is received.
+		 * When you receive this message, it means that your opponent has executed a move.
 		 * You can fetch the move via the Game object's list of executed moves
 		 */
 		public static final String MOVE_PUSH = "client.push.move";
@@ -161,7 +161,7 @@ public class Client implements ServiceEventListener
 
 	/**
 	 * Call to determine if the user is logged in
-	 * @return @{code true} if a user is logged in, @{code false} otherwise
+	 * @return {@code true} if a user is logged in, {@code false} otherwise
 	 */
 	public boolean isLoggedIn()
 	{
@@ -170,7 +170,7 @@ public class Client implements ServiceEventListener
 
 	/**
 	 * Gets the currently logged in user. A user exists after a successful login or register and is destroyed on logout
-	 * @return A @{code Player} instance representing the user
+	 * @return A {@code Player} instance representing the user
 	 */
 	public Player getPlayer()
 	{
@@ -178,12 +178,12 @@ public class Client implements ServiceEventListener
 	}
 
 	/**
-	 * Gets the last created/played game
-	 * Will return an existing game after a successful create game or join game request
+	 * Gets the last created/played game.
+	 * Will return an existing game after a successful create game or join game request.
 	 * The game is destroyed on logout or after a successful cancel game request and otherwise is cached until the next game creation
 	 * so even after a game has ended you can fetch the game object and query it for status.
 	 * That is how, for example, you can find out who won the current game and how it ended
-	 * @return A @{code Game} object if the player has created or played a game and has not disconnected, @{code null} otherwise
+	 * @return A {@code Game} object if the player has created or played a game and has not disconnected, {@code null} otherwise
 	 */
 	public Game getGame()
 	{
@@ -191,9 +191,9 @@ public class Client implements ServiceEventListener
 	}
 
 	/**
-	 * Gets the list of pending games cached from the last @{code loadPendingGames()} request
-	 * @return A @{code List} of @{code GameTicket}'s. Will be @{code null} if there are not games on the server
-	 * or no @{code loadPendingGames()} request has been made
+	 * Gets the list of pending games cached from the last {@code loadPendingGames()} request
+	 * @return A {@code List} of {@code GameTicket}'s. Will be {@code null} if there are not games on the server
+	 * or no {@code loadPendingGames()} request has been made
 	 */
 	public List<GameTicket> getCachedPendingGames()
 	{
@@ -202,8 +202,8 @@ public class Client implements ServiceEventListener
 
 	/**
 	 * Attempts to register a user. Registration also logs the user in automatically
-	 * @param userName A username. Must not be @{code null}
-	 * @param password A password. Must not be @{code null}
+	 * @param userName A username. Must not be {@code null}
+	 * @param password A password. Must not be {@code null}
 	 */
 	public void register(String userName, String password)
 	{
@@ -218,8 +218,8 @@ public class Client implements ServiceEventListener
 
 	/**
 	 * Attempts to log a user in
-	 * @param userName A username. Must not be @{code null}
-	 * @param password A password. Must not be @{code null}
+	 * @param userName A username. Must not be {@code null}
+	 * @param password A password. Must not be {@code null}
 	 */
 	public void login(String userName, String password)
 	{
@@ -233,7 +233,7 @@ public class Client implements ServiceEventListener
 	}
 
 	/**
-	 * Logs out the user and clears @{code Client} state. Since the client disconnects from the server, if a
+	 * Logs out the user and clears {@code Client} state. Since the client disconnects from the server, if a
 	 * game is in progress, the player will this way concede defeat
 	 */
 	public void logout()
@@ -264,7 +264,7 @@ public class Client implements ServiceEventListener
 
 	/**
 	 * Attempts to create a game
-	 * @param name The name of the game. Must not be @{code null}
+	 * @param name The name of the game. Must not be {@code null}
 	 * @param color The color the player will play as in the game. This is optional and if not provided, white will be chosen
 	 */
 	public void createGame(String name, Color color)
@@ -303,9 +303,9 @@ public class Client implements ServiceEventListener
 	}
 
 	/**
-	 * Attempts to join a game described by a @{code GameTicket} object.
-	 * A ticket can be acquired from the list returned by the @{code getCachedPendingGames()} method
-	 * @param ticket The ticket describing the game. Must not be @{code null}
+	 * Attempts to join a game described by a {@code GameTicket} object.
+	 * A ticket can be acquired from the list returned by the {@code getCachedPendingGames()} method
+	 * @param ticket The ticket describing the game. Must not be {@code null}
 	 */
 	public void joinGame(GameTicket ticket)
 	{
@@ -338,8 +338,8 @@ public class Client implements ServiceEventListener
 
 	/**
 	 * Attempts to execute a move
-	 * @param from The starting position on the board. Must not be @{code null}
-	 * @param to The destination position on the board. Must not be @{code null}
+	 * @param from The starting position on the board. Must not be {@code null}
+	 * @param to The destination position on the board. Must not be {@code null}
 	 */
 	public void executeMove(Position from, Position to)
 	{
@@ -348,8 +348,8 @@ public class Client implements ServiceEventListener
 
 	/**
 	 * Attempts to execute a move on a chess piece and if it is a pawn, promote it
-	 * @param from The starting position on the board. Must not be @{code null}
-	 * @param to The destination position on the board. Must not be @{code null}
+	 * @param from The starting position on the board. Must not be {@code null}
+	 * @param to The destination position on the board. Must not be {@code null}
 	 * @param promotion The pawn's promotion. This parameter is optional and will be ignored if promotion does
 	 *                  not apply to the move. If the move describes a pawn moving to the last row, the server will
 	 *                  require promotion and if not provided, the move will fail

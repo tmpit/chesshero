@@ -6,16 +6,16 @@ import com.kt.api.Action;
 /**
  * Created by Toshko on 12/8/14.
  *
- * A class used for generation of @{code ServiceRequest} objects that can be sent through a @{code ServerCommunicationService}.
+ * A class used for generation of {@code ServiceRequest} objects that can be sent through a {@code ServerCommunicationService}.
  * @see com.kt.api.Action
  */
 public class RequestFactory
 {
 	/**
-	 * Creates a @{code ServiceRequest} object for a registration request
-	 * @param userName A username with which to register. Must not be @{code null}
-	 * @param password A password with which to register. Must not be @{code null}
-	 * @return A @{code ServiceRequest} object for a registration request
+	 * Creates a {@code ServiceRequest} object for a registration request
+	 * @param userName A username with which to register. Must not be {@code null}
+	 * @param password A password with which to register. Must not be {@code null}
+	 * @return A {@code ServiceRequest} object for a registration request
 	 */
 	public static ServiceRequest createRegisterRequest(String userName, String password)
 	{
@@ -26,10 +26,10 @@ public class RequestFactory
 	}
 
 	/**
-	 * Creates a @{code ServiceRequest} object for a login request
-	 * @param userName A username with which to login. Must not be @{code null}
-	 * @param password A password with which to login. Must not be @{code null}
-	 * @return A @{code ServiceRequest} object for a login request
+	 * Creates a {@code ServiceRequest} object for a login request
+	 * @param userName A username with which to login. Must not be {@code null}
+	 * @param password A password with which to login. Must not be {@code null}
+	 * @return A {@code ServiceRequest} object for a login request
 	 */
 	public static ServiceRequest createLoginRequest(String userName, String password)
 	{
@@ -40,11 +40,11 @@ public class RequestFactory
 	}
 
 	/**
-	 * Creates a @{code ServiceRequest} object for a create game request
-	 * @param name The name of the game. Must not be @{code null}
-	 * @param color The color which the creator of the game will play as. If @{code null} provided, white will be chosen
-	 * @param timeout The game timeout measured in minutes. If @{code null} provided, the game will have no timeout
-	 * @return A @{code ServiceRequest} object for a create game request
+	 * Creates a {@code ServiceRequest} object for a create game request
+	 * @param name The name of the game. Must not be {@code null}
+	 * @param color The color which the creator of the game will play as. If {@code null} provided, white will be chosen
+	 * @param timeout The game timeout measured in minutes. If {@code null} provided, the game will have no timeout
+	 * @return A {@code ServiceRequest} object for a create game request
 	 */
 	public static ServiceRequest createCreateGameRequest(String name, String color, Integer timeout)
 	{
@@ -65,9 +65,9 @@ public class RequestFactory
 	}
 
 	/**
-	 * Creates a @{code ServiceRequest} object for a cancel game request
-	 * @param gameID The id of the game to cancel. Must not be @{code null}
-	 * @return A @{code ServiceRequest} object for a cancel game request
+	 * Creates a {@code ServiceRequest} object for a cancel game request
+	 * @param gameID The id of the game to cancel. Must not be {@code null}
+	 * @return A {@code ServiceRequest} object for a cancel game request
 	 */
 	public static ServiceRequest createCancelGameRequest(Integer gameID)
 	{
@@ -77,12 +77,12 @@ public class RequestFactory
 	}
 
 	/**
-	 * Creates a @{code ServiceRequest} object for a fetch games request
+	 * Creates a {@code ServiceRequest} object for a fetch games request
 	 * @param type The type of games to look for
 	 *             @see com.kt.api.Action
 	 * @param offset The offset within the result set to start fetching from
-	 * @param limit The number of results to fetch starting from @{code offset}
-	 * @return A @{code ServiceRequest} object for a fetch games request
+	 * @param limit The number of results to fetch starting from {@code offset}
+	 * @return A {@code ServiceRequest} object for a fetch games request
 	 */
 	public static ServiceRequest createFetchGamesRequest(String type, Integer offset, Integer limit)
 	{
@@ -107,9 +107,9 @@ public class RequestFactory
 	}
 
 	/**
-	 * Creates a @{code ServiceRequest} object for a join game request
-	 * @param gameID The game id of the game to join. Must not be @{code null}
-	 * @return A @{code ServiceRequest} object for a join game request
+	 * Creates a {@code ServiceRequest} object for a join game request
+	 * @param gameID The game id of the game to join. Must not be {@code null}
+	 * @return A {@code ServiceRequest} object for a join game request
 	 */
 	public static ServiceRequest createJoinGameRequest(Integer gameID)
 	{
@@ -119,9 +119,9 @@ public class RequestFactory
 	}
 
 	/**
-	 * Creates a @{code ServiceRequest} object for an exit game request
-	 * @param gameID The game id of the game to exit. Must not be @{code null}
-	 * @return A @{code ServiceRequest} object for an exit game request
+	 * Creates a {@code ServiceRequest} object for an exit game request
+	 * @param gameID The game id of the game to exit. Must not be {@code null}
+	 * @return A {@code ServiceRequest} object for an exit game request
 	 */
 	public static ServiceRequest createExitGameRequest(Integer gameID)
 	{
@@ -131,9 +131,9 @@ public class RequestFactory
 	}
 
 	/**
-	 * Creates a @{code ServiceRequest} object for an game move request
-	 * @param move The encoded chess move. Must not be @{code null}
-	 * @return A @{code ServiceRequest} object for an game move request
+	 * Creates a {@code ServiceRequest} object for an game move request
+	 * @param move The encoded chess move. Must not be {@code null}
+	 * @return A {@code ServiceRequest} object for an game move request
 	 */
 	public static ServiceRequest createMoveRequest(String move)
 	{

@@ -15,9 +15,9 @@ public abstract class PushParser
 	protected abstract void reset();
 
 	/**
-	 * Parses the provided message. @{code reset()} is called prior to parsing the message
-	 * @param message The push message as sent by the server. Must not be @{code null}
-	 * @return @{code this}
+	 * Parses the provided message. {@code reset()} is called prior to parsing the message
+	 * @param message The push message as sent by the server. Must not be {@code null}
+	 * @return {@code this}
 	 */
 	public PushParser parse(HashMap<String, Object> message)
 	{

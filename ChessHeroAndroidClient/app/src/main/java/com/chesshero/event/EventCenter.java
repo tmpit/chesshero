@@ -7,7 +7,7 @@ import java.util.HashSet;
  * Created by Toshko on 12/9/14.
  *
  * A very basic class implementing a one-to-many Observer pattern.
- * Observers register for events specified by a name and once an event with that name is posted, the @{code EventCenter}
+ * Observers register for events specified by a name and once an event with that name is posted, the {@code EventCenter}
  * invokes a callback on the observer object
  */
 public class EventCenter
@@ -15,8 +15,8 @@ public class EventCenter
 	private static EventCenter singleton = null;
 
 	/**
-	 * Gets the singleton instance of the @{code EventCenter}. The instance is lazy loaded on demand
-	 * @return An instance of @{code EventCenter}
+	 * Gets the singleton instance of the {@code EventCenter}. The instance is lazy loaded on demand
+	 * @return An instance of {@code EventCenter}
 	 */
 	public synchronized static EventCenter getSingleton()
 	{
@@ -32,8 +32,8 @@ public class EventCenter
 
 	/**
 	 * Adds an observer to the event center for an event specified by a name
-	 * @param observer An object implementing @{code EventCenterObserver} interface. Must not be @{code null}
-	 * @param eventName The name of the event. Must not be @{code null}
+	 * @param observer An object implementing {@code EventCenterObserver} interface. Must not be {@code null}
+	 * @param eventName The name of the event. Must not be {@code null}
 	 */
 	public void addObserver(EventCenterObserver observer, String eventName)
 	{
@@ -63,8 +63,8 @@ public class EventCenter
 	/**
 	 * Removes an observer from the event center for an event specified by a name. The observer will still be notified
 	 * for other events it has subscribed for
-	 * @param observer An object implementing @{code EventCenterObserver} interface. Must not be @{code null}
-	 * @param eventName The name of the event. Must not be @{code null}
+	 * @param observer An object implementing {@code EventCenterObserver} interface. Must not be {@code null}
+	 * @param eventName The name of the event. Must not be {@code null}
 	 */
 	public void removeObserver(EventCenterObserver observer, String eventName)
 	{
@@ -96,7 +96,7 @@ public class EventCenter
 
 	/**
 	 * Posts an event described by a name
-	 * @param eventName The name of the event. Must not be @{code null}
+	 * @param eventName The name of the event. Must not be {@code null}
 	 */
 	public void postEvent(String eventName)
 	{
@@ -105,8 +105,8 @@ public class EventCenter
 
 	/**
 	 * Posts an event described by a name and an object to be passed to the observers
-	 * @param eventName The name of the event. Must not be @{code null}
-	 * @param userData An object that will be passed to all observers of this event. Can be @{code null}
+	 * @param eventName The name of the event. Must not be {@code null}
+	 * @param userData An object that will be passed to all observers of this event. Can be {@code null}
 	 */
 	public void postEvent(String eventName, Object userData)
 	{

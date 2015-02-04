@@ -20,7 +20,7 @@ public abstract class ConnectTask extends Task
 
 	/**
 	 * Designated initializer for the class
-	 * @param address The address the socket should connect to. Must not be @{code null}
+	 * @param address The address the socket should connect to. Must not be {@code null}
 	 * @param port The port the socket should connect to
 	 * @param timeout The connection timeout measured in milliseconds. Pass 0 to disable timeout
 	 */
@@ -32,8 +32,8 @@ public abstract class ConnectTask extends Task
 	}
 
 	/**
-	 * Gets the created @{code CHESCOSocket} instance. Will exist only if the task completes successfully
-	 * @return A @{code CHESCOSocket} instance if created
+	 * Gets the created {@code CHESCOSocket} instance. Will exist only if the task completes successfully
+	 * @return A {@code CHESCOSocket} instance if created
 	 */
 	public synchronized CHESCOSocket getSocket()
 	{

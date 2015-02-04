@@ -6,7 +6,7 @@ import com.kt.game.Color;
  * Created by Toshko on 12/10/14.
  *
  * Instances describe a pending game. A pending game is a game waiting for players to join. Class is used by
- * @{code FetchGamesResponseParser} and @{code Client} classes
+ * {@code FetchGamesResponseParser} and {@code Client} classes
  */
 public class GameTicket
 {
@@ -21,7 +21,7 @@ public class GameTicket
 	public final String gameName;
 
 	/**
-	 * The timeout of the game measured in minutes. Can be @{code null} if the game has no timeout
+	 * The timeout of the game measured in minutes. Can be {@code null} if the game has no timeout
 	 */
 	public final Integer timeout;
 

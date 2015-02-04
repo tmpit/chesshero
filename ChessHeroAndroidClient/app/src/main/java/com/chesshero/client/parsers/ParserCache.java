@@ -12,7 +12,7 @@ public class ParserCache
 
 	/**
 	 * Gets a generic response parser. This parser's state may be cached from the previous request
-	 * @return A @{code ResponseParser} instance
+	 * @return A {@code ResponseParser} instance
 	 */
 	public static ResponseParser getGenericResponseParser()
 	{
@@ -28,7 +28,7 @@ public class ParserCache
 
 	/**
 	 * Gets a response parser for a response from a login request. This parser's state may be cached from the previous request
-	 * @return A @{code LoginResponseParser} instance
+	 * @return A {@code LoginResponseParser} instance
 	 */
 	public static LoginResponseParser getLoginResponseParser()
 	{
@@ -44,7 +44,7 @@ public class ParserCache
 
 	/**
 	 * Gets a response parser for a response from a create game request. This parser's state may be cached from the previous request
-	 * @return A @{code CreateGameResponseParser} instance
+	 * @return A {@code CreateGameResponseParser} instance
 	 */
 	public static CreateGameResponseParser getCreateGameResponseParser()
 	{
@@ -60,7 +60,7 @@ public class ParserCache
 
 	/**
 	 * Gets a response parser for a response from a fetch games request. This parser's state may be cached from the previous request
-	 * @return A @{code FetchGamesResponseParser} instance
+	 * @return A {@code FetchGamesResponseParser} instance
 	 */
 	public static FetchGamesResponseParser getFetchGamesResponseParser()
 	{
@@ -76,7 +76,7 @@ public class ParserCache
 
 	/**
 	 * Gets a response parser for a response from a game move request. This parser's state may be cached from the previous request
-	 * @return A @{code GameMoveResponseParser} instance
+	 * @return A {@code GameMoveResponseParser} instance
 	 */
 	public static GameMoveResponseParser getGameMoveResponseParser()
 	{
@@ -92,7 +92,7 @@ public class ParserCache
 
 	/**
 	 * Gets a parser for a game join push message. This parser's state may be cached from the previous push message
-	 * @return A @{code GameJoinPushParser} instance
+	 * @return A {@code GameJoinPushParser} instance
 	 */
 	public static GameJoinPushParser getGameJoinPushParser()
 	{
@@ -108,7 +108,7 @@ public class ParserCache
 
 	/**
 	 * Gets a parser for a game end push message. This parser's state may be cached from the previous push message
-	 * @return A @{code GameEndPushParser} instance
+	 * @return A {@code GameEndPushParser} instance
 	 */
 	public static GameEndPushParser getGameEndPushParser()
 	{
@@ -124,7 +124,7 @@ public class ParserCache
 
 	/**
 	 * Gets a parser for a game move push message. This parser's state may be cached from the previous push message
-	 * @return A @{code GameMovePushParser} instance
+	 * @return A {@code GameMovePushParser} instance
 	 */
 	public static GameMovePushParser getGameMovePushParser()
 	{

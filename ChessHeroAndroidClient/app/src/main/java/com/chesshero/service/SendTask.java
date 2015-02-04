@@ -18,8 +18,8 @@ public abstract class SendTask extends Task
 
 	/**
 	 * Designated initializer for the class
-	 * @param socket The socket to write the message to. Must not be @{code null}
-	 * @param message The message to write. Must not be @{code null}
+	 * @param socket The socket to write the message to. Must not be {@code null}
+	 * @param message The message to write. Must not be {@code null}
 	 * @param timeout The write timeout measured in milliseconds. Pass 0 for no timeout
 	 */
 	SendTask(CHESCOSocket socket, Map message, int timeout)

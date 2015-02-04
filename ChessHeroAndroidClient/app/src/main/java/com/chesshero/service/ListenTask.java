@@ -15,7 +15,7 @@ public abstract class ListenTask extends Task
 
 	/**
 	 * Designated initializer for the class
-	 * @param socket The socket this task will listen on. Must not be @{code null}
+	 * @param socket The socket this task will listen on. Must not be {@code null}
 	 */
 	ListenTask(CHESCOSocket socket)
 	{
@@ -59,8 +59,8 @@ public abstract class ListenTask extends Task
 	}
 
 	/**
-	 * Invoked every time this task reads a message from its socket. If a @{code Handler} object is provided through
-	 * the @{code setCallbackHandler()} method, this method will be dispatched on that handler. Otherwise, it will be invoked
+	 * Invoked every time this task reads a message from its socket. If a {@code Handler} object is provided through
+	 * the {@code setCallbackHandler()} method, this method will be dispatched on that handler. Otherwise, it will be invoked
 	 * on the thread this task runs on
 	 * @param message The message read from the socket
 	 */

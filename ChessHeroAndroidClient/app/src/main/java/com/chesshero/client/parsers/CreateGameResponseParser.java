@@ -8,7 +8,7 @@ import java.util.HashMap;
  * Created by Toshko on 12/9/14.
  *
  * Instances of this class can parse the response returned from a create game request as described in
- * @{link com.kt.api.Action}
+ * {@link com.kt.api.Action}
  */
 public class CreateGameResponseParser extends ResponseParser
 {

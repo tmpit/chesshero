@@ -10,8 +10,8 @@ public class ChessHeroApplication extends Application
 	private Client sharedClient = null;
 
 	/**
-	 * Gets the singleton @{code Client} object. This method lazy loads the instance on demand
-	 * @return A @{code Client} instance
+	 * Gets the singleton {@code Client} object. This method lazy loads the instance on demand
+	 * @return A {@code Client} instance
 	 */
 	public Client getClient()
 	{

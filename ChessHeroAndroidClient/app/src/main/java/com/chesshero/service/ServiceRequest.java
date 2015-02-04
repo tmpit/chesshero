@@ -5,7 +5,7 @@ import java.util.HashMap;
 /**
  * Created by Toshko on 11/26/14.
  *
- * The class describes a generic server request and acts as a builder for a raw request that can be written to a @{code CHESCOSocket}
+ * The class describes a generic server request and acts as a builder for a raw request that can be written to a {@code CHESCOSocket}
  * @see com.kt.api.Action
  */
 public class ServiceRequest
@@ -16,7 +16,7 @@ public class ServiceRequest
 
 	/**
 	 * Initialize a request with a specific action. The request can timeout
-	 * @param action An action code as per @{code com.kt.api.Action}
+	 * @param action An action code as per {@code com.kt.api.Action}
 	 */
 	public ServiceRequest(int action)
 	{
@@ -25,8 +25,8 @@ public class ServiceRequest
 
 	/**
 	 * Designated initializer for the class
-	 * @param action An action code as per @{code com.kt.api.Action}
-	 * @param timeout Pass @{code true} if this request should be able to timeout, @{code false} otherwise
+	 * @param action An action code as per {@code com.kt.api.Action}
+	 * @param timeout Pass {@code true} if this request should be able to timeout, {@code false} otherwise
 	 */
 	public ServiceRequest(int action, boolean timeout)
 	{
@@ -46,7 +46,7 @@ public class ServiceRequest
 
 	/**
 	 * Call to check if this request can timeout
-	 * @return @{code true} if this request can timeout, @{code false} otherwise
+	 * @return {@code true} if this request can timeout, {@code false} otherwise
 	 */
 	public boolean canTimeout()
 	{
@@ -55,7 +55,7 @@ public class ServiceRequest
 
 	/**
 	 * Gets all of the raw parameters for the request
-	 * @return A @{code HashMap} containing all the request parameters
+	 * @return A {@code HashMap} containing all the request parameters
 	 */
 	protected HashMap<String, Object> getParameters()
 	{
@@ -63,9 +63,9 @@ public class ServiceRequest
 	}
 
 	/**
-	 * Adds a @{code String} parameter to the request
-	 * @param name The parameter name. Must not be @{code null}
-	 * @param value The parameter value. Must not be @{code null}
+	 * Adds a {@code String} parameter to the request
+	 * @param name The parameter name. Must not be {@code null}
+	 * @param value The parameter value. Must not be {@code null}
 	 */
 	public void addParameter(String name, String value)
 	{
@@ -74,7 +74,7 @@ public class ServiceRequest
 
 	/**
 	 * Adds an integer parameter to the request
-	 * @param name The parameter name. Must not be @{code null}
+	 * @param name The parameter name. Must not be {@code null}
 	 * @param value The parameter value
 	 */
 	public void addParameter(String name, int value)
@@ -84,7 +84,7 @@ public class ServiceRequest
 
 	/**
 	 * Adds a boolean parameter to the request
-	 * @param name The parameter name. Must not be @{code null}
+	 * @param name The parameter name. Must not be {@code null}
 	 * @param value The parameter value
 	 */
 	public void addParameter(String name, boolean value)

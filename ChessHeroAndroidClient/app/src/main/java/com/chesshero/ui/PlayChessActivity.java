@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.chesshero.R;
 import com.chesshero.client.Client;
+import com.chesshero.client.Promotion;
 import com.chesshero.event.EventCenter;
 import com.chesshero.event.EventCenterObserver;
 import com.chesshero.ui.chessboard.ChessboardAdapter;
@@ -203,7 +204,7 @@ public class PlayChessActivity extends Activity implements EventCenterObserver {
                         Toast.makeText(PlayChessActivity.this, "Illegal move", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    client.executeMove(previousTileClicked.getPosition(), currentTileClicked.getPosition());
+                    client.executeMove(previousTileClicked.getPosition(), currentTileClicked.getPosition(), Promotion.QUEEN);
                     restrictions.clear();
                     newMove = true;
                 }

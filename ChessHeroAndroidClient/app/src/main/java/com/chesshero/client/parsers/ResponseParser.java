@@ -12,8 +12,8 @@ import java.util.HashMap;
 public class ResponseParser
 {
 	/**
-	 * The evaluated outcome of the request based on the @{code result}.
-	 * @{code true} if @{code result == com.kt.api.Result.OK}, @{code false} otherwise
+	 * The evaluated outcome of the request based on the {@code result}.
+	 * {@code true} if {@code result == com.kt.api.Result.OK}, {@code false} otherwise
 	 */
 	public boolean success;
 
@@ -33,9 +33,9 @@ public class ResponseParser
 	}
 
 	/**
-	 * Parses the provided response. @{code reset()} is called prior to parsing the response
-	 * @param response The response as sent by the server. Must not be @{code null}
-	 * @return @{code this}
+	 * Parses the provided response. {@code reset()} is called prior to parsing the response
+	 * @param response The response as sent by the server. Must not be {@code null}
+	 * @return {@code this}
 	 */
 	public ResponseParser parse(HashMap<String, Object> response)
 	{
